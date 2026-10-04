@@ -1,8 +1,9 @@
 # Claude Code — Mobile
 
-Aplica `../../CLAUDE.md` y `../../.ai/roles/frontend.md`.
+Lee:
 
-Trabaja normalmente solo en `apps/mobile/**`.
+- README.md
+- AGENTS.md
+- contracts/openapi/
 
-Stack vigente: Flutter + Dart.
-Consume `../../docs/contracts/openapi/`.
+No asumir rutas del superproyecto.

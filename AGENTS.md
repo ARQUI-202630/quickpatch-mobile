@@ -1,10 +1,9 @@
 # AGENTS — Mobile
 
-Complementa `../../AGENTS.md`.
+Repositorio autónomo Cliente/Técnico.
 
-- Rol: Frontend Developer.
-- Área normal de escritura: `apps/mobile/**`.
-- Stack: Flutter + Dart.
-- API: `../../docs/contracts/openapi/`.
-- No modificar backend, web o infraestructura por defecto.
+- Stack: Flutter 3.47.5 + Dart 3.13.4.
+- Contratos REST: `contracts/openapi/`.
+- Unit/widget tests: flutter test.
+- E2E: integration_test / Patrol cuando exista el scaffold.
 - No inventar endpoints ni payloads.
