@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Solo en debug: el backend local corre en http://10.0.2.2:8080 (config/dev.json).
+         Los builds de release siguen exigiendo HTTPS. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

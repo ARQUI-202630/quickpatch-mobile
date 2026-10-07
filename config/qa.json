@@ -1,0 +1,5 @@
+{
+  "ENTORNO": "qa",
+  "API_BASE_URL": "https://quickpatch.internal/api",
+  "CHANNEL_ID": "quickpatch-mobile"
+}

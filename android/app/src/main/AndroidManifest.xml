@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- La app consume el API Gateway; sin este permiso el build de release no tiene red. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:label="quickpatch_mobile"
         android:name="${applicationName}"
