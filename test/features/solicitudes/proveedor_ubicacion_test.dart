@@ -70,8 +70,9 @@ void main() {
           LecturasGps(
             actual: ({bool soloGpsDelSistema = false}) async {
               llamadas.add(soloGpsDelSistema);
-              if (!soloGpsDelSistema)
+              if (!soloGpsDelSistema) {
                 throw Exception('sin servicios de Google');
+              }
               return _posicion(latitud: 4.61);
             },
             ultimaConocida: () async => ultima,
