@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compuerta local (formato + análisis + pruebas)",
+      "type": "shell",
+      "command": "dart format --output=none --set-exit-if-changed lib test && flutter analyze && flutter test --coverage",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": []
+    }
+  ]
+}
