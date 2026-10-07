@@ -4,6 +4,6 @@ Lee:
 
 - README.md
 - AGENTS.md
-- contracts/openapi/
+- contracts/api-gateway/openapi/
 
 No asumir rutas del superproyecto.
