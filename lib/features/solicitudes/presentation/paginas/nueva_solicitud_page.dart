@@ -45,6 +45,10 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
       if (mounted) setState(() => _ubicacion = ubicacion);
     } on UbicacionNoDisponible catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
+    } on Exception {
+      if (mounted) {
+        setState(() => _error = 'No pudimos obtener tu ubicación.');
+      }
     } finally {
       if (mounted) setState(() => _ubicando = false);
     }
