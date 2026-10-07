@@ -10,6 +10,8 @@ class AppConfig {
     required this.entorno,
     required this.apiBaseUrl,
     required this.canalId,
+    this.hostHeader = '',
+    this.certificadoSha256 = '',
   });
 
   /// Lee la configuración de las variables de compilación.
@@ -23,6 +25,8 @@ class AppConfig {
       'CHANNEL_ID',
       defaultValue: 'quickpatch-mobile',
     ),
+    hostHeader: String.fromEnvironment('HOST_HEADER'),
+    certificadoSha256: String.fromEnvironment('CERT_SHA256'),
   );
 
   /// `dev` o `qa`.
@@ -34,6 +38,17 @@ class AppConfig {
   /// Valor de `X-Channel-Id` para las peticiones públicas. El Gateway lo
   /// traduce al tenant (RN-U5); su formato definitivo depende de DEP-09.
   final String canalId;
+
+  /// Nombre que se envía en la cabecera `Host` cuando [apiBaseUrl] usa la IP
+  /// de VM1: un teléfono no puede editar su archivo `hosts`, y el Nginx de VM1
+  /// elige el ambiente por nombre (Documento de Infraestructura, 11.2).
+  /// Vacío: se usa el nombre de la URL.
+  final String hostHeader;
+
+  /// Huella SHA-256 del certificado autofirmado del gateway (R9, sin CA
+  /// pública). Si se define, la app confía solo en ese certificado; vacío: se
+  /// validan los certificados con las CA del sistema.
+  final String certificadoSha256;
 
   /// El registro de empresa cliente (RF-06) depende de `client_companies`
   /// (DD 3.1, pendiente de aprobación): se habilita cuando Identity publique

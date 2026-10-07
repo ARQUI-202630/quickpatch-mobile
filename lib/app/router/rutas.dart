@@ -4,4 +4,7 @@ abstract final class Rutas {
   static const iniciarSesion = '/iniciar-sesion';
   static const registro = '/registro';
   static const inicio = '/inicio';
+  static const nuevaSolicitud = '/solicitudes/nueva';
+  static const detalleSolicitudPatron = '/solicitudes/:id';
+  static String detalleSolicitud(String id) => '/solicitudes/$id';
 }

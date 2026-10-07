@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../autenticacion/presentation/controlador_sesion.dart';
 import '../../domain/opciones_por_rol.dart';
@@ -33,8 +34,16 @@ class InicioPage extends ConsumerWidget {
                 for (final opcion in opcionesPara(usuario.rol))
                   ListTile(
                     title: Text(opcion.titulo),
-                    subtitle: Text('Próximamente · ${opcion.requisito}'),
-                    enabled: false,
+                    subtitle: opcion.disponible
+                        ? null
+                        : Text('Próximamente · ${opcion.requisito}'),
+                    enabled: opcion.disponible,
+                    trailing: opcion.disponible
+                        ? const Icon(Icons.chevron_right)
+                        : null,
+                    onTap: opcion.disponible
+                        ? () => context.push(opcion.ruta!)
+                        : null,
                   ),
               ],
             )

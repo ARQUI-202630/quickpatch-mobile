@@ -7,6 +7,8 @@ import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/inicio/presentation/paginas/inicio_page.dart';
+import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
+import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../shared/widgets/vista_cargando.dart';
 import 'rutas.dart';
 
@@ -52,6 +54,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.inicio,
         builder: (context, state) => const InicioPage(),
+      ),
+      GoRoute(
+        path: Rutas.nuevaSolicitud,
+        builder: (context, state) => const NuevaSolicitudPage(),
+      ),
+      GoRoute(
+        path: Rutas.detalleSolicitudPatron,
+        builder: (context, state) =>
+            DetalleSolicitudPage(id: state.pathParameters['id']!),
       ),
     ],
   );

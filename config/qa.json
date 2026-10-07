@@ -1,5 +1,7 @@
 {
   "ENTORNO": "qa",
-  "API_BASE_URL": "https://quickpatch.internal/api",
+  "API_BASE_URL": "https://10.43.100.168/api",
+  "HOST_HEADER": "qa.quickpatch.internal",
+  "CERT_SHA256": "",
   "CHANNEL_ID": "quickpatch-mobile"
 }
