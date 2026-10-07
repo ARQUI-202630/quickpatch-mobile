@@ -6,7 +6,7 @@
 
 La aplicación móvil concentra los flujos de solicitud, matching/asignación visible al usuario, ejecución, evidencia, pago/calificación y demás capacidades móviles definidas por requisitos.
 
-Consume únicamente contratos REST publicados en `contracts/openapi/` (submódulo `quickpatch-contracts`).
+Consume únicamente contratos REST publicados en `contracts/api-gateway/openapi/` (submódulo `quickpatch-api-gateway`).
 
 ## Estructura
 

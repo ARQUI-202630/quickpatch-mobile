@@ -2,7 +2,7 @@
 
 Una carpeta por capacidad (por ejemplo `service_requests/`), con tres capas:
 
-- `data/`: modelos y cliente REST según `contracts/openapi/` (no se inventan endpoints ni campos).
+- `data/`: modelos y cliente REST según `contracts/api-gateway/openapi/` (no se inventan endpoints ni campos).
 - `domain/`: entidades y reglas de la capacidad, sin dependencias de Flutter ni de HTTP.
 - `presentation/`: pantallas y widgets.
 

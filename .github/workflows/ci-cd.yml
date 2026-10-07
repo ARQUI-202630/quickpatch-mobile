@@ -1,5 +1,6 @@
-# CI/CD de quickpatch-mobile (Flutter). Copiar en el repo como .github/workflows/ci-cd.yml.
-# La lógica vive en quickpatch-infrastructure; aquí solo se decide qué corre en cada rama:
+# CI/CD de quickpatch-mobile (Flutter).
+# El CI vive en este archivo (SCRUM-337). El despliegue (imagen, QA y producción) todavía usa
+# los workflows de quickpatch-infrastructure hasta que se traslade (SCRUM-338). Qué corre en cada rama:
 #   PR a develop, push develop → formato, análisis y pruebas
 #   push release/* y main      → además, APK de release como artefacto del workflow
 # La app no se despliega en las VMs: el APK se descarga desde la pestaña Actions.
@@ -19,10 +20,49 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # CI propio del repositorio (SCRUM-337): formato, análisis, pruebas y cobertura ≥ 80%.
   ci:
-    uses: ARQUI-202630/quickpatch-infrastructure/.github/workflows/ci-flutter.yml@main
-    with:
-      apk: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
+    name: Análisis, pruebas y cobertura
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APK: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.5"
+          cache: true
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Formato
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Análisis estático
+        run: flutter analyze
+
+      - name: Pruebas con cobertura
+        run: flutter test --coverage
+
+      - name: Cobertura mínima
+        run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
+
+      - name: APK de release
+        if: env.APK == 'true'
+        run: flutter build apk --release
+
+      - name: Guardar el APK
+        if: env.APK == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
 
   dependency-review:
     if: github.event_name == 'pull_request'
