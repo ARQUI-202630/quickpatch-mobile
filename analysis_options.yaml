@@ -1,5 +1,5 @@
 # Reglas de análisis de QUICKPATCH Mobile.
-# El CI (ci-flutter.yml de quickpatch-infrastructure) corre `flutter analyze`
+# El CI (.github/workflows/ci-cd.yml) corre `flutter analyze`
 # y `dart format --set-exit-if-changed lib test`: cualquier hallazgo bloquea el PR.
 include: package:flutter_lints/flutter.yaml
 
