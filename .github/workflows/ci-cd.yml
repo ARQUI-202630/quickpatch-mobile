@@ -1,6 +1,6 @@
 # CI/CD de quickpatch-mobile (Flutter).
-# El CI vive en este archivo (SCRUM-337). El despliegue (imagen, QA y producción) todavía usa
-# los workflows de quickpatch-infrastructure hasta que se traslade (SCRUM-338). Qué corre en cada rama:
+# El CI (SCRUM-337) y el CD (SCRUM-338) viven en este archivo, sin workflows de otros repositorios.
+# Qué corre en cada rama:
 #   PR a develop, push develop → formato, análisis y pruebas
 #   push release/* y main      → además, APK de release como artefacto del workflow
 # La app no se despliega en las VMs: el APK se descarga desde la pestaña Actions.
@@ -65,8 +65,15 @@ jobs:
           retention-days: 30
 
   dependency-review:
+    name: dependency-review
     if: github.event_name == 'pull_request'
-    uses: ARQUI-202630/quickpatch-infrastructure/.github/workflows/dependency-review.yml@main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
 
   quality-gate:
     name: quality-gate
