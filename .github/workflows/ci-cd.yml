@@ -2,7 +2,8 @@
 # El CI (SCRUM-337) y el CD (SCRUM-338) viven en este archivo, sin workflows de otros repositorios.
 # Qué corre en cada rama:
 #   PR a develop, push develop → formato, análisis, pruebas y compilación del APK de release
-#   push release/* y main      → además, el APK como artefacto del workflow
+#   push release/*             → además, el APK contra el API Gateway de QA (config/qa.json) como artefacto `apk-qa`
+#   push main                  → además, el APK como artefacto `apk` (falta config/produccion.json)
 # La app no se despliega en las VMs: el APK se descarga desde la pestaña Actions.
 name: CI/CD
 
@@ -28,6 +29,10 @@ jobs:
     timeout-minutes: 20
     env:
       APK: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
+      # release/* es QA (SCRUM-447): la app toma la URL del gateway, el Host y la huella del certificado de
+      # config/qa.json, sin secretos (quedan dentro del APK). En PR y develop no se fija ambiente.
+      CONFIG_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && '--dart-define-from-file=config/qa.json' || '' }}
+      NOMBRE_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && 'apk-qa' || 'apk' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,13 +59,13 @@ jobs:
         run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
 
       - name: APK de release
-        run: flutter build apk --release
+        run: flutter build apk --release $CONFIG_APK
 
       - name: Guardar el APK
         if: env.APK == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: ${{ env.NOMBRE_APK }}
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 

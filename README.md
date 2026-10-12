@@ -62,6 +62,8 @@ Un teléfono no puede editar su archivo `hosts` ni confiar en el certificado aut
 
 El teléfono o el emulador deben estar conectados a la VPN de la universidad.
 
+**APK de QA (SCRUM-447):** cada push a `release/*` compila el APK con `config/qa.json` y lo deja como artefacto `apk-qa` del workflow (pestaña Actions, 30 días). En local: `flutter build apk --release --dart-define-from-file=config/qa.json`.
+
 ## Comandos
 
 ```bash
