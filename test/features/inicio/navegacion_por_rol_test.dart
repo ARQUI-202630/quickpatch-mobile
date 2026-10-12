@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/router/rutas.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/features/inicio/domain/navegacion_por_rol.dart';
-import 'package:quickpatch_mobile/features/inicio/presentation/icono_categoria.dart';
 import 'package:quickpatch_mobile/features/inicio/presentation/paginas/cuenta_page.dart';
+import 'package:quickpatch_mobile/features/solicitudes/presentation/icono_categoria.dart';
 
 void main() {
   group('destinosPara', () {

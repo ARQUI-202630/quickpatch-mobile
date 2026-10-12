@@ -47,6 +47,10 @@ void main() {
     WidgetTester tester, {
     ProveedorUbicacion? ubicacion,
   }) async {
+    // Teléfono de 400 x 1200 px lógicos: el formulario cabe sin desplazar.
+    tester.view.physicalSize = const Size(1200, 3600);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
     container = ProviderContainer(
       overrides: [
         almacenSeguroProvider.overrideWithValue(AlmacenSeguroEnMemoria()),
