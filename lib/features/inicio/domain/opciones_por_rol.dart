@@ -32,7 +32,11 @@ List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
     OpcionInicio('Usuarios de la empresa', 'RF-06'),
   ],
   RolUsuario.tecnico => const [
-    OpcionInicio('Disponibilidad y cobertura', 'RF-13'),
+    OpcionInicio(
+      'Disponibilidad y cobertura',
+      'RF-13',
+      ruta: Rutas.disponibilidad,
+    ),
     OpcionInicio('Ofertas', 'RF-10'),
     OpcionInicio('Historial de servicios', 'RF-17'),
     OpcionInicio('Pagos recibidos', 'RF-25'),

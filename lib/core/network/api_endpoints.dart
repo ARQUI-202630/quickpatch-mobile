@@ -1,9 +1,10 @@
 /// Rutas REST que consume la app móvil.
 ///
 /// Fuente: `quickpatch-api-gateway/openapi/` en `v0.5.0` (identity 1.3.0,
-/// catalog 1.2.0 y service-request 1.1.0). Las rutas marcadas "pendiente de contrato" vienen
-/// del catálogo del DD 3.1 y todavía no tienen especificación publicada: no
-/// deben usarse hasta que exista. No agregar rutas que no estén en el DD.
+/// catalog 1.2.0, service-request 1.1.0 y matching 1.0.0). Las rutas marcadas
+/// "pendiente de contrato" vienen del catálogo del DD 3.1 y todavía no tienen
+/// especificación publicada: no deben usarse hasta que exista. No agregar
+/// rutas que no estén en el DD.
 abstract final class ApiEndpoints {
   // Identity Service
   static const registroCliente = '/v1/auth/register/client';
