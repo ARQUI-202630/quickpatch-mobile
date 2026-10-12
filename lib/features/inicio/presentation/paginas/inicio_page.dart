@@ -11,8 +11,8 @@ import '../../../../shared/widgets/vista_estado.dart';
 import '../../../autenticacion/presentation/controlador_sesion.dart';
 import '../../../solicitudes/data/repositorio_solicitudes.dart';
 import '../../../solicitudes/domain/modelos.dart';
+import '../../../solicitudes/presentation/icono_categoria.dart';
 import '../../domain/opciones_por_rol.dart';
-import '../icono_categoria.dart';
 
 /// Pantalla de inicio según el rol del usuario autenticado (SCRUM-441).
 ///
@@ -351,10 +351,7 @@ class _TarjetaCategoria extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: QpEspacio.e4),
-              Text(
-                categoria.nombre,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
+              NombreCategoria(categoria.nombre),
             ],
           ),
         ),
@@ -387,4 +384,24 @@ class _TarjetaOpcion extends StatelessWidget {
       onTap: opcion.disponible ? () => context.push(opcion.ruta!) : null,
     ),
   );
+}
+
+/// Nombre de una categoría en una tarjeta angosta. Los nombres de varias
+/// palabras pasan a la siguiente línea; una sola palabra que no cabe
+/// ("Electrodomésticos") se reduce en vez de partirse a la mitad.
+class NombreCategoria extends StatelessWidget {
+  const NombreCategoria(this.nombre, {super.key});
+
+  final String nombre;
+
+  @override
+  Widget build(BuildContext context) {
+    final texto = Text(nombre, style: Theme.of(context).textTheme.titleSmall);
+    if (nombre.trim().contains(' ')) return texto;
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: AlignmentDirectional.centerStart,
+      child: texto,
+    );
+  }
 }
