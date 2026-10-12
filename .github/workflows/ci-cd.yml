@@ -1,8 +1,8 @@
 # CI/CD de quickpatch-mobile (Flutter).
 # El CI (SCRUM-337) y el CD (SCRUM-338) viven en este archivo, sin workflows de otros repositorios.
 # Qué corre en cada rama:
-#   PR a develop, push develop → formato, análisis y pruebas
-#   push release/* y main      → además, APK de release como artefacto del workflow
+#   PR a develop, push develop → formato, análisis, pruebas y compilación del APK de release
+#   push release/* y main      → además, el APK como artefacto del workflow
 # La app no se despliega en las VMs: el APK se descarga desde la pestaña Actions.
 name: CI/CD
 
@@ -20,7 +20,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  # CI propio del repositorio (SCRUM-337): formato, análisis, pruebas y cobertura ≥ 80%.
+  # CI propio del repositorio (SCRUM-337): formato, análisis, pruebas, cobertura ≥ 80% y APK de
+  # release (SCRUM-444: compilarlo en cada PR detecta antes un asset o una dependencia rota).
   ci:
     name: Análisis, pruebas y cobertura
     runs-on: ubuntu-latest
@@ -53,7 +54,6 @@ jobs:
         run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
 
       - name: APK de release
-        if: env.APK == 'true'
         run: flutter build apk --release
 
       - name: Guardar el APK

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
+import 'package:quickpatch_mobile/features/inicio/presentation/paginas/inicio_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/data/proveedor_ubicacion.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
@@ -16,13 +17,17 @@ const _categoria = 'f2b9a0c4-1111-4c0a-9a55-2f1f3d6b8e01';
 const _solicitud = '01a113ed-acfd-7f1e-9ccd-5e24e2736119';
 
 class _UbicacionFija implements ProveedorUbicacion {
-  _UbicacionFija({this.falla});
+  _UbicacionFija({this.falla, this.fallaInesperada = false});
 
   final String? falla;
+
+  /// Falla con una excepción que no es [UbicacionNoDisponible].
+  final bool fallaInesperada;
 
   @override
   Future<Ubicacion> actual() async {
     if (falla != null) throw UbicacionNoDisponible(falla!);
+    if (fallaInesperada) throw Exception('GPS sin respuesta');
     return const Ubicacion(4.6533, -74.0836);
   }
 }
@@ -192,6 +197,64 @@ void main() {
       find.text('Esa categoría ya no está disponible. Elige otra.'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('si Catalog falla muestra el error y reintenta', (tester) async {
+    final normal = adaptador.responder;
+    var catalogoArriba = false;
+    adaptador.responder = (o) =>
+        o.path.endsWith('/v1/catalog/categories') && !catalogoArriba
+        ? respuestaJson({'status': 503}, 503)
+        : normal(o);
+    await abrirComoCliente(tester);
+    expect(find.text('No pudimos cargar las categorías.'), findsOneWidget);
+
+    catalogoArriba = true;
+    await tester.tap(find.text('Reintentar'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('campo-categoria')), findsOneWidget);
+  });
+
+  testWidgets('un fallo inesperado del GPS muestra un mensaje genérico', (
+    tester,
+  ) async {
+    await abrirComoCliente(
+      tester,
+      ubicacion: _UbicacionFija(fallaInesperada: true),
+    );
+    await tester.tap(find.byKey(const Key('boton-ubicacion')));
+    await tester.pumpAndSettle();
+    expect(find.text('No pudimos obtener tu ubicación.'), findsOneWidget);
+  });
+
+  testWidgets('el detalle se actualiza al deslizar y vuelve al inicio', (
+    tester,
+  ) async {
+    await abrirComoCliente(tester);
+    await llenarFormulario(tester);
+    await tester.tap(find.byKey(const Key('boton-ubicacion')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('boton-enviar')));
+    await tester.pumpAndSettle();
+    expect(find.byType(DetalleSolicitudPage), findsOneWidget);
+
+    var consultas = 0;
+    final normal = adaptador.responder;
+    adaptador.responder = (o) {
+      if (o.path.endsWith('/v1/service-requests/$_solicitud')) consultas++;
+      return normal(o);
+    };
+    await tester.fling(
+      find.text('Buscando técnico'),
+      const Offset(0, 400),
+      1000,
+    );
+    await tester.pumpAndSettle();
+    expect(consultas, 1);
+
+    await tester.tap(find.byTooltip('Inicio'));
+    await tester.pumpAndSettle();
+    expect(find.byType(InicioPage), findsOneWidget);
   });
 
   test('Solicitud y estados se leen según el contrato', () {
