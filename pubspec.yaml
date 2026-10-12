@@ -65,6 +65,16 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Licencia OFL de Plus Jakarta Sans; main.dart la registra en LicenseRegistry.
+  assets:
+    - assets/fonts/OFL.txt
+
+  # Plus Jakarta Sans variable (eje wght 200-800), autoalojada (SCRUM-440).
+  fonts:
+    - family: PlusJakartaSans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-Variable.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
