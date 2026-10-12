@@ -12,7 +12,10 @@ import '../../domain/modelos.dart';
 /// categoría, describe el problema, comparte su ubicación y escribe la
 /// dirección. Contrato: `POST /v1/service-requests`.
 class NuevaSolicitudPage extends ConsumerStatefulWidget {
-  const NuevaSolicitudPage({super.key});
+  const NuevaSolicitudPage({this.categoriaInicial, super.key});
+
+  /// Categoría elegida desde el inicio; se ignora si Catalog ya no la ofrece.
+  final String? categoriaInicial;
 
   @override
   ConsumerState<NuevaSolicitudPage> createState() => _NuevaSolicitudPageState();
@@ -22,7 +25,7 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
   final _formulario = GlobalKey<FormState>();
   final _descripcion = TextEditingController();
   final _direccion = TextEditingController();
-  String? _categoriaId;
+  late String? _categoriaId = widget.categoriaInicial;
   Ubicacion? _ubicacion;
   bool _ubicando = false;
   bool _enviando = false;
@@ -116,6 +119,7 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
   }
 
   Widget _formularioCon(BuildContext context, List<Categoria> lista) {
+    if (!lista.any((c) => c.id == _categoriaId)) _categoriaId = null;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Form(

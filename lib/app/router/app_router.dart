@@ -6,10 +6,13 @@ import '../../core/session/sesion.dart';
 import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
+import '../../features/inicio/presentation/paginas/actividad_page.dart';
+import '../../features/inicio/presentation/paginas/cuenta_page.dart';
 import '../../features/inicio/presentation/paginas/inicio_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../shared/widgets/vista_cargando.dart';
+import '../shell/estructura_principal.dart';
 import 'rutas.dart';
 
 /// Decide a dónde redirigir según el estado de la sesión.
@@ -51,13 +54,34 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Rutas.registro,
         builder: (context, state) => const RegistroPage(),
       ),
-      GoRoute(
-        path: Rutas.inicio,
-        builder: (context, state) => const InicioPage(),
+      // Pestañas con la barra inferior; sin transición al cambiar de una a
+      // otra, como una barra de navegación nativa.
+      ShellRoute(
+        builder: (context, state, child) =>
+            EstructuraPrincipal(ubicacion: state.matchedLocation, child: child),
+        routes: [
+          GoRoute(
+            path: Rutas.inicio,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: InicioPage()),
+          ),
+          GoRoute(
+            path: Rutas.actividad,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: ActividadPage()),
+          ),
+          GoRoute(
+            path: Rutas.cuenta,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: CuentaPage()),
+          ),
+        ],
       ),
       GoRoute(
         path: Rutas.nuevaSolicitud,
-        builder: (context, state) => const NuevaSolicitudPage(),
+        builder: (context, state) => NuevaSolicitudPage(
+          categoriaInicial: state.uri.queryParameters['categoria'],
+        ),
       ),
       GoRoute(
         path: Rutas.detalleSolicitudPatron,

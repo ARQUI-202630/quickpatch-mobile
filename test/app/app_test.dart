@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,6 +17,7 @@ void main() {
   late AlmacenSeguroEnMemoria memoria;
   late AdaptadorFalso adaptador;
   late ProviderContainer container;
+  late List<RequestOptions> peticiones;
 
   Future<void> abrirApp(WidgetTester tester) async {
     container = ProviderContainer(
@@ -34,7 +36,14 @@ void main() {
 
   setUp(() {
     memoria = AlmacenSeguroEnMemoria();
-    adaptador = AdaptadorFalso((_) => respuestaJson(loginJson(), 200));
+    peticiones = [];
+    // El inicio del cliente consulta las categorías de Catalog.
+    adaptador = AdaptadorFalso((o) {
+      peticiones.add(o);
+      return o.path.endsWith('/categories')
+          ? respuestaJson(<Object>[], 200)
+          : respuestaJson(loginJson(), 200);
+    });
   });
 
   testWidgets('flujo completo: login, inicio del cliente y salida', (
@@ -51,10 +60,13 @@ void main() {
     await tester.tap(find.byKey(const Key('boton-ingresar')));
     await tester.pumpAndSettle();
 
-    expect(adaptador.ultima!.headers['X-Channel-Id'], 'quickpatch-mobile');
+    final login = peticiones.firstWhere((o) => o.path.endsWith('/login'));
+    expect(login.headers['X-Channel-Id'], 'quickpatch-mobile');
     expect(find.text('Hola, Ana Gómez'), findsOneWidget);
     expect(find.text('Nueva solicitud'), findsOneWidget);
 
+    await tester.tap(find.text('Cuenta'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('boton-salir')));
     await tester.pumpAndSettle();
     expect(find.byType(InicioSesionPage), findsOneWidget);
@@ -106,6 +118,7 @@ void main() {
     final rutas = <String>[];
     adaptador.responder = (o) {
       rutas.add(o.path);
+      if (o.path.endsWith('/categories')) return respuestaJson(<Object>[], 200);
       return o.path.endsWith('/login')
           ? respuestaJson(loginJson(), 200)
           : respuestaJson({'userId': 'u', 'role': 'cliente'}, 201);
@@ -131,7 +144,7 @@ void main() {
     await tester.tap(find.byKey(const Key('boton-registrar')));
     await tester.pumpAndSettle();
 
-    expect(rutas, ['/v1/auth/register/client', '/v1/auth/login']);
+    expect(rutas.take(2), ['/v1/auth/register/client', '/v1/auth/login']);
     expect(find.text('Hola, Ana Gómez'), findsOneWidget);
   });
 
