@@ -100,6 +100,62 @@ void main() {
     });
   });
 
+  group('registro de técnico (SCRUM-55)', () {
+    const datos = DatosRegistroTecnico(
+      rol: RolProfesional.tecnico,
+      nombreCompleto: ' Luis Pérez ',
+      email: ' luis@correo.co ',
+      password: 'secreta123',
+      telefono: ' 3001234567 ',
+      documento: ' 1012345678 ',
+      especialidadId: 'c-1',
+    );
+
+    test('es público y envía el cuerpo de RegisterTechnicianRequest', () async {
+      adaptador.responder = (_) =>
+          respuestaJson({'id': 'u', 'role': 'tecnico'}, 201);
+      await repositorio.registrarTecnico(datos);
+      expect(adaptador.ultima!.path, ApiEndpoints.registroTecnico);
+      expect(adaptador.ultima!.method, 'POST');
+      expect(adaptador.ultima!.extra['publico'], isTrue);
+      expect(adaptador.ultima!.data, {
+        'email': 'luis@correo.co',
+        'password': 'secreta123',
+        'fullName': 'Luis Pérez',
+        'phone': '3001234567',
+        'documentId': '1012345678',
+        'specialtyId': 'c-1',
+        'role': 'tecnico',
+      });
+      expect((adaptador.ultima!.data as Map).containsKey('tenantId'), isFalse);
+    });
+
+    test('el 409 de documento repetido conserva su tipo', () async {
+      adaptador.responder = (_) => respuestaJson({
+        'type': 'https://quickpatch.internal/problems/documento-registrado',
+        'title': 'Documento registrado',
+        'status': 409,
+      }, 409);
+      await expectLater(
+        repositorio.registrarTecnico(datos),
+        throwsA(
+          isA<AppException>()
+              .having((e) => e.codigo, 'codigo', CodigoError.duplicateResource)
+              .having(
+                (e) => e.esProblema('documento-registrado'),
+                'documento',
+                isTrue,
+              )
+              .having(
+                (e) => e.esProblema('correo-registrado'),
+                'correo',
+                isFalse,
+              ),
+        ),
+      );
+    });
+  });
+
   test('registro duplicado se traduce con el campo', () async {
     adaptador.responder = (_) => respuestaJson({
       'code': 'DUPLICATE_RESOURCE',

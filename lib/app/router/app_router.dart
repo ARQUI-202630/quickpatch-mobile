@@ -6,6 +6,7 @@ import '../../core/session/sesion.dart';
 import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
+import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
 import '../../features/inicio/presentation/paginas/actividad_page.dart';
 import '../../features/inicio/presentation/paginas/cuenta_page.dart';
 import '../../features/inicio/presentation/paginas/inicio_page.dart';
@@ -22,7 +23,9 @@ String? calcularRedireccion(AsyncValue<Sesion?> sesion, String ubicacion) {
   }
   final autenticado = sesion.value != null;
   final publica =
-      ubicacion == Rutas.iniciarSesion || ubicacion == Rutas.registro;
+      ubicacion == Rutas.iniciarSesion ||
+      ubicacion == Rutas.registro ||
+      ubicacion == Rutas.registroTecnico;
   final enEntrada = publica || ubicacion == Rutas.cargando;
   if (!autenticado) {
     return publica ? null : Rutas.iniciarSesion;
@@ -53,6 +56,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.registro,
         builder: (context, state) => const RegistroPage(),
+      ),
+      GoRoute(
+        path: Rutas.registroTecnico,
+        builder: (context, state) => const RegistroTecnicoPage(),
       ),
       // Pestañas con la barra inferior; sin transición al cambiar de una a
       // otra, como una barra de navegación nativa.

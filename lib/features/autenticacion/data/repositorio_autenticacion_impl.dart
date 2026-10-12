@@ -40,6 +40,15 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
       throw AppException.desdeDio(e);
     }
   }
+
+  @override
+  Future<void> registrarTecnico(DatosRegistroTecnico datos) async {
+    try {
+      await _api.registrarTecnico(datos.toJson());
+    } on DioException catch (e) {
+      throw AppException.desdeDio(e);
+    }
+  }
 }
 
 final repositorioAutenticacionProvider = Provider<RepositorioAutenticacion>(

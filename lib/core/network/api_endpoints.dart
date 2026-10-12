@@ -1,7 +1,7 @@
 /// Rutas REST que consume la app móvil.
 ///
-/// Fuente: `quickpatch-api-gateway/openapi/` (identity 1.1.0, catalog 1.0.0 y
-/// service-request 1.0.0). Las rutas marcadas "pendiente de contrato" vienen
+/// Fuente: `quickpatch-api-gateway/openapi/` en `v0.4.0` (identity 1.2.0,
+/// catalog 1.2.0 y service-request 1.0.0). Las rutas marcadas "pendiente de contrato" vienen
 /// del catálogo del DD 3.1 y todavía no tienen especificación publicada: no
 /// deben usarse hasta que exista. No agregar rutas que no estén en el DD.
 abstract final class ApiEndpoints {

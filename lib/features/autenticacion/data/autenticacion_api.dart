@@ -29,6 +29,13 @@ class AutenticacionApi {
     options: opcionesPublicas(),
   );
 
+  /// `POST /v1/auth/register/technician` (openapi/identity.v1.yaml).
+  Future<void> registrarTecnico(Map<String, dynamic> datos) => _dio.post<void>(
+    ApiEndpoints.registroTecnico,
+    data: datos,
+    options: opcionesPublicas(),
+  );
+
   /// `POST /v1/auth/register/company` (openapi/identity.v1.yaml).
   Future<void> registrarEmpresa(Map<String, dynamic> datos) => _dio.post<void>(
     ApiEndpoints.registroEmpresa,

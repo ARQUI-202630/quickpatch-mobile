@@ -132,6 +132,25 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
                           ),
                         ],
                       ),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '¿Ofreces servicios?',
+                            style: texto.bodyMedium?.copyWith(
+                              color: esquema.onSurfaceVariant,
+                            ),
+                          ),
+                          TextButton(
+                            key: const Key('boton-ir-registro-tecnico'),
+                            onPressed: () => context.go(Rutas.registroTecnico),
+                            child: const Text(
+                              'Regístrate como técnico o proveedor',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),

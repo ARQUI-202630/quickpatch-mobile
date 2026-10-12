@@ -28,6 +28,14 @@ class RepositorioFalso implements RepositorioAutenticacion {
 
   @override
   Future<void> registrar(DatosRegistro datos) async => registros.add(datos);
+
+  final registrosTecnico = <DatosRegistroTecnico>[];
+
+  @override
+  Future<void> registrarTecnico(DatosRegistroTecnico datos) async {
+    if (error != null) throw error!;
+    registrosTecnico.add(datos);
+  }
 }
 
 void main() {
@@ -109,5 +117,40 @@ void main() {
         );
     expect(repositorio.registros.single.email, 'a@b.co');
     expect(c.read(controladorSesionProvider).value, isNotNull);
+  });
+
+  group('registro de técnico (SCRUM-55)', () {
+    const datos = DatosRegistroTecnico(
+      rol: RolProfesional.proveedor,
+      nombreCompleto: 'Luis Pérez',
+      email: 'luis@correo.co',
+      password: 'secreta123',
+      telefono: '3001234567',
+      documento: '1012345678',
+      especialidadId: 'c-1',
+    );
+
+    test('registra y deja la sesión iniciada', () async {
+      final c = crear();
+      await c.read(controladorSesionProvider.future);
+      await c
+          .read(controladorSesionProvider.notifier)
+          .registrarTecnicoEIniciarSesion(datos);
+      expect(repositorio.registrosTecnico.single.rol, RolProfesional.proveedor);
+      expect(c.read(controladorSesionProvider).value, isNotNull);
+    });
+
+    test('si el registro falla no inicia sesión', () async {
+      repositorio.error = const AppException(CodigoError.duplicateResource);
+      final c = crear();
+      await c.read(controladorSesionProvider.future);
+      await expectLater(
+        c
+            .read(controladorSesionProvider.notifier)
+            .registrarTecnicoEIniciarSesion(datos),
+        throwsA(isA<AppException>()),
+      );
+      expect(c.read(controladorSesionProvider).value, isNull);
+    });
   });
 }
