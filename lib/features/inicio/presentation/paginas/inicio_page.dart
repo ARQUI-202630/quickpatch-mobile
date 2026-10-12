@@ -4,9 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
-import '../../../../core/errors/app_exception.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../core/session/sesion.dart';
+
+import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../../autenticacion/presentation/controlador_sesion.dart';
 import '../../../solicitudes/data/repositorio_solicitudes.dart';
@@ -252,14 +253,11 @@ class _Categorias extends ConsumerWidget {
         ),
       ),
       error: (e, _) => enCaja(
-        VistaEstado(
+        VistaError(
           key: const Key('categorias-error'),
-          icono: Icons.cloud_off_rounded,
-          tono: Theme.of(context).colorScheme.error,
+          error: e,
           titulo: 'No pudimos cargar las categorías',
-          mensaje: e is AppException ? e.mensaje : null,
-          accion: 'Reintentar',
-          alAccionar: () => ref.invalidate(categoriasProvider),
+          alReintentar: () => ref.invalidate(categoriasProvider),
         ),
       ),
       data: (lista) => lista.isEmpty

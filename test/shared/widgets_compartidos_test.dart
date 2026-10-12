@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
+import 'package:quickpatch_mobile/core/errors/app_exception.dart';
+import 'package:quickpatch_mobile/core/errors/codigo_error.dart';
 import 'package:quickpatch_mobile/features/inicio/presentation/paginas/inicio_page.dart';
 import 'package:quickpatch_mobile/shared/widgets/boton_principal.dart';
+import 'package:quickpatch_mobile/shared/widgets/botones.dart';
 import 'package:quickpatch_mobile/shared/widgets/campo_contrasena.dart';
 import 'package:quickpatch_mobile/shared/widgets/mensaje_error.dart';
+import 'package:quickpatch_mobile/shared/widgets/vista_error.dart';
 
 Widget _conTema(Widget hijo) => MaterialApp(
   theme: AppTheme.claro(),
@@ -125,6 +129,87 @@ void main() {
         ),
       );
       expect(find.byType(FittedBox), findsNothing);
+    });
+  });
+
+  group('VistaError', () {
+    testWidgets('muestra el mensaje del código de error y reintenta', (
+      tester,
+    ) async {
+      var reintentos = 0;
+      await tester.pumpWidget(
+        _conTema(
+          VistaError(
+            error: const AppException(CodigoError.sinConexion),
+            titulo: 'No pudimos cargar',
+            alReintentar: () => reintentos++,
+          ),
+        ),
+      );
+      expect(find.text('No pudimos cargar'), findsOneWidget);
+      expect(
+        find.text(const AppException(CodigoError.sinConexion).mensaje),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('Reintentar'));
+      expect(reintentos, 1);
+    });
+
+    testWidgets('con otro error no muestra detalle ni botón sin acción', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _conTema(
+          VistaError(error: StateError('x'), titulo: 'No pudimos cargar'),
+        ),
+      );
+      expect(find.text('Reintentar'), findsNothing);
+      expect(find.textContaining('StateError'), findsNothing);
+    });
+  });
+
+  testWidgets('IndicadorCarga anuncia su etiqueta', (tester) async {
+    await tester.pumpWidget(
+      _conTema(const IndicadorCarga(etiqueta: 'Cargando ofertas')),
+    );
+    expect(find.bySemanticsLabel('Cargando ofertas'), findsOneWidget);
+  });
+
+  group('BotonSecundario y BotonPeligro', () {
+    testWidgets('sin ícono responden al toque', (tester) async {
+      var veces = 0;
+      await tester.pumpWidget(
+        _conTema(
+          Column(
+            children: [
+              BotonSecundario(texto: 'Ver', alPresionar: () => veces++),
+              BotonPeligro(texto: 'Rechazar', alPresionar: () => veces++),
+            ],
+          ),
+        ),
+      );
+      await tester.tap(find.text('Ver'));
+      await tester.tap(find.text('Rechazar'));
+      expect(veces, 2);
+    });
+
+    testWidgets('el de peligro usa el color de error del tema', (tester) async {
+      await tester.pumpWidget(
+        _conTema(
+          BotonPeligro(
+            texto: 'Rechazar',
+            icono: Icons.close,
+            alPresionar: () {},
+          ),
+        ),
+      );
+      final boton = tester.widget<OutlinedButton>(
+        find.byWidgetPredicate((w) => w is OutlinedButton),
+      );
+      expect(
+        boton.style?.foregroundColor?.resolve({}),
+        AppTheme.claro().colorScheme.error,
+      );
     });
   });
 }

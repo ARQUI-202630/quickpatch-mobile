@@ -7,6 +7,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/proveedor_ubicacion.dart';
 import '../../data/repositorio_solicitudes.dart';
@@ -113,13 +114,10 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
           ),
           error: (e, _) => Center(
             child: SingleChildScrollView(
-              child: VistaEstado(
-                icono: Icons.cloud_off_rounded,
-                tono: Theme.of(context).colorScheme.error,
+              child: VistaError(
+                error: e,
                 titulo: 'No pudimos cargar las categorías.',
-                mensaje: e is AppException ? e.mensaje : null,
-                accion: 'Reintentar',
-                alAccionar: () => ref.invalidate(categoriasProvider),
+                alReintentar: () => ref.invalidate(categoriasProvider),
               ),
             ),
           ),
