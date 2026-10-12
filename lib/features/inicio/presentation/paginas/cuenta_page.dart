@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/session/rol_usuario.dart';
+import '../../../../shared/widgets/botones.dart';
 import '../../../autenticacion/presentation/controlador_sesion.dart';
 
 /// Pestaña de cuenta: datos de la sesión, licencias y cierre de sesión
@@ -73,16 +74,12 @@ class CuentaPage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: QpEspacio.e8),
-          OutlinedButton.icon(
+          BotonPeligro(
             key: const Key('boton-salir'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: esquema.error,
-              side: BorderSide(color: esquema.error),
-            ),
-            onPressed: () =>
+            texto: 'Cerrar sesión',
+            icono: Icons.logout_rounded,
+            alPresionar: () =>
                 ref.read(controladorSesionProvider.notifier).cerrarSesion(),
-            icon: const Icon(Icons.logout_rounded),
-            label: const Text('Cerrar sesión'),
           ),
         ],
       ),

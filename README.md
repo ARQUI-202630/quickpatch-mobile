@@ -34,6 +34,23 @@ Las opciones del inicio dependen del rol del usuario (`features/inicio/domain/op
 |Registro de cliente y técnico, inicio de sesión y perfil|`identity.v1.yaml`|SCRUM-63|
 |Nueva solicitud: categoría, descripción, dirección y ubicación del GPS; confirmación con el estado|`catalog.v1.yaml` (`GET /v1/catalog/categories`), `service-request.v1.yaml` (`POST` y `GET /v1/service-requests`)|SCRUM-27 / SCRUM-71|
 
+## Sistema de diseño (SCRUM-439)
+
+Tema azul con la paleta del panel web en `lib/app/theme/` (`tokens.dart` y `app_theme.dart`). Las pantallas leen `Theme.of(context)` y `context.estados`, nunca colores sueltos. Barra inferior por rol en `lib/app/shell/`.
+
+Componentes para reutilizar en las pantallas del técnico (SCRUM-22, 30, 33 y 34):
+
+|Componente|Archivo|Uso|
+|---|---|---|
+|`TarjetaSolicitud` (y `.de(solicitud)`)|`features/solicitudes/presentation/widgets/`|Resumen en listas, con acciones al pie (aceptar o rechazar una oferta)|
+|`ChipEstado`|`features/solicitudes/presentation/widgets/`|Estado de la solicitud con su tono (`estado_vista.dart`)|
+|`SelectorCategoria`|`features/solicitudes/presentation/widgets/`|Campo de formulario para elegir una categoría de Catalog (especialidad)|
+|`BotonPrincipal`, `BotonSecundario`, `BotonPeligro`|`shared/widgets/`|Acción principal con carga, secundaria y de rechazo|
+|`VistaEstado`, `VistaError`, `IndicadorCarga`|`shared/widgets/`|Estados vacío, de error con reintento y de carga|
+|`MensajeError`, `CampoContrasena`|`shared/widgets/`|Error de formulario y contraseña visible a demanda|
+
+Todos cumplen WCAG AA y no se desbordan con el texto al 200 % (AC4-E7); hay pruebas para cada uno.
+
 ## Conexión con QA
 
 Un teléfono no puede editar su archivo `hosts` ni confiar en el certificado autofirmado del laboratorio (R9). Por eso `config/qa.json`:

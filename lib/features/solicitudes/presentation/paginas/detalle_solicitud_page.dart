@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
-import '../../../../core/errors/app_exception.dart';
-import '../../../../shared/widgets/vista_estado.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
@@ -32,19 +31,14 @@ class DetalleSolicitudPage extends ConsumerWidget {
         ),
       ),
       body: solicitud.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(semanticsLabel: 'Cargando'),
-        ),
+        loading: () => const IndicadorCarga(),
         error: (e, _) => Center(
           child: SingleChildScrollView(
-            child: VistaEstado(
+            child: VistaError(
               key: const Key('detalle-error'),
-              icono: Icons.cloud_off_rounded,
-              tono: Theme.of(context).colorScheme.error,
+              error: e,
               titulo: 'No pudimos cargar la solicitud',
-              mensaje: e is AppException ? e.mensaje : null,
-              accion: 'Reintentar',
-              alAccionar: () => ref.invalidate(solicitudProvider(id)),
+              alReintentar: () => ref.invalidate(solicitudProvider(id)),
             ),
           ),
         ),
