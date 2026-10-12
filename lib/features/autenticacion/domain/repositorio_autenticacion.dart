@@ -11,4 +11,8 @@ abstract interface class RepositorioAutenticacion {
 
   /// Registra un cliente hogar o una empresa cliente. Lanza `AppException`.
   Future<void> registrar(DatosRegistro datos);
+
+  /// Registra un técnico o un proveedor, pendiente de verificación.
+  /// Lanza `AppException`.
+  Future<void> registrarTecnico(DatosRegistroTecnico datos);
 }

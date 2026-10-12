@@ -20,6 +20,7 @@ class AppException implements Exception {
     this.correlationId,
     this.erroresCampo = const [],
     this.bloqueadaHasta,
+    this.tipo,
   });
 
   factory AppException.desdeDio(DioException e) {
@@ -59,6 +60,7 @@ class AppException implements Exception {
       correlationId: cuerpo['correlationId'] as String?,
       erroresCampo: errores,
       bloqueadaHasta: bloqueo == null ? null : DateTime.parse(bloqueo),
+      tipo: cuerpo['type'] as String?,
     );
   }
 
@@ -91,6 +93,13 @@ class AppException implements Exception {
 
   /// Solo en `423 ACCOUNT_LOCKED`.
   final DateTime? bloqueadaHasta;
+
+  /// `type` de Problem Details tal como llegó. Distingue problemas que
+  /// comparten código, como `correo-registrado` y `documento-registrado`.
+  final String? tipo;
+
+  /// Si el `type` es el [problema] dado (último segmento de la URL).
+  bool esProblema(String problema) => tipo?.split('/').last == problema;
 
   String get mensaje => codigo.mensaje;
 

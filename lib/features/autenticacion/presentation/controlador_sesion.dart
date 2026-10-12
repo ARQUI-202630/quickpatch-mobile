@@ -42,6 +42,15 @@ class ControladorSesion extends AsyncNotifier<Sesion?> {
     await iniciarSesion(email: datos.email, password: datos.password);
   }
 
+  /// Registra al técnico o proveedor y entra con su cuenta: el inicio le
+  /// muestra que está en verificación (`verificationStatus` de la sesión).
+  Future<void> registrarTecnicoEIniciarSesion(
+    DatosRegistroTecnico datos,
+  ) async {
+    await ref.read(repositorioAutenticacionProvider).registrarTecnico(datos);
+    await iniciarSesion(email: datos.email, password: datos.password);
+  }
+
   Future<void> cerrarSesion() async {
     await ref.read(almacenSesionProvider).borrar();
     state = const AsyncData(null);

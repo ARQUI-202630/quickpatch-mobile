@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/network/interceptores.dart';
 import '../domain/modelos.dart';
 
 /// Catálogo y solicitudes del cliente. Contratos: `catalog.v1.yaml`
@@ -16,11 +17,21 @@ class RepositorioSolicitudes {
 
   Future<List<Categoria>> categorias() => _llamar(() async {
     final respuesta = await _dio.get<List<dynamic>>(ApiEndpoints.categorias);
-    return respuesta.data!
-        .cast<Map<String, dynamic>>()
-        .map(Categoria.desdeJson)
-        .toList();
+    return _aCategorias(respuesta.data!);
   });
+
+  /// Las mismas categorías sin sesión, con `X-Channel-Id`: el tenant sale
+  /// del canal (DD 8.1). La usa el registro de técnicos (SCRUM-22, P-03).
+  Future<List<Categoria>> categoriasPublicas() => _llamar(() async {
+    final respuesta = await _dio.get<List<dynamic>>(
+      ApiEndpoints.categorias,
+      options: opcionesPublicas(),
+    );
+    return _aCategorias(respuesta.data!);
+  });
+
+  static List<Categoria> _aCategorias(List<dynamic> datos) =>
+      datos.cast<Map<String, dynamic>>().map(Categoria.desdeJson).toList();
 
   Future<Solicitud> crear(NuevaSolicitud datos) => _llamar(() async {
     final respuesta = await _dio.post<Map<String, dynamic>>(
@@ -53,6 +64,11 @@ final repositorioSolicitudesProvider = Provider<RepositorioSolicitudes>(
 /// Categorías activas del tenant del usuario.
 final categoriasProvider = FutureProvider.autoDispose<List<Categoria>>(
   (ref) => ref.watch(repositorioSolicitudesProvider).categorias(),
+);
+
+/// Categorías activas del tenant del canal, para quien aún no tiene sesión.
+final categoriasPublicasProvider = FutureProvider.autoDispose<List<Categoria>>(
+  (ref) => ref.watch(repositorioSolicitudesProvider).categoriasPublicas(),
 );
 
 /// Detalle de una solicitud.

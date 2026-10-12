@@ -3,6 +3,7 @@ abstract final class Rutas {
   static const cargando = '/cargando';
   static const iniciarSesion = '/iniciar-sesion';
   static const registro = '/registro';
+  static const registroTecnico = '/registro/tecnico';
 
   // Pestañas de la barra inferior (SCRUM-441).
   static const inicio = '/inicio';
