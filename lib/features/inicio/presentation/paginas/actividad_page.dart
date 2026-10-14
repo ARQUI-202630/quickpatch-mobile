@@ -6,13 +6,15 @@ import '../../../../app/router/rutas.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../../autenticacion/presentation/controlador_sesion.dart';
+import '../../../equipo/presentation/paginas/equipo_page.dart';
 import '../../domain/navegacion_por_rol.dart';
 
 /// Pestaña del medio: el trabajo propio de cada rol (SCRUM-441).
 ///
-/// Los contratos publicados todavía no tienen el listado de solicitudes del
-/// cliente (RF-11), las ofertas del técnico (RF-10, SCRUM-30) ni el equipo
-/// del proveedor (RF-16): la pestaña lo dice en vez de mostrar datos fijos.
+/// El proveedor ve su equipo (RF-16, SCRUM-98). Los contratos publicados
+/// todavía no tienen el listado de solicitudes del cliente (RF-11) ni las
+/// ofertas del técnico (RF-10, SCRUM-30): la pestaña lo dice en vez de
+/// mostrar datos fijos.
 class ActividadPage extends ConsumerWidget {
   const ActividadPage({super.key});
 
@@ -20,6 +22,7 @@ class ActividadPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rol = ref.watch(controladorSesionProvider).value?.usuario.rol;
     if (rol == null) return const SizedBox.shrink();
+    if (rol == RolUsuario.proveedor) return const EquipoPage();
     final destinos = destinosPara(rol);
     final titulo = destinos.isEmpty ? 'Actividad' : destinos[1].etiqueta;
 
@@ -28,10 +31,6 @@ class ActividadPage extends ConsumerWidget {
         Icons.work_outline_rounded,
         'Aquí llegarán las ofertas de servicio que te asigne QUICKPATCH '
             '(RF-10).',
-      ),
-      RolUsuario.proveedor => (
-        Icons.groups_outlined,
-        'Aquí podrás gestionar los técnicos de tu equipo (RF-16).',
       ),
       _ => (
         Icons.receipt_long_outlined,

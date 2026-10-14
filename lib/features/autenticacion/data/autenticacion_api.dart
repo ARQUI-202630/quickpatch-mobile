@@ -36,6 +36,16 @@ class AutenticacionApi {
     options: opcionesPublicas(),
   );
 
+  /// `POST /v1/auth/password/setup` (identity 1.7.0): el técnico del equipo
+  /// de un proveedor define su contraseña con el token de su invitación. Sin
+  /// token de sesión; el tenant sale del canal (RN-U5). Responde 204.
+  Future<void> definirContrasena(String token, String password) =>
+      _dio.post<void>(
+        ApiEndpoints.definirContrasena,
+        data: {'token': token, 'password': password},
+        options: opcionesPublicas(),
+      );
+
   /// `POST /v1/auth/register/company` (openapi/identity.v1.yaml).
   Future<void> registrarEmpresa(Map<String, dynamic> datos) => _dio.post<void>(
     ApiEndpoints.registroEmpresa,
