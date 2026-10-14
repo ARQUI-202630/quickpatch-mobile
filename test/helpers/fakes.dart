@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/core/session/sesion.dart';
@@ -41,6 +44,60 @@ class AdaptadorFalso implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// WebSocket en memoria: la prueba envía tramas con [recibir] y cierra con
+/// [cerrarDesdeServidor]; [enviadas] guarda lo que mandó la app.
+class ConexionWsFalsa implements ConexionWs {
+  final _tramas = StreamController<dynamic>();
+  final enviadas = <String>[];
+  bool cerradaPorApp = false;
+
+  @override
+  int? codigoCierre;
+
+  @override
+  Stream<dynamic> get tramas => _tramas.stream;
+
+  @override
+  void enviar(String trama) => enviadas.add(trama);
+
+  void recibir(Map<String, dynamic> json) => _tramas.add(jsonEncode(json));
+
+  void recibirTexto(Object trama) => _tramas.add(trama);
+
+  Future<void> cerrarDesdeServidor(int codigo) {
+    codigoCierre = codigo;
+    return _tramas.close();
+  }
+
+  @override
+  Future<void> cerrar() async {
+    cerradaPorApp = true;
+    if (!_tramas.isClosed) await _tramas.close();
+  }
+}
+
+/// Conector que entrega conexiones falsas y las guarda en orden.
+class ConectorWsFalso {
+  final conexiones = <ConexionWsFalsa>[];
+  Uri? ultimaUrl;
+
+  /// Si es verdadero, el siguiente intento de conexión falla.
+  bool fallar = false;
+
+  Future<ConexionWs> call(Uri url) async {
+    ultimaUrl = url;
+    if (fallar) {
+      fallar = false;
+      throw const SocketException('sin red');
+    }
+    final conexion = ConexionWsFalsa();
+    conexiones.add(conexion);
+    return conexion;
+  }
+
+  ConexionWsFalsa get ultima => conexiones.last;
 }
 
 ResponseBody respuestaJson(Object cuerpo, int status) =>

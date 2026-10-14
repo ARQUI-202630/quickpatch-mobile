@@ -33,6 +33,7 @@ Las opciones del inicio dependen del rol del usuario (`features/inicio/domain/op
 |---|---|---|
 |Registro de cliente y técnico, inicio de sesión y perfil|`identity.v1.yaml`|SCRUM-63|
 |Nueva solicitud: categoría, descripción, dirección y ubicación del GPS; confirmación con el estado|`catalog.v1.yaml` (`GET /v1/catalog/categories`), `service-request.v1.yaml` (`POST` y `GET /v1/service-requests`)|SCRUM-27 / SCRUM-71|
+|Seguimiento de la solicitud: línea de estado en 4 pasos, técnico asignado (nombre y especialidad, que es la categoría por RN-M9) y avisos en tiempo real, con consulta cada 30 s si el canal no está disponible|`service-request.v1.yaml` 1.1.0 (`GET /v1/service-requests/{id}`), `asyncapi/realtime.v1.yaml` (`/v1/realtime`, ADR-023)|SCRUM-31 / SCRUM-83|
 
 ## Sistema de diseño (SCRUM-439)
 

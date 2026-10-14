@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/features/inicio/presentation/paginas/inicio_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/data/proveedor_ubicacion.dart';
@@ -59,6 +60,7 @@ void main() {
     container = ProviderContainer(
       overrides: [
         almacenSeguroProvider.overrideWithValue(AlmacenSeguroEnMemoria()),
+        conectorWsProvider.overrideWithValue(ConectorWsFalso().call),
         proveedorUbicacionProvider.overrideWithValue(
           ubicacion ?? _UbicacionFija(),
         ),
@@ -146,7 +148,14 @@ void main() {
     });
     expect(adaptador.ultima!.headers['Authorization'], 'Bearer token-acceso');
     expect(find.byType(DetalleSolicitudPage), findsOneWidget);
-    expect(find.text('Buscando técnico'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('estado-solicitud')),
+        matching: find.text('Buscando técnico'),
+        matchRoot: true,
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Calle 45 # 13-20, apto 301'), findsOneWidget);
   });
 
@@ -245,7 +254,7 @@ void main() {
       return normal(o);
     };
     await tester.fling(
-      find.text('Buscando técnico'),
+      find.byKey(const Key('estado-solicitud')),
       const Offset(0, 400),
       1000,
     );

@@ -71,6 +71,20 @@ enum EstadoSolicitud {
       values.firstWhere((e) => e.valor == valor);
 }
 
+/// Técnico asignado a la solicitud (`AssignedTechnician`, 1.1.0).
+class TecnicoAsignado {
+  const TecnicoAsignado({required this.id, this.nombre});
+
+  factory TecnicoAsignado.desdeJson(Map<String, dynamic> json) =>
+      TecnicoAsignado(
+        id: json['id'] as String,
+        nombre: json['fullName'] as String?,
+      );
+
+  final String id;
+  final String? nombre;
+}
+
 /// Solicitud creada o consultada (`ServiceRequest`).
 class Solicitud {
   const Solicitud({
@@ -82,6 +96,8 @@ class Solicitud {
     required this.direccion,
     required this.creadaEn,
     this.tecnicoId,
+    this.tecnico,
+    this.asignadaEn,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -93,6 +109,12 @@ class Solicitud {
     direccion: json['addressText'] as String,
     creadaEn: DateTime.parse(json['createdAt'] as String),
     tecnicoId: json['technicianId'] as String?,
+    tecnico: json['technician'] == null
+        ? null
+        : TecnicoAsignado.desdeJson(json['technician'] as Map<String, dynamic>),
+    asignadaEn: json['assignedAt'] == null
+        ? null
+        : DateTime.parse(json['assignedAt'] as String),
   );
 
   final String id;
@@ -103,4 +125,10 @@ class Solicitud {
   final String direccion;
   final DateTime creadaEn;
   final String? tecnicoId;
+
+  /// Datos del técnico asignado; `null` antes de la asignación (1.1.0).
+  final TecnicoAsignado? tecnico;
+
+  /// Momento en que un técnico aceptó la oferta; `null` antes (1.1.0).
+  final DateTime? asignadaEn;
 }
