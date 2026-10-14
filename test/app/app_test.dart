@@ -219,5 +219,15 @@ void main() {
       expect(calcularRedireccion(con, Rutas.registro), Rutas.inicio);
       expect(calcularRedireccion(con, Rutas.inicio), isNull);
     });
+
+    test('el enlace de invitación se atiende siempre (SCRUM-98)', () {
+      // Abre la app en frío: no se pierde el token mientras carga la sesión.
+      const cargando = AsyncLoading<Sesion?>();
+      expect(calcularRedireccion(cargando, Rutas.activarCuenta), isNull);
+      const sin = AsyncData<Sesion?>(null);
+      expect(calcularRedireccion(sin, Rutas.activarCuenta), isNull);
+      final con = AsyncData<Sesion?>(sesion);
+      expect(calcularRedireccion(con, Rutas.activarCuenta), isNull);
+    });
   });
 }

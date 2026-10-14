@@ -5,12 +5,18 @@ abstract final class Rutas {
   static const registro = '/registro';
   static const registroTecnico = '/registro/tecnico';
 
+  /// Activación de un técnico del equipo de un proveedor (SCRUM-98). Es la
+  /// ruta del enlace de invitación (`/activar#token=...`), así que no cambia.
+  static const activarCuenta = '/activar';
+
   // Pestañas de la barra inferior (SCRUM-441).
   static const inicio = '/inicio';
   static const actividad = '/actividad';
   static const cuenta = '/cuenta';
 
   static const disponibilidad = '/tecnico/disponibilidad';
+
+  static const altaTecnico = '/equipo/nuevo';
 
   static const nuevaSolicitud = '/solicitudes/nueva';
   static const detalleSolicitudPatron = '/solicitudes/:id';

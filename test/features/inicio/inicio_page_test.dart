@@ -57,6 +57,14 @@ void main() {
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = AdaptadorFalso((o) {
       peticiones.add(o);
+      if (o.path == '/v1/providers/me/technicians') {
+        return respuestaJson({
+          'items': <dynamic>[],
+          'page': 1,
+          'size': 20,
+          'totalItems': 0,
+        }, 200);
+      }
       return respuestaCategorias();
     });
     await tester.pumpWidget(
@@ -213,12 +221,19 @@ void main() {
     expect(find.byKey(const Key('aviso-verificacion')), findsNothing);
   });
 
-  testWidgets('proveedor tiene la pestaña Equipo', (tester) async {
+  testWidgets('proveedor tiene la pestaña Equipo con su equipo (SCRUM-98)', (
+    tester,
+  ) async {
     await abrir(tester, rol: RolUsuario.proveedor);
     expect(find.text('Tu equipo en QUICKPATCH'), findsOneWidget);
     await tester.tap(pestana('Equipo'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('RF-16'), findsOneWidget);
+    expect(find.byKey(const Key('filtro-equipo')), findsOneWidget);
+    expect(find.byKey(const Key('equipo-vacio')), findsOneWidget);
+    expect(
+      peticiones.any((o) => o.path == '/v1/providers/me/technicians'),
+      isTrue,
+    );
   });
 
   testWidgets('empresa cliente ve Solicitudes pero aún no solicita', (

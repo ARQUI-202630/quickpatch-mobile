@@ -1,6 +1,6 @@
 /// Rutas REST que consume la app móvil.
 ///
-/// Fuente: `quickpatch-api-gateway/openapi/` en `v0.5.0` (identity 1.3.0,
+/// Fuente: `quickpatch-api-gateway/openapi/` en `aaf0eb1` (identity 1.7.0,
 /// catalog 1.2.0, service-request 1.1.0 y matching 1.0.0). Las rutas marcadas
 /// "pendiente de contrato" vienen del catálogo del DD 3.1 y todavía no tienen
 /// especificación publicada: no deben usarse hasta que exista. No agregar
@@ -11,12 +11,15 @@ abstract final class ApiEndpoints {
   static const registroTecnico = '/v1/auth/register/technician';
   static const login = '/v1/auth/login';
   static const usuarioActual = '/v1/users/me';
+  static const definirContrasena = '/v1/auth/password/setup';
+  static const equipoProveedor = '/v1/providers/me/technicians';
+  static String invitacionTecnico(String userId) =>
+      '/v1/providers/me/technicians/$userId/invitation';
 
   // Pendientes de contrato (DD 3.1).
   static const registroEmpresa = '/v1/auth/register/company';
   static const refresh = '/v1/auth/refresh';
   static const usuariosEmpresa = '/v1/companies/me/users';
-  static const equipoProveedor = '/v1/providers/me/technicians';
 
   // Catalog Service
   static const categorias = '/v1/catalog/categories';

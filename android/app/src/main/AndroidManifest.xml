@@ -29,6 +29,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Enlace de invitación del técnico del equipo de un proveedor
+                 (SCRUM-98, identity 1.7.0): https://<host>/activar#token=...
+                 Android 12+ solo lo abre directo en la app si el dominio publica
+                 /.well-known/assetlinks.json; si no, el técnico lo pega en
+                 «Activa tu cuenta» del inicio de sesión. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https"/>
+                <data android:host="quickpatch.internal"/>
+                <data android:host="qa.quickpatch.internal"/>
+                <data android:path="/activar"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
