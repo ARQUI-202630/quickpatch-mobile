@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
 import '../../../core/network/interceptores.dart';
+import '../domain/mapa_localidades.dart';
 import '../domain/modelos.dart';
 
 /// Disponibilidad y cobertura del técnico autenticado (RF-13, SCRUM-33).
@@ -88,4 +90,14 @@ final disponibilidadProvider = FutureProvider.autoDispose<Disponibilidad>(
 
 final coberturaProvider = FutureProvider.autoDispose<Cobertura>(
   (ref) => ref.watch(repositorioDisponibilidadProvider).cobertura(),
+);
+
+/// Límites de las localidades para el mapa de cobertura (SCRUM-89). Es un
+/// asset de la app: no depende de ningún servicio externo (R5, ADR-024).
+const rutaMapaLocalidades = 'assets/geo/localidades_bogota.geojson';
+
+final mapaLocalidadesProvider = FutureProvider<MapaLocalidades>(
+  (ref) async => MapaLocalidades.desdeGeoJson(
+    await rootBundle.loadString(rutaMapaLocalidades),
+  ),
 );

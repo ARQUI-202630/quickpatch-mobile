@@ -68,6 +68,8 @@ flutter:
   # Licencia OFL de Plus Jakarta Sans; main.dart la registra en LicenseRegistry.
   assets:
     - assets/fonts/OFL.txt
+    # Límites de las localidades para el mapa de cobertura (SCRUM-89); ver assets/geo/README.md.
+    - assets/geo/localidades_bogota.geojson
 
   # Plus Jakarta Sans variable (eje wght 200-800), autoalojada (SCRUM-440).
   fonts:

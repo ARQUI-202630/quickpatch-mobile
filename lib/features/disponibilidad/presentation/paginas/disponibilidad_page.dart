@@ -11,6 +11,7 @@ import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_disponibilidad.dart';
 import '../../domain/modelos.dart';
+import '../widgets/mapa_cobertura.dart';
 
 /// Disponibilidad y zona de cobertura del técnico (RF-13, SCRUM-33 /
 /// SCRUM-89). Contrato: `matching.v1.yaml`. Solo recibe ofertas cuando está
@@ -168,6 +169,22 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
   bool _guardando = false;
   String? _error;
 
+  /// Último cambio hecho desde el mapa, para lectores de pantalla.
+  String? _anuncio;
+
+  /// Marca o desmarca [localidad]; el mapa y los chips usan el mismo conjunto.
+  void _alternar(Localidad localidad, {bool desdeMapa = false}) {
+    final elegidas = _elegidas!;
+    setState(() {
+      _error = null;
+      final agregada = elegidas.add(localidad.codigo);
+      if (!agregada) elegidas.remove(localidad.codigo);
+      _anuncio = desdeMapa
+          ? '${localidad.nombre} ${agregada ? 'agregada' : 'quitada'}.'
+          : null;
+    });
+  }
+
   Future<void> _guardar() async {
     final elegidas = _elegidas!;
     if (elegidas.isEmpty) {
@@ -202,6 +219,7 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
   Widget build(BuildContext context) {
     final localidades = ref.watch(localidadesProvider);
     final cobertura = ref.watch(coberturaProvider);
+    final mapa = ref.watch(mapaLocalidadesProvider);
     void reintentar() {
       ref
         ..invalidate(localidadesProvider)
@@ -249,6 +267,33 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
           style: texto.bodySmall?.copyWith(color: secundario),
         ),
         const SizedBox(height: QpEspacio.e3),
+        // Sin el asset del mapa la cobertura sigue funcionando con los chips.
+        if (mapa.value case final mapa?) ...[
+          MapaCobertura(
+            mapa: mapa,
+            disponibles: {for (final l in lista) l.codigo},
+            elegidas: elegidas,
+            habilitado: !_guardando,
+            alTocar: (codigo) => _alternar(
+              lista.firstWhere((l) => l.codigo == codigo),
+              desdeMapa: true,
+            ),
+          ),
+          const SizedBox(height: QpEspacio.e1),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              _anuncio ?? '',
+              key: const Key('anuncio-mapa'),
+              style: texto.bodySmall,
+            ),
+          ),
+          Text(
+            'Límites: IDECA – Secretaría Distrital de Planeación (CC BY 4.0)',
+            style: texto.labelSmall?.copyWith(color: secundario),
+          ),
+          const SizedBox(height: QpEspacio.e3),
+        ],
         Wrap(
           spacing: QpEspacio.e2,
           runSpacing: QpEspacio.e2,
@@ -258,14 +303,7 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
                 key: Key('localidad-${localidad.codigo}'),
                 label: Text(localidad.nombre),
                 selected: elegidas.contains(localidad.codigo),
-                onSelected: _guardando
-                    ? null
-                    : (marcada) => setState(() {
-                        _error = null;
-                        marcada
-                            ? elegidas.add(localidad.codigo)
-                            : elegidas.remove(localidad.codigo);
-                      }),
+                onSelected: _guardando ? null : (_) => _alternar(localidad),
               ),
           ],
         ),

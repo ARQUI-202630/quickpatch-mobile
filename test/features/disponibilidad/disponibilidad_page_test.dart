@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +12,16 @@ import 'package:quickpatch_mobile/app/router/rutas.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
+import 'package:quickpatch_mobile/features/disponibilidad/data/repositorio_disponibilidad.dart';
+import 'package:quickpatch_mobile/features/disponibilidad/domain/mapa_localidades.dart';
 
 import '../../helpers/fakes.dart';
 
 /// SCRUM-89: disponibilidad y zona de cobertura del técnico.
+final mapaDePrueba = MapaLocalidades.desdeGeoJson(
+  File(rutaMapaLocalidades).readAsStringSync(),
+);
+
 void main() {
   late List<RequestOptions> peticiones;
   late String estado;
@@ -97,7 +104,12 @@ void main() {
     await AlmacenSesion(memoria)
         .guardar(sesionDePrueba(rol: RolUsuario.tecnico));
     final container = ProviderContainer(
-      overrides: [almacenSeguroProvider.overrideWithValue(memoria)],
+      overrides: [
+        almacenSeguroProvider.overrideWithValue(memoria),
+        // El asset del mapa, leído del disco: rootBundle no responde dentro
+        // del reloj simulado de la prueba.
+        mapaLocalidadesProvider.overrideWith((ref) => mapaDePrueba),
+      ],
     );
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = adaptador();
@@ -283,5 +295,114 @@ void main() {
     await abrir(tester, brillo: Brightness.dark);
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('estado-no_disponible')), findsOneWidget);
+  });
+
+  group('mapa de cobertura', () {
+    final mapa = mapaDePrueba;
+
+    /// Toca el mapa en una coordenada real (longitud, latitud).
+    Future<void> tocarEnMapa(
+      WidgetTester tester,
+      double longitud,
+      double latitud,
+    ) async {
+      await tester.ensureVisible(find.byKey(const Key('mapa-cobertura')));
+      await tester.pumpAndSettle();
+      final lienzo = tester.renderObject<RenderBox>(
+        find.byKey(const Key('lienzo-mapa')),
+      );
+      final k = lienzo.size.width / mapa.limites.width;
+      final punto =
+          (MapaLocalidades.proyectar(longitud, latitud) -
+              mapa.limites.topLeft) *
+          k;
+      await tester.tapAt(lienzo.localToGlobal(punto));
+      await tester.pumpAndSettle();
+    }
+
+    bool marcada(WidgetTester tester, String codigo) => tester
+        .widget<FilterChip>(find.byKey(Key('localidad-$codigo')))
+        .selected;
+
+    String anuncio(WidgetTester tester) =>
+        tester.widget<Text>(find.byKey(const Key('anuncio-mapa'))).data!;
+
+    testWidgets('se dibuja con la atribución de la fuente', (tester) async {
+      await abrir(tester);
+      expect(find.byKey(const Key('mapa-cobertura')), findsOneWidget);
+      expect(find.textContaining('IDECA'), findsOneWidget);
+      expect(anuncio(tester), isEmpty);
+    });
+
+    testWidgets('tocar una localidad la marca en los chips y lo anuncia', (
+      tester,
+    ) async {
+      await abrir(tester);
+      await tocarEnMapa(tester, -74.0306, 4.6950); // Plaza de Usaquén
+
+      expect(marcada(tester, '01'), isTrue);
+      expect(find.text('2 de 3 seleccionadas'), findsOneWidget);
+      expect(anuncio(tester), 'Usaquén agregada.');
+
+      await tocarEnMapa(tester, -74.0480, 4.6765); // Parque de la 93
+      expect(marcada(tester, '02'), isFalse);
+      expect(anuncio(tester), 'Chapinero quitada.');
+
+      // Un chip limpia el anuncio del mapa.
+      await tocar(tester, find.byKey(const Key('localidad-03')));
+      expect(anuncio(tester), isEmpty);
+    });
+
+    testWidgets('una localidad que no viene de la API no se puede tocar', (
+      tester,
+    ) async {
+      await abrir(tester);
+      await tocarEnMapa(tester, -74.1469, 4.7016); // Aeropuerto, Fontibón
+      await tocarEnMapa(tester, -73.9000, 4.9000); // fuera del mapa
+
+      expect(find.text('1 de 3 seleccionadas'), findsOneWidget);
+      expect(anuncio(tester), isEmpty);
+    });
+
+    testWidgets('el mapa y los chips guardan la misma selección', (
+      tester,
+    ) async {
+      await abrir(tester);
+      await tocarEnMapa(tester, -74.0306, 4.6950); // Usaquén
+      await tocar(tester, find.byKey(const Key('localidad-03')));
+      await tocar(tester, find.byKey(const Key('boton-guardar-cobertura')));
+
+      expect(puts('/v1/technicians/me/coverage').single.data, {
+        'localityCodes': ['01', '02', '03'],
+      });
+    });
+
+    testWidgets('alterna entre la zona urbana y la ciudad completa', (
+      tester,
+    ) async {
+      await abrir(tester);
+      final visor = find.byKey(const Key('mapa-cobertura'));
+      double escala() => tester
+          .widget<InteractiveViewer>(visor)
+          .transformationController!
+          .value
+          .getMaxScaleOnAxis();
+      final urbana = escala();
+      expect(find.byTooltip('Ver toda la ciudad'), findsOneWidget);
+      // El lienzo se omite para lectores de pantalla, pero el botón no.
+      final semantica = tester.ensureSemantics();
+      expect(
+        tester.getSemantics(find.byKey(const Key('boton-encuadre-mapa'))),
+        isSemantics(tooltip: 'Ver toda la ciudad', isButton: true),
+      );
+      semantica.dispose();
+
+      await tocar(tester, find.byKey(const Key('boton-encuadre-mapa')));
+      expect(escala(), lessThan(urbana));
+      expect(find.byTooltip('Volver a la zona urbana'), findsOneWidget);
+
+      await tocar(tester, find.byKey(const Key('boton-encuadre-mapa')));
+      expect(escala(), closeTo(urbana, 1e-9));
+    });
   });
 }
