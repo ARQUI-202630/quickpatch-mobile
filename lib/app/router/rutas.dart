@@ -10,6 +10,8 @@ abstract final class Rutas {
   static const actividad = '/actividad';
   static const cuenta = '/cuenta';
 
+  static const disponibilidad = '/tecnico/disponibilidad';
+
   static const nuevaSolicitud = '/solicitudes/nueva';
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';

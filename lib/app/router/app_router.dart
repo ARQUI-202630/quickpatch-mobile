@@ -7,6 +7,7 @@ import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
+import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/inicio/presentation/paginas/actividad_page.dart';
 import '../../features/inicio/presentation/paginas/cuenta_page.dart';
 import '../../features/inicio/presentation/paginas/inicio_page.dart';
@@ -83,6 +84,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: CuentaPage()),
           ),
         ],
+      ),
+      GoRoute(
+        path: Rutas.disponibilidad,
+        builder: (context, state) => const DisponibilidadPage(),
       ),
       GoRoute(
         path: Rutas.nuevaSolicitud,
