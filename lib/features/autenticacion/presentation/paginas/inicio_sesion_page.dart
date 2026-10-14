@@ -151,6 +151,25 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
                           ),
                         ],
                       ),
+                      // Respaldo del enlace de invitación (SCRUM-98): si se
+                      // abrió en el navegador, el técnico lo pega aquí.
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            '¿Te invitaron a un equipo?',
+                            style: texto.bodyMedium?.copyWith(
+                              color: esquema.onSurfaceVariant,
+                            ),
+                          ),
+                          TextButton(
+                            key: const Key('boton-ir-activar'),
+                            onPressed: () => context.push(Rutas.activarCuenta),
+                            child: const Text('Activa tu cuenta'),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
