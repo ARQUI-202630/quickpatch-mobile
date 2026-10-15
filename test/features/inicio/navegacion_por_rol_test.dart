@@ -22,7 +22,7 @@ void main() {
         'Solicitudes',
         'Cuenta',
       ]);
-      expect(etiquetas(RolUsuario.tecnico), ['Inicio', 'Ofertas', 'Cuenta']);
+      expect(etiquetas(RolUsuario.tecnico), ['Inicio', 'Servicios', 'Cuenta']);
       expect(etiquetas(RolUsuario.proveedor), ['Inicio', 'Equipo', 'Cuenta']);
     });
 

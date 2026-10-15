@@ -85,6 +85,24 @@ class TecnicoAsignado {
   final String? nombre;
 }
 
+/// Contacto del cliente (`RequestClient`, 1.1.0). Solo lo recibe el técnico
+/// asignado mientras la solicitud está entre `asignado` y `completado`
+/// (RN-SR13); si Identity no respondió, nombre y teléfono llegan en `null`.
+class ClienteSolicitud {
+  const ClienteSolicitud({required this.id, this.nombre, this.telefono});
+
+  factory ClienteSolicitud.desdeJson(Map<String, dynamic> json) =>
+      ClienteSolicitud(
+        id: json['id'] as String,
+        nombre: json['fullName'] as String?,
+        telefono: json['phone'] as String?,
+      );
+
+  final String id;
+  final String? nombre;
+  final String? telefono;
+}
+
 /// Solicitud creada o consultada (`ServiceRequest`).
 class Solicitud {
   const Solicitud({
@@ -98,6 +116,7 @@ class Solicitud {
     this.tecnicoId,
     this.tecnico,
     this.asignadaEn,
+    this.cliente,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -115,6 +134,9 @@ class Solicitud {
     asignadaEn: json['assignedAt'] == null
         ? null
         : DateTime.parse(json['assignedAt'] as String),
+    cliente: json['client'] == null
+        ? null
+        : ClienteSolicitud.desdeJson(json['client'] as Map<String, dynamic>),
   );
 
   final String id;
@@ -131,4 +153,62 @@ class Solicitud {
 
   /// Momento en que un técnico aceptó la oferta; `null` antes (1.1.0).
   final DateTime? asignadaEn;
+
+  /// Contacto del cliente, solo para el técnico asignado (1.1.0).
+  final ClienteSolicitud? cliente;
+}
+
+/// Solicitud en la lista del técnico (`TechnicianServiceRequest`,
+/// service-request 1.2.0). Sin dirección, ubicación ni cliente (RN-SR13): el
+/// detalle sigue en `GET /v1/service-requests/{id}`.
+class ServicioTecnico {
+  const ServicioTecnico({
+    required this.id,
+    required this.estado,
+    required this.categoriaId,
+    required this.descripcion,
+    required this.creadaEn,
+    required this.asignadaEn,
+  });
+
+  factory ServicioTecnico.desdeJson(Map<String, dynamic> json) =>
+      ServicioTecnico(
+        id: json['id'] as String,
+        estado: EstadoSolicitud.desdeValor(json['status'] as String),
+        categoriaId: json['categoryId'] as String,
+        descripcion: json['description'] as String,
+        creadaEn: DateTime.parse(json['createdAt'] as String),
+        asignadaEn: DateTime.parse(json['assignedAt'] as String),
+      );
+
+  final String id;
+  final EstadoSolicitud estado;
+  final String categoriaId;
+  final String descripcion;
+  final DateTime creadaEn;
+  final DateTime asignadaEn;
+}
+
+/// Página de `GET /v1/technicians/me/service-requests`
+/// (`TechnicianServiceRequestPage`).
+class PaginaServiciosTecnico {
+  const PaginaServiciosTecnico({
+    required this.servicios,
+    required this.pagina,
+    required this.total,
+  });
+
+  factory PaginaServiciosTecnico.desdeJson(Map<String, dynamic> json) =>
+      PaginaServiciosTecnico(
+        servicios: (json['items'] as List<dynamic>)
+            .cast<Map<String, dynamic>>()
+            .map(ServicioTecnico.desdeJson)
+            .toList(),
+        pagina: json['page'] as int,
+        total: json['totalItems'] as int,
+      );
+
+  final List<ServicioTecnico> servicios;
+  final int pagina;
+  final int total;
 }

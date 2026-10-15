@@ -9,7 +9,8 @@ import '../domain/modelos.dart';
 
 /// Catálogo y solicitudes del cliente. Contratos: `catalog.v1.yaml`
 /// (`GET /v1/catalog/categories`) y `service-request.v1.yaml`
-/// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}`).
+/// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}` y, para el
+/// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0).
 class RepositorioSolicitudes {
   const RepositorioSolicitudes(this._dio);
 
@@ -46,6 +47,25 @@ class RepositorioSolicitudes {
       ApiEndpoints.solicitud(id),
     );
     return Solicitud.desdeJson(respuesta.data!);
+  });
+
+  static const tamanoPagina = 20;
+
+  /// Solicitudes asignadas al técnico de la sesión, de la asignación más
+  /// reciente a la más antigua (RF-17). [estado] filtra por uno solo.
+  Future<PaginaServiciosTecnico> serviciosDelTecnico({
+    EstadoSolicitud? estado,
+    int pagina = 1,
+  }) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.historialTecnico,
+      queryParameters: {
+        'status': ?estado?.valor,
+        'page': pagina,
+        'size': tamanoPagina,
+      },
+    );
+    return PaginaServiciosTecnico.desdeJson(respuesta.data!);
   });
 
   Future<T> _llamar<T>(Future<T> Function() llamada) async {

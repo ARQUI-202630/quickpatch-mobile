@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
+import 'package:quickpatch_mobile/app/shell/actividad_page.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/core/session/sesion.dart';
-import 'package:quickpatch_mobile/features/inicio/presentation/paginas/actividad_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 
 import '../../helpers/fakes.dart';
@@ -57,7 +57,8 @@ void main() {
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = AdaptadorFalso((o) {
       peticiones.add(o);
-      if (o.path == '/v1/providers/me/technicians') {
+      if (o.path == '/v1/providers/me/technicians' ||
+          o.path == '/v1/technicians/me/service-requests') {
         return respuestaJson({
           'items': <dynamic>[],
           'page': 1,
@@ -197,7 +198,7 @@ void main() {
     });
   });
 
-  testWidgets('técnico en verificación ve el aviso, sus opciones y Ofertas', (
+  testWidgets('técnico en verificación ve el aviso, sus opciones y Servicios', (
     tester,
   ) async {
     await abrir(tester, rol: RolUsuario.tecnico, verificacion: 'pendiente');
@@ -208,10 +209,28 @@ void main() {
     expect(consultoCategorias(), isFalse);
     expect(find.byKey(const Key('boton-nueva-solicitud')), findsNothing);
 
-    await tester.tap(pestana('Ofertas'));
+    await tester.tap(pestana('Servicios'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('RF-10'), findsOneWidget);
+    expect(find.byKey(const Key('servicios-vacio')), findsOneWidget);
+    expect(
+      peticiones.any((o) => o.path == '/v1/technicians/me/service-requests'),
+      isTrue,
+    );
     expect(find.text('Crear una solicitud'), findsNothing);
+  });
+
+  testWidgets('«Mis servicios» del inicio cambia a la pestaña Servicios', (
+    tester,
+  ) async {
+    await abrir(tester, rol: RolUsuario.tecnico, verificacion: 'aprobado');
+
+    await tester.tap(find.text('Mis servicios'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('filtro-servicios')), findsOneWidget);
+    // Cambia de pestaña, no apila otra pantalla: no hay botón de volver.
+    expect(find.byType(BackButton), findsNothing);
+    final barra = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(barra.selectedIndex, 1);
   });
 
   testWidgets('técnico aprobado no ve el aviso de verificación', (

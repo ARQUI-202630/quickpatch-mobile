@@ -1,23 +1,30 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/tokens.dart';
-import '../../domain/mapa_localidades.dart';
+import '../../app/theme/tokens.dart';
+import '../../core/geo/mapa_localidades.dart';
 
-/// Mapa de Bogotá para elegir la cobertura tocando las localidades (SCRUM-89).
-/// Solo dibuja los límites, sin mapa de fondo ni red (R5). Abre encuadrado en
-/// la zona urbana; el botón alterna con la ciudad completa, que incluye
-/// Sumapaz. Para lectores de pantalla el mapa se omite: los chips de la
-/// página son la vía accesible y siempre están sincronizados con él.
-class MapaCobertura extends StatefulWidget {
-  const MapaCobertura({
+/// Mapa de las localidades de Bogotá. Solo dibuja los límites, sin mapa de
+/// fondo ni red (R5). Dos usos:
+///
+/// - Elegir la cobertura tocando las localidades (SCRUM-89), con [alTocar].
+/// - Ver dónde es un servicio (SCRUM-92): sin [alTocar] es de solo lectura,
+///   con un pin en [punto] y abierto en [encuadreInicial].
+///
+/// Sin [encuadreInicial] abre en la zona urbana; el botón alterna con la
+/// ciudad completa, que incluye Sumapaz. Para lectores de pantalla el lienzo se
+/// omite: la página da lo mismo en texto (los chips o la dirección).
+class MapaBogota extends StatefulWidget {
+  const MapaBogota({
     super.key,
     required this.mapa,
     required this.disponibles,
     required this.elegidas,
-    required this.alTocar,
+    this.alTocar,
     this.habilitado = true,
     this.alto = 320,
+    this.punto,
+    this.encuadreInicial,
   });
 
   final MapaLocalidades mapa;
@@ -26,15 +33,24 @@ class MapaCobertura extends StatefulWidget {
   /// no se pueden tocar.
   final Set<String> disponibles;
   final Set<String> elegidas;
-  final ValueChanged<String> alTocar;
+
+  /// Toque sobre una localidad disponible; `null` deja el mapa de solo lectura.
+  final ValueChanged<String>? alTocar;
   final bool habilitado;
   final double alto;
 
+  /// Lugar del servicio, en coordenadas proyectadas
+  /// ([MapaLocalidades.proyectar]); se marca con un pin.
+  final Offset? punto;
+
+  /// Rectángulo proyectado en el que abre el mapa, en vez de la zona urbana.
+  final Rect? encuadreInicial;
+
   @override
-  State<MapaCobertura> createState() => _MapaCoberturaState();
+  State<MapaBogota> createState() => _MapaBogotaState();
 }
 
-class _MapaCoberturaState extends State<MapaCobertura> {
+class _MapaBogotaState extends State<MapaBogota> {
   final _control = TransformationController();
   bool _ciudadCompleta = false;
   Size? _vista;
@@ -76,8 +92,9 @@ class _MapaCoberturaState extends State<MapaCobertura> {
       ..scaleByDouble(s, s, s, 1);
   }
 
-  Rect get _objetivo =>
-      _ciudadCompleta ? widget.mapa.limites : widget.mapa.limitesUrbanos;
+  Rect get _objetivo => _ciudadCompleta
+      ? widget.mapa.limites
+      : widget.encuadreInicial ?? widget.mapa.limitesUrbanos;
 
   void _alternarEncuadre() {
     setState(() => _ciudadCompleta = !_ciudadCompleta);
@@ -104,12 +121,13 @@ class _MapaCoberturaState extends State<MapaCobertura> {
   }
 
   void _tocar(TapUpDetails detalles, double ancho) {
-    if (!widget.habilitado) return;
+    final alTocar = widget.alTocar;
+    if (!widget.habilitado || alTocar == null) return;
     final punto =
         detalles.localPosition / _escala(ancho) + widget.mapa.limites.topLeft;
     final codigo = widget.mapa.localidadEn(punto);
     if (codigo != null && widget.disponibles.contains(codigo)) {
-      widget.alTocar(codigo);
+      alTocar(codigo);
     }
   }
 
@@ -154,7 +172,9 @@ class _MapaCoberturaState extends State<MapaCobertura> {
                     maxScale: 12,
                     child: GestureDetector(
                       key: const Key('lienzo-mapa'),
-                      onTapUp: (d) => _tocar(d, ancho),
+                      onTapUp: widget.alTocar == null
+                          ? null
+                          : (d) => _tocar(d, ancho),
                       child: CustomPaint(
                         size: Size(ancho, alto),
                         painter: _PintorMapa(
@@ -163,6 +183,10 @@ class _MapaCoberturaState extends State<MapaCobertura> {
                           disponibles: {...widget.disponibles},
                           esquema: esquema,
                           control: _control,
+                          punto: widget.punto == null
+                              ? null
+                              : (widget.punto! - widget.mapa.limites.topLeft) *
+                                    _escala(ancho),
                         ),
                       ),
                     ),
@@ -173,9 +197,11 @@ class _MapaCoberturaState extends State<MapaCobertura> {
                   right: QpEspacio.e2,
                   child: IconButton.filledTonal(
                     key: const Key('boton-encuadre-mapa'),
-                    tooltip: _ciudadCompleta
+                    tooltip: !_ciudadCompleta
+                        ? 'Ver toda la ciudad'
+                        : widget.encuadreInicial == null
                         ? 'Volver a la zona urbana'
-                        : 'Ver toda la ciudad',
+                        : 'Acercar al servicio',
                     icon: Icon(
                       _ciudadCompleta ? Icons.zoom_in_map : Icons.zoom_out_map,
                     ),
@@ -198,6 +224,7 @@ class _PintorMapa extends CustomPainter {
     required this.disponibles,
     required this.esquema,
     required this.control,
+    this.punto,
   }) : super(repaint: control);
 
   final Map<String, Path> trazos;
@@ -207,6 +234,9 @@ class _PintorMapa extends CustomPainter {
 
   /// El borde se mantiene del mismo grosor en pantalla con cualquier zoom.
   final TransformationController control;
+
+  /// Pin del servicio, en coordenadas del lienzo.
+  final Offset? punto;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -236,12 +266,21 @@ class _PintorMapa extends CustomPainter {
         ..drawPath(trazo, relleno)
         ..drawPath(trazo, borde);
     }
+    if (punto case final p?) {
+      // Pin del mismo tamaño en pantalla con cualquier zoom.
+      final radio = 9 / escala;
+      canvas
+        ..drawCircle(p, radio * 1.6, Paint()..color = esquema.surface)
+        ..drawCircle(p, radio, Paint()..color = esquema.error)
+        ..drawCircle(p, radio * 0.35, Paint()..color = esquema.onError);
+    }
   }
 
   @override
   bool shouldRepaint(_PintorMapa anterior) =>
       anterior.trazos != trazos ||
       anterior.esquema != esquema ||
+      anterior.punto != punto ||
       !setEquals(anterior.elegidas, elegidas) ||
       !setEquals(anterior.disponibles, disponibles);
 }

@@ -46,6 +46,14 @@ void main() {
         ], 200);
       }
       if (o.path.endsWith('/login')) return respuestaJson(loginJson(), 200);
+      if (o.path == '/v1/technicians/me/service-requests') {
+        return respuestaJson({
+          'items': <dynamic>[],
+          'page': 1,
+          'size': 20,
+          'totalItems': 0,
+        }, 200);
+      }
       return respuestaJson({'userId': 'u', 'role': 'cliente'}, 201);
     });
     await tester.pumpWidget(
