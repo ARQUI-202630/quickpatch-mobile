@@ -11,7 +11,7 @@ import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../domain/datos_registro.dart';
-import '../controlador_sesion.dart';
+import '../acciones_sesion.dart';
 
 /// Registro de cliente hogar (RF-01) o empresa cliente (RF-06).
 /// Al terminar inicia sesión y el router lleva al inicio.
@@ -57,7 +57,7 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
     setState(() => _enviando = true);
     try {
       await ref
-          .read(controladorSesionProvider.notifier)
+          .read(accionesSesionProvider)
           .registrarEIniciarSesion(
             DatosRegistro(
               tipo: _tipo,

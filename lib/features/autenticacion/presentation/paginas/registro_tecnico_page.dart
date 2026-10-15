@@ -13,7 +13,7 @@ import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/selector_categoria.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../domain/datos_registro.dart';
-import '../controlador_sesion.dart';
+import '../acciones_sesion.dart';
 
 /// Registro de técnico o proveedor (RF-02, SCRUM-22 / SCRUM-55).
 ///
@@ -66,7 +66,7 @@ class _RegistroTecnicoPageState extends ConsumerState<RegistroTecnicoPage> {
     setState(() => _enviando = true);
     try {
       await ref
-          .read(controladorSesionProvider.notifier)
+          .read(accionesSesionProvider)
           .registrarTecnicoEIniciarSesion(
             DatosRegistroTecnico(
               rol: _rol,

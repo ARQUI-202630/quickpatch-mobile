@@ -6,9 +6,9 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../config/app_config.dart';
 import '../network/cliente_api.dart';
+import '../session/controlador_sesion.dart';
 import '../session/rol_usuario.dart';
 import 'mensaje_tiempo_real.dart';
 

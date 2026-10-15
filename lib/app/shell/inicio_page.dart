@@ -4,9 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/catalogo/categoria.dart';
 import '../../core/catalogo/repositorio_catalogo.dart';
+import '../../core/session/controlador_sesion.dart';
 import '../../core/session/rol_usuario.dart';
 import '../../core/session/sesion.dart';
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../shared/widgets/icono_categoria.dart';
 import '../../shared/widgets/vista_error.dart';
 import '../../shared/widgets/vista_estado.dart';

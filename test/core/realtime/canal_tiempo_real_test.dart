@@ -9,8 +9,8 @@ import 'package:quickpatch_mobile/core/config/app_config.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
 import 'package:quickpatch_mobile/core/realtime/mensaje_tiempo_real.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
+import 'package:quickpatch_mobile/core/session/controlador_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
-import 'package:quickpatch_mobile/features/autenticacion/presentation/controlador_sesion.dart';
 
 import '../../helpers/fakes.dart';
 

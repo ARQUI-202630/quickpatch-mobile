@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/session/controlador_sesion.dart';
 import '../../core/session/rol_usuario.dart';
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/solicitudes/presentation/widgets/escucha_asignaciones.dart';
 import 'navegacion_por_rol.dart';
 

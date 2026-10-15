@@ -2,9 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/session/controlador_sesion.dart';
 import '../../core/session/sesion.dart';
 import '../../features/autenticacion/domain/enlace_invitacion.dart';
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/activar_cuenta_page.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';

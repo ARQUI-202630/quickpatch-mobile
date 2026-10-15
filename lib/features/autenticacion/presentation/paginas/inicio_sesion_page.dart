@@ -9,7 +9,7 @@ import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
-import '../controlador_sesion.dart';
+import '../acciones_sesion.dart';
 
 /// Inicio de sesión (RF-03). Contrato: `POST /v1/auth/login`.
 class InicioSesionPage extends ConsumerStatefulWidget {
@@ -41,7 +41,7 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
     });
     try {
       await ref
-          .read(controladorSesionProvider.notifier)
+          .read(accionesSesionProvider)
           .iniciarSesion(email: _email.text, password: _password.text);
     } on AppException catch (e) {
       if (mounted) setState(() => _error = e.mensaje);
