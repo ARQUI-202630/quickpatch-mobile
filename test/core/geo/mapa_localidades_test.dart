@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:quickpatch_mobile/features/disponibilidad/data/repositorio_disponibilidad.dart';
-import 'package:quickpatch_mobile/features/disponibilidad/domain/mapa_localidades.dart';
+import 'package:quickpatch_mobile/core/geo/mapa_localidades.dart';
+import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
 
 /// SCRUM-89: límites de las localidades para el mapa de cobertura.
 void main() {
