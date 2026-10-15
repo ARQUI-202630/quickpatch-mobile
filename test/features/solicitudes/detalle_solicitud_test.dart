@@ -239,6 +239,86 @@ void main() {
     expect(find.text('Técnico asignado'), findsOneWidget);
   });
 
+  group('indicador de búsqueda de técnico (SCRUM-77)', () {
+    Finder paso(String texto) => find.bySemanticsLabel(RegExp(texto));
+
+    for (final (estado, explicacion) in [
+      (EstadoSolicitud.buscandoTecnico, 'buscando un técnico disponible'),
+      (EstadoSolicitud.enEspera, 'no hay técnicos disponibles'),
+    ]) {
+      testWidgets(
+        '${estado.valor}: el primer paso sigue en curso y sin técnico',
+        (tester) async {
+          await abrir(tester, () async => _solicitud(estado));
+
+          expect(
+            find.descendant(
+              of: find.byKey(const Key('estado-solicitud')),
+              matching: find.text(estado.etiqueta),
+              matchRoot: true,
+            ),
+            findsOneWidget,
+          );
+          expect(find.textContaining(explicacion), findsOneWidget);
+          expect(
+            paso('Paso 1 de 4: Buscando técnico, en curso'),
+            findsOneWidget,
+          );
+          expect(paso('Paso 2 de 4: Asignado, pendiente'), findsOneWidget);
+          expect(find.byKey(const Key('sin-tecnico')), findsOneWidget);
+          expect(find.byKey(const Key('tarjeta-tecnico')), findsNothing);
+        },
+      );
+    }
+
+    testWidgets('asignado: el primer paso queda hecho y aparece el técnico', (
+      tester,
+    ) async {
+      await abrir(
+        tester,
+        () async => _solicitud(EstadoSolicitud.asignado, tecnico: _carlos),
+      );
+
+      expect(paso('Paso 1 de 4: Buscando técnico, completado'), findsOneWidget);
+      expect(paso('Paso 2 de 4: Asignado, en curso'), findsOneWidget);
+      expect(find.byKey(const Key('tarjeta-tecnico')), findsOneWidget);
+      expect(find.text('Carlos Ruiz'), findsOneWidget);
+      expect(find.byKey(const Key('sin-tecnico')), findsNothing);
+    });
+
+    testWidgets('pasa de buscando a en espera y a asignado con cada aviso', (
+      tester,
+    ) async {
+      var actual = _solicitud(EstadoSolicitud.buscandoTecnico);
+      await abrir(tester, () async => actual);
+      await conectar(tester);
+      expect(find.textContaining('buscando un técnico'), findsOneWidget);
+
+      Future<void> avisar(EstadoSolicitud estado) async {
+        conector.ultima.recibir({
+          'type': 'service-request.status-changed',
+          'serviceRequestId': 's-1',
+          'status': estado.valor,
+        });
+        await tester.pumpAndSettle();
+      }
+
+      actual = _solicitud(EstadoSolicitud.enEspera);
+      await avisar(EstadoSolicitud.enEspera);
+      expect(
+        find.textContaining('no hay técnicos disponibles'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('sin-tecnico')), findsOneWidget);
+
+      actual = _solicitud(EstadoSolicitud.asignado, tecnico: _carlos);
+      await avisar(EstadoSolicitud.asignado);
+      expect(find.text('Carlos Ruiz'), findsOneWidget);
+      expect(find.textContaining('Plomería'), findsOneWidget);
+      expect(paso('Paso 2 de 4: Asignado, en curso'), findsOneWidget);
+    });
+  });
+
   testWidgets('sin canal consulta cada 30 s; en vivo no', (tester) async {
     await abrir(
       tester,
