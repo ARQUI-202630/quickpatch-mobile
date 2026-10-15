@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/widgets/icono_categoria.dart';
 import '../../domain/modelos.dart';
-import '../icono_categoria.dart';
 import 'chip_estado.dart';
 
 /// Resumen de una solicitud en una lista: servicio, estado, descripción,

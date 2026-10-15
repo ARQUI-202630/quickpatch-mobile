@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';

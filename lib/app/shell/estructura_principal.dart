@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/session/rol_usuario.dart';
 import '../../features/autenticacion/presentation/controlador_sesion.dart';
-import '../../features/inicio/domain/navegacion_por_rol.dart';
 import '../../features/solicitudes/presentation/widgets/escucha_asignaciones.dart';
+import 'navegacion_por_rol.dart';
 
 /// Envuelve las pestañas principales con la barra de navegación inferior,
 /// cuyas pestañas dependen del rol de la sesión (SCRUM-441).

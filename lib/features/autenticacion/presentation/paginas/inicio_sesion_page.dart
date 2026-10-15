@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
@@ -210,14 +211,4 @@ class MarcaQuickpatch extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Valida el correo antes de enviarlo (AC4, protección ante errores).
-String? validarEmail(String? valor) {
-  final texto = valor?.trim() ?? '';
-  if (texto.isEmpty) return 'Escribe tu correo.';
-  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(texto)) {
-    return 'Escribe un correo válido, por ejemplo ana@correo.com.';
-  }
-  return null;
 }

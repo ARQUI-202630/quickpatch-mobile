@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
+import '../../../../shared/widgets/selector_categoria.dart';
 import '../../../../shared/widgets/vista_error.dart';
-import '../../../autenticacion/presentation/paginas/inicio_sesion_page.dart'
-    show validarEmail;
-import '../../../solicitudes/data/repositorio_solicitudes.dart';
-import '../../../solicitudes/presentation/widgets/selector_categoria.dart';
 import '../../data/repositorio_equipo.dart';
 import '../../domain/modelos.dart';
 import '../widgets/hoja_invitacion.dart';

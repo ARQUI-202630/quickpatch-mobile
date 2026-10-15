@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
+import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
+import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/errors/app_exception.dart';
 import 'package:quickpatch_mobile/core/errors/codigo_error.dart';
 import 'package:quickpatch_mobile/core/geo/localidad.dart';

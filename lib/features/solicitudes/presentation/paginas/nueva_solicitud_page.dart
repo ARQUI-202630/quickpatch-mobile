@@ -4,15 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/categoria.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/icono_categoria.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/proveedor_ubicacion.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
-import '../icono_categoria.dart';
 
 /// Nueva solicitud de servicio (RF-07, SCRUM-27). El cliente elige la
 /// categoría, describe el problema, comparte su ubicación y escribe la

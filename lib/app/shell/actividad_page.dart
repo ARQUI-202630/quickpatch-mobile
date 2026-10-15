@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../core/session/rol_usuario.dart';
 import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/equipo/presentation/paginas/equipo_page.dart';
-import '../../features/inicio/domain/navegacion_por_rol.dart';
 import '../../features/solicitudes/presentation/paginas/servicios_tecnico_page.dart';
 import '../../shared/widgets/vista_estado.dart';
 import '../router/rutas.dart';
+import 'navegacion_por_rol.dart';
 
 /// Pestaña del medio: el trabajo propio de cada rol (SCRUM-441). Está en el
 /// shell porque compone pantallas de varias features.

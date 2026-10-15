@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/geo/mapa_localidades.dart';
 import '../../../../core/geo/repositorio_localidades.dart';
+import '../../../../shared/widgets/icono_categoria.dart';
 import '../../../../shared/widgets/mapa_bogota.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
-import '../icono_categoria.dart';
 import '../widgets/chip_estado.dart';
 
 /// Detalle de la solicitud asignada, para el técnico (RF-14, SCRUM-34 /

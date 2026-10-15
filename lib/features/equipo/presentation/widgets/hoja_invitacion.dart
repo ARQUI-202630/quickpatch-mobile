@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
-import '../../../solicitudes/presentation/paginas/detalle_solicitud_page.dart'
-    show fechaCorta;
+import '../../../../core/utils/fechas.dart';
 import '../../data/compartir.dart';
 import '../../domain/modelos.dart';
 

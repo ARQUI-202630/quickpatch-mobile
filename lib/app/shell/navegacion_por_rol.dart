@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../app/router/rutas.dart';
-import '../../../core/session/rol_usuario.dart';
+import '../../core/session/rol_usuario.dart';
+import '../router/rutas.dart';
 
 /// Pestaña de la barra de navegación inferior.
 class DestinoPrincipal {

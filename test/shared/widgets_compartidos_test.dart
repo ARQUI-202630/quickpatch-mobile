@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quickpatch_mobile/app/shell/inicio_page.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/errors/app_exception.dart';
 import 'package:quickpatch_mobile/core/errors/codigo_error.dart';
-import 'package:quickpatch_mobile/features/inicio/presentation/paginas/inicio_page.dart';
 import 'package:quickpatch_mobile/shared/widgets/boton_principal.dart';
 import 'package:quickpatch_mobile/shared/widgets/botones.dart';
 import 'package:quickpatch_mobile/shared/widgets/campo_contrasena.dart';

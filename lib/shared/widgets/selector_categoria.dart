@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../app/theme/tokens.dart';
-import '../../domain/modelos.dart';
-import '../icono_categoria.dart';
+import '../../app/theme/tokens.dart';
+import '../../core/catalogo/categoria.dart';
+import 'icono_categoria.dart';
 
 /// Elección de una categoría de Catalog con fichas de ícono y nombre, como
 /// campo de formulario (valida y muestra el error debajo). Sirve para la

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
+import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/chip_estado.dart';
-import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/selector_categoria.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/tarjeta_solicitud.dart';
 import 'package:quickpatch_mobile/shared/widgets/botones.dart';
+import 'package:quickpatch_mobile/shared/widgets/selector_categoria.dart';
 
 Widget _conTema(Widget hijo, {double escalaTexto = 1}) => MaterialApp(
   theme: AppTheme.claro(),

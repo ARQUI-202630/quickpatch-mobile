@@ -12,13 +12,13 @@ import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
 import '../../features/inicio/presentation/paginas/cuenta_page.dart';
-import '../../features/inicio/presentation/paginas/inicio_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/solicitud_asignada_page.dart';
 import '../../shared/widgets/vista_cargando.dart';
 import '../shell/actividad_page.dart';
 import '../shell/estructura_principal.dart';
+import '../shell/inicio_page.dart';
 import 'rutas.dart';
 
 /// Decide a dónde redirigir según el estado de la sesión.

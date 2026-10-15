@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
-import '../../../solicitudes/data/repositorio_solicitudes.dart';
 import '../../data/repositorio_equipo.dart';
 import '../../domain/modelos.dart';
 import '../widgets/hoja_invitacion.dart';
