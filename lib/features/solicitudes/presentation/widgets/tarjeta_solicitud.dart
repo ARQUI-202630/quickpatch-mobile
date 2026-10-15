@@ -6,14 +6,14 @@ import '../icono_categoria.dart';
 import 'chip_estado.dart';
 
 /// Resumen de una solicitud en una lista: servicio, estado, descripción,
-/// dirección y fecha, con acciones opcionales al pie (por ejemplo, aceptar o
+/// dirección (si la lista la trae) y fecha, con acciones opcionales al pie (por ejemplo, aceptar o
 /// rechazar una oferta en SCRUM-30). Recibe los datos sueltos para servir
 /// tanto a la solicitud del cliente como a la oferta del técnico.
 class TarjetaSolicitud extends StatelessWidget {
   const TarjetaSolicitud({
     required this.servicio,
     required this.descripcion,
-    required this.direccion,
+    this.direccion,
     this.estado,
     this.fecha,
     this.alTocar,
@@ -42,7 +42,7 @@ class TarjetaSolicitud extends StatelessWidget {
 
   final String servicio;
   final String descripcion;
-  final String direccion;
+  final String? direccion;
   final EstadoSolicitud? estado;
   final DateTime? fecha;
   final VoidCallback? alTocar;
@@ -98,9 +98,11 @@ class TarjetaSolicitud extends StatelessWidget {
                 style: texto.bodyMedium,
               ),
               const SizedBox(height: QpEspacio.e3),
-              _Dato(Icons.place_outlined, direccion, secundario),
-              if (fecha != null) ...[
+              if (direccion case final direccion?) ...[
+                _Dato(Icons.place_outlined, direccion, secundario),
                 const SizedBox(height: QpEspacio.e1),
+              ],
+              if (fecha != null) ...[
                 _Dato(
                   Icons.schedule_rounded,
                   fechaRelativa(fecha!.toLocal(), DateTime.now()),

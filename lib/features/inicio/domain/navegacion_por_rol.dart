@@ -49,7 +49,7 @@ List<DestinoPrincipal> destinosPara(RolUsuario rol) => switch (rol) {
   RolUsuario.tecnico => const [
     _inicio,
     DestinoPrincipal(
-      etiqueta: 'Ofertas',
+      etiqueta: 'Servicios',
       icono: Icons.work_outline_rounded,
       iconoActivo: Icons.work_rounded,
       ruta: Rutas.actividad,

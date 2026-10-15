@@ -9,7 +9,8 @@ import '../domain/modelos.dart';
 
 /// Catálogo y solicitudes del cliente. Contratos: `catalog.v1.yaml`
 /// (`GET /v1/catalog/categories`) y `service-request.v1.yaml`
-/// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}`).
+/// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}` y, para el
+/// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0).
 class RepositorioSolicitudes {
   const RepositorioSolicitudes(this._dio);
 
@@ -48,6 +49,25 @@ class RepositorioSolicitudes {
     return Solicitud.desdeJson(respuesta.data!);
   });
 
+  static const tamanoPagina = 20;
+
+  /// Solicitudes asignadas al técnico de la sesión, de la asignación más
+  /// reciente a la más antigua (RF-17). [estado] filtra por uno solo.
+  Future<PaginaServiciosTecnico> serviciosDelTecnico({
+    EstadoSolicitud? estado,
+    int pagina = 1,
+  }) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.historialTecnico,
+      queryParameters: {
+        'status': ?estado?.valor,
+        'page': pagina,
+        'size': tamanoPagina,
+      },
+    );
+    return PaginaServiciosTecnico.desdeJson(respuesta.data!);
+  });
+
   Future<T> _llamar<T>(Future<T> Function() llamada) async {
     try {
       return await llamada();
@@ -74,14 +94,4 @@ final categoriasPublicasProvider = FutureProvider.autoDispose<List<Categoria>>(
 /// Detalle de una solicitud.
 final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>(
   (ref, id) => ref.watch(repositorioSolicitudesProvider).obtener(id),
-  retry: reintentarSalvoErrorDelCliente,
 );
-
-/// Mientras Riverpod reintenta, el provider sigue en carga. Un 4xx (403, 404)
-/// no cambia al reintentar: se muestra de una vez en vez de esperar los
-/// reintentos. El resto (sin conexión, 5xx) usa la política por defecto.
-Duration? reintentarSalvoErrorDelCliente(int intento, Object error) {
-  final status = error is AppException ? error.status : null;
-  if (status != null && status >= 400 && status < 500) return null;
-  return ProviderContainer.defaultRetry(intento, error);
-}
