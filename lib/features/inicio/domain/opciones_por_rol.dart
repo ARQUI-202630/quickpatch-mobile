@@ -14,6 +14,10 @@ class OpcionInicio {
   final String? ruta;
 
   bool get disponible => ruta != null;
+
+  /// La opción lleva a una pestaña de la barra inferior: se cambia de
+  /// pestaña en vez de apilar otra pantalla.
+  bool get esPestana => ruta == Rutas.actividad;
 }
 
 /// Opciones de cada rol en la app móvil, según la relación pantalla–contrato
@@ -38,7 +42,7 @@ List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
       ruta: Rutas.disponibilidad,
     ),
     OpcionInicio('Ofertas', 'RF-10'),
-    OpcionInicio('Historial de servicios', 'RF-17'),
+    OpcionInicio('Mis servicios', 'RF-17', ruta: Rutas.actividad),
     OpcionInicio('Pagos recibidos', 'RF-25'),
   ],
   RolUsuario.proveedor => const [OpcionInicio('Mi equipo', 'RF-16')],

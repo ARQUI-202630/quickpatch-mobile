@@ -379,7 +379,11 @@ class _TarjetaOpcion extends StatelessWidget {
       trailing: opcion.disponible
           ? const Icon(Icons.chevron_right_rounded)
           : null,
-      onTap: opcion.disponible ? () => context.push(opcion.ruta!) : null,
+      onTap: !opcion.disponible
+          ? null
+          : opcion.esPestana
+          ? () => context.go(opcion.ruta!)
+          : () => context.push(opcion.ruta!),
     ),
   );
 }
