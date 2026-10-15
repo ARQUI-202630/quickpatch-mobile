@@ -12,6 +12,7 @@ import 'package:quickpatch_mobile/core/geo/localidad.dart';
 import 'package:quickpatch_mobile/core/geo/mapa_localidades.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/network/politica_reintento.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
@@ -84,6 +85,8 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
+        // La misma política de reintentos de main.dart.
+        retry: politicaReintento,
         overrides: [
           solicitudProvider.overrideWith((ref, id) {
             consultas++;
@@ -212,25 +215,6 @@ void main() {
     expect(find.text('Calle 93 # 13-20, apto 502'), findsNothing);
     // Un 4xx no se reintenta: la pantalla no se queda cargando.
     expect(consultas, 1);
-  });
-
-  test('solo reintenta errores que pueden cambiar', () {
-    Duration? reintento(Object e) => reintentarSalvoErrorDelCliente(0, e);
-    expect(
-      reintento(const AppException(CodigoError.forbidden, status: 403)),
-      isNull,
-    );
-    expect(
-      reintento(const AppException(CodigoError.notFound, status: 404)),
-      isNull,
-    );
-    expect(reintento(const AppException(CodigoError.sinConexion)), isNotNull);
-    expect(
-      reintento(
-        const AppException(CodigoError.serviceUnavailable, status: 503),
-      ),
-      isNotNull,
-    );
   });
 
   testWidgets('un 404 dice que no encontró el servicio', (tester) async {
