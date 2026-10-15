@@ -74,4 +74,14 @@ final categoriasPublicasProvider = FutureProvider.autoDispose<List<Categoria>>(
 /// Detalle de una solicitud.
 final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>(
   (ref, id) => ref.watch(repositorioSolicitudesProvider).obtener(id),
+  retry: reintentarSalvoErrorDelCliente,
 );
+
+/// Mientras Riverpod reintenta, el provider sigue en carga. Un 4xx (403, 404)
+/// no cambia al reintentar: se muestra de una vez en vez de esperar los
+/// reintentos. El resto (sin conexión, 5xx) usa la política por defecto.
+Duration? reintentarSalvoErrorDelCliente(int intento, Object error) {
+  final status = error is AppException ? error.status : null;
+  if (status != null && status >= 400 && status < 500) return null;
+  return ProviderContainer.defaultRetry(intento, error);
+}

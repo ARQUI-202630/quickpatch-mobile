@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
+import '../../../../core/geo/localidad.dart';
+import '../../../../core/geo/repositorio_localidades.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/mapa_bogota.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_disponibilidad.dart';
 import '../../domain/modelos.dart';
-import '../widgets/mapa_cobertura.dart';
 
 /// Disponibilidad y zona de cobertura del técnico (RF-13, SCRUM-33 /
 /// SCRUM-89). Contrato: `matching.v1.yaml`. Solo recibe ofertas cuando está
@@ -269,7 +270,7 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
         const SizedBox(height: QpEspacio.e3),
         // Sin el asset del mapa la cobertura sigue funcionando con los chips.
         if (mapa.value case final mapa?) ...[
-          MapaCobertura(
+          MapaBogota(
             mapa: mapa,
             disponibles: {for (final l in lista) l.codigo},
             elegidas: elegidas,

@@ -9,11 +9,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/router/app_router.dart';
 import 'package:quickpatch_mobile/app/router/rutas.dart';
+import 'package:quickpatch_mobile/core/geo/mapa_localidades.dart';
+import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
-import 'package:quickpatch_mobile/features/disponibilidad/data/repositorio_disponibilidad.dart';
-import 'package:quickpatch_mobile/features/disponibilidad/domain/mapa_localidades.dart';
 
 import '../../helpers/fakes.dart';
 

@@ -84,6 +84,9 @@ class MapaLocalidades {
 
   Iterable<String> get codigos => anillos.keys;
 
+  /// Rectángulo de la localidad [codigo], o `null` si no está en el mapa.
+  Rect? cajaDe(String codigo) => _cajas[codigo];
+
   /// Código de la localidad que contiene [punto] (en coordenadas proyectadas),
   /// o `null` si cae fuera. Usa la regla par-impar, así un punto en un hueco
   /// queda fuera de la localidad que lo rodea.

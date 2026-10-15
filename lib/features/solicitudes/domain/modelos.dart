@@ -85,6 +85,24 @@ class TecnicoAsignado {
   final String? nombre;
 }
 
+/// Contacto del cliente (`RequestClient`, 1.1.0). Solo lo recibe el técnico
+/// asignado mientras la solicitud está entre `asignado` y `completado`
+/// (RN-SR13); si Identity no respondió, nombre y teléfono llegan en `null`.
+class ClienteSolicitud {
+  const ClienteSolicitud({required this.id, this.nombre, this.telefono});
+
+  factory ClienteSolicitud.desdeJson(Map<String, dynamic> json) =>
+      ClienteSolicitud(
+        id: json['id'] as String,
+        nombre: json['fullName'] as String?,
+        telefono: json['phone'] as String?,
+      );
+
+  final String id;
+  final String? nombre;
+  final String? telefono;
+}
+
 /// Solicitud creada o consultada (`ServiceRequest`).
 class Solicitud {
   const Solicitud({
@@ -98,6 +116,7 @@ class Solicitud {
     this.tecnicoId,
     this.tecnico,
     this.asignadaEn,
+    this.cliente,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -115,6 +134,9 @@ class Solicitud {
     asignadaEn: json['assignedAt'] == null
         ? null
         : DateTime.parse(json['assignedAt'] as String),
+    cliente: json['client'] == null
+        ? null
+        : ClienteSolicitud.desdeJson(json['client'] as Map<String, dynamic>),
   );
 
   final String id;
@@ -131,4 +153,7 @@ class Solicitud {
 
   /// Momento en que un técnico aceptó la oferta; `null` antes (1.1.0).
   final DateTime? asignadaEn;
+
+  /// Contacto del cliente, solo para el técnico asignado (1.1.0).
+  final ClienteSolicitud? cliente;
 }
