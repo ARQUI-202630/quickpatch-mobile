@@ -36,7 +36,14 @@ enum FiltroServicios {
 /// su detalle. Se recarga cuando el canal en tiempo real avisa un cambio de
 /// estado y al deslizar.
 class ServiciosTecnicoPage extends ConsumerStatefulWidget {
-  const ServiciosTecnicoPage({super.key});
+  const ServiciosTecnicoPage({super.key, this.encabezado, this.alRecargar});
+
+  /// Contenido arriba de la lista que arma el shell, por ejemplo la oferta
+  /// pendiente (SCRUM-80). Así esta feature no importa otras.
+  final Widget? encabezado;
+
+  /// Se llama también al deslizar para recargar, para el [encabezado].
+  final VoidCallback? alRecargar;
 
   @override
   ConsumerState<ServiciosTecnicoPage> createState() =>
@@ -157,6 +164,12 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
     }
   }
 
+  /// Deslizar para recargar: la lista y el encabezado.
+  Future<void> _recargar() {
+    widget.alRecargar?.call();
+    return _cargar(silencioso: true);
+  }
+
   void _filtrar(FiltroServicios filtro) {
     if (filtro == _filtro) return;
     setState(() => _filtro = filtro);
@@ -182,6 +195,22 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (widget.encabezado case final encabezado?)
+              // Con texto grande, el encabezado se desplaza y no tapa la lista.
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.5,
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(
+                    QpEspacio.pantalla,
+                    QpEspacio.e2,
+                    QpEspacio.pantalla,
+                    0,
+                  ),
+                  child: encabezado,
+                ),
+              ),
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 QpEspacio.pantalla,
@@ -232,7 +261,7 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
       final todos = _filtro == FiltroServicios.todos;
       // Con RefreshIndicator también se puede recargar la lista vacía.
       return RefreshIndicator(
-        onRefresh: () => _cargar(silencioso: true),
+        onRefresh: _recargar,
         child: LayoutBuilder(
           builder: (context, restricciones) => SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -259,7 +288,7 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
     }
     final hayMas = _servicios.length < _total;
     return RefreshIndicator(
-      onRefresh: () => _cargar(silencioso: true),
+      onRefresh: _recargar,
       child: ListView(
         key: const Key('lista-servicios'),
         padding: const EdgeInsets.fromLTRB(

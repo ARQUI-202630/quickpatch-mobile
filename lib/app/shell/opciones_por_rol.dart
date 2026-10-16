@@ -41,7 +41,7 @@ List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
       'RF-13',
       ruta: Rutas.disponibilidad,
     ),
-    OpcionInicio('Ofertas', 'RF-10'),
+    OpcionInicio('Ofertas', 'RF-10', ruta: Rutas.actividad),
     OpcionInicio('Mis servicios', 'RF-17', ruta: Rutas.actividad),
     OpcionInicio('Pagos recibidos', 'RF-25'),
   ],

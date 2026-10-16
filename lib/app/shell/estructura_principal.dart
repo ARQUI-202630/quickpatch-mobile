@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/session/controlador_sesion.dart';
 import '../../core/session/rol_usuario.dart';
+import '../../features/ofertas/presentation/widgets/escucha_ofertas.dart';
 import '../../features/solicitudes/presentation/widgets/escucha_asignaciones.dart';
 import 'navegacion_por_rol.dart';
 
@@ -28,9 +29,10 @@ class EstructuraPrincipal extends ConsumerWidget {
     if (destinos.isEmpty) return child;
 
     return Scaffold(
-      // El técnico recibe el aviso de las solicitudes que le asignan (SCRUM-92).
+      // El técnico recibe el aviso de las solicitudes que le asignan
+      // (SCRUM-92) y de las ofertas nuevas (SCRUM-80).
       body: rol == RolUsuario.tecnico
-          ? EscuchaAsignaciones(child: child)
+          ? EscuchaAsignaciones(child: EscuchaOfertas(child: child))
           : child,
       bottomNavigationBar: NavigationBar(
         key: const Key('barra-navegacion'),
