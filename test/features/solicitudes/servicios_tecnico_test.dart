@@ -107,6 +107,10 @@ void main() {
     );
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = AdaptadorFalso((o) {
+      // Sin oferta pendiente (la oferta se prueba en test/features/ofertas).
+      if (o.path == '/v1/matching/offers') {
+        return respuestaJson(_pagina(const []), 200);
+      }
       if (o.path == _ruta) {
         consultas.add(o);
         return responder(o);

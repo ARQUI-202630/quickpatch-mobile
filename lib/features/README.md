@@ -22,4 +22,5 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 | `solicitudes/` | Nueva solicitud, detalle y seguimiento del cliente; servicios del técnico y su detalle |
 | `disponibilidad/` | Disponibilidad y cobertura del técnico |
 | `equipo/` | Equipo del proveedor e invitaciones |
+| `ofertas/` | Oferta pendiente del técnico: aceptar o rechazar con su cuenta regresiva |
 | `cuenta/` | Pantalla de cuenta |

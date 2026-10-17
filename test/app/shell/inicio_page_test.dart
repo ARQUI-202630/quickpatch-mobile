@@ -58,7 +58,8 @@ void main() {
     container.read(clienteApiProvider).httpClientAdapter = AdaptadorFalso((o) {
       peticiones.add(o);
       if (o.path == '/v1/providers/me/technicians' ||
-          o.path == '/v1/technicians/me/service-requests') {
+          o.path == '/v1/technicians/me/service-requests' ||
+          o.path == '/v1/matching/offers') {
         return respuestaJson({
           'items': <dynamic>[],
           'page': 1,
