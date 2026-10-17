@@ -1,3 +1,5 @@
+import '../../../core/geo/localidad.dart';
+
 /// Punto geográfico WGS 84 (`GeoPoint` en `service-request.v1.yaml`).
 class Ubicacion {
   const Ubicacion(this.latitud, this.longitud);
@@ -18,21 +20,47 @@ class NuevaSolicitud {
   const NuevaSolicitud({
     required this.categoriaId,
     required this.descripcion,
-    required this.ubicacion,
     required this.direccion,
+    this.ubicacion,
   });
 
   final String categoriaId;
   final String descripcion;
-  final Ubicacion ubicacion;
+
+  /// Opcional desde service-request 1.3.0: sin ella, ServiceRequest
+  /// geocodifica [direccion] dentro de Bogotá (ADR-024).
+  final Ubicacion? ubicacion;
   final String direccion;
 
   Map<String, dynamic> toJson() => {
     'categoryId': categoriaId,
     'description': descripcion.trim(),
-    'location': ubicacion.toJson(),
+    'location': ?ubicacion?.toJson(),
     'addressText': direccion.trim(),
   };
+}
+
+/// Dónde ubicó el geocodificador una dirección (`LocationPreview`,
+/// service-request 1.3.0), para que el cliente confirme antes de crear la
+/// solicitud. Nominatim no usa el número de casa: ubica la calle o el barrio.
+class VistaPreviaUbicacion {
+  const VistaPreviaUbicacion({
+    required this.ubicacion,
+    required this.localidad,
+    required this.direccionReconocida,
+  });
+
+  factory VistaPreviaUbicacion.desdeJson(
+    Map<String, dynamic> json,
+  ) => VistaPreviaUbicacion(
+    ubicacion: Ubicacion.desdeJson(json['location'] as Map<String, dynamic>),
+    localidad: Localidad.desdeJson(json['locality'] as Map<String, dynamic>),
+    direccionReconocida: json['matchedAddress'] as String,
+  );
+
+  final Ubicacion ubicacion;
+  final Localidad localidad;
+  final String direccionReconocida;
 }
 
 /// Estado de la solicitud (`ServiceRequestStatus`, DD 7.4).
