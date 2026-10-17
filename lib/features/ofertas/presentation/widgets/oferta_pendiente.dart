@@ -147,7 +147,10 @@ class _TarjetaOfertaState extends ConsumerState<TarjetaOferta> {
   _Accion? _enCurso;
   bool _avisoVencida = false;
 
-  /// Tras vencer, espera un momento antes de consultar: Matching la reasigna.
+  /// Tras vencer, consulta cada [esperaTrasVencer] hasta que la oferta
+  /// desaparezca. La cuenta usa el reloj del teléfono, pero Matching decide
+  /// el vencimiento con el del servidor: si el teléfono va adelantado, la
+  /// oferta sigue pendiente un momento más.
   static const esperaTrasVencer = Duration(seconds: 3);
 
   @override
@@ -170,7 +173,7 @@ class _TarjetaOfertaState extends ConsumerState<TarjetaOferta> {
     if (_restante == Duration.zero && !_avisoVencida) {
       _avisoVencida = true;
       _cuenta?.cancel();
-      _cuenta = Timer(esperaTrasVencer, widget.alTerminar);
+      _cuenta = Timer.periodic(esperaTrasVencer, (_) => widget.alTerminar());
     }
   }
 
@@ -313,12 +316,20 @@ class _TarjetaOfertaState extends ConsumerState<TarjetaOferta> {
               ],
             ),
             const SizedBox(height: QpEspacio.e2),
-            Text(
-              oferta.descripcion,
-              key: const Key('oferta-descripcion'),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
+            // Las solicitudes viejas de Matching pueden no tener descripción.
+            if (oferta.descripcion.trim().isEmpty)
+              Text(
+                'Sin descripción',
+                key: const Key('oferta-descripcion'),
+                style: secundario?.copyWith(fontStyle: FontStyle.italic),
+              )
+            else
+              Text(
+                oferta.descripcion,
+                key: const Key('oferta-descripcion'),
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
             const SizedBox(height: QpEspacio.e2),
             Text(
               '${oferta.localidad.nombre} · '

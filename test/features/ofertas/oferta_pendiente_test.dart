@@ -284,7 +284,50 @@ void main() {
     expect(clave('tarjeta-oferta'), findsNothing);
   });
 
-  testWidgets('el aviso offer.created muestra la oferta y avisa', (
+  testWidgets(
+    'con el reloj adelantado sigue consultando hasta que desaparece',
+    (tester) async {
+      await abrir(tester);
+      final antes = consultasDeOfertas();
+
+      // El teléfono cree que venció, pero Matching (reloj del servidor) todavía
+      // la devuelve dos consultas más.
+      var pendientes = 2;
+      ofertas = (o) => pendientes-- > 0
+          ? respuestaJson(_pagina([_oferta()]), 200)
+          : respuestaJson(_pagina(const []), 200);
+      ahora = _inicio.add(const Duration(minutes: 3));
+      await tester.pump(const Duration(seconds: 1));
+      expect(texto(tester, 'oferta-tiempo'), 'La oferta venció.');
+
+      for (var i = 0; i < 3; i++) {
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expect(consultasDeOfertas(), antes + 3);
+      expect(clave('tarjeta-oferta'), findsNothing);
+
+      // Sin oferta no vuelve a consultar cada 3 s.
+      await tester.pump(const Duration(seconds: 9));
+      expect(consultasDeOfertas(), antes + 3);
+    },
+  );
+
+  testWidgets('sin descripción lo dice en vez de dejar el espacio vacío', (
+    tester,
+  ) async {
+    ofertas = (o) => respuestaJson(
+      _pagina([
+        {..._oferta(), 'description': '  '},
+      ]),
+      200,
+    );
+    await abrir(tester);
+    expect(texto(tester, 'oferta-descripcion'), 'Sin descripción');
+  });
+
+  testWidgets('en Servicios, offer.created muestra la oferta sin avisar', (
     tester,
   ) async {
     ofertas = (o) => respuestaJson(_pagina(const []), 200);
@@ -301,8 +344,9 @@ void main() {
       'occurredAt': _inicio.toIso8601String(),
     });
     await tester.pumpAndSettle();
-    expect(find.text('Tienes una oferta nueva.'), findsOneWidget);
     expect(clave('tarjeta-oferta'), findsOneWidget);
+    // Ya está en Servicios: el aviso con «Ver» llevaría a la misma pantalla.
+    expect(find.text('Tienes una oferta nueva.'), findsNothing);
   });
 
   testWidgets('desde otra pestaña, «Ver» lleva a Servicios', (tester) async {

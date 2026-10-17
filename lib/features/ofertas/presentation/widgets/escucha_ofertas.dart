@@ -11,7 +11,7 @@ import '../../../../core/realtime/mensaje_tiempo_real.dart';
 /// Para el técnico, en cualquier pestaña: con el aviso `offer.created`
 /// (`realtime.v1.yaml`, solo al técnico de la oferta) muestra «Tienes una
 /// oferta nueva» con «Ver», que lleva a la pestaña Servicios donde está la
-/// oferta (SCRUM-80).
+/// oferta (SCRUM-80). Si ya está en Servicios no avisa: la oferta aparece ahí.
 class EscuchaOfertas extends ConsumerStatefulWidget {
   const EscuchaOfertas({super.key, required this.child});
 
@@ -37,6 +37,12 @@ class _EscuchaOfertasState extends ConsumerState<EscuchaOfertas> {
 
   void _avisar() {
     if (!mounted) return;
+    final ubicacion = GoRouter.of(context)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .path;
+    if (ubicacion == Rutas.actividad) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
