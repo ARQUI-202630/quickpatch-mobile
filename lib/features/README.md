@@ -10,7 +10,7 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 
 | Carpeta | Qué va ahí | Ejemplos |
 |---|---|---|
-| `core/` | Código sin pantallas que comparten varias features | `session/`, `network/`, `realtime/`, `catalogo/` (categorías del tenant), `geo/` (localidades y su mapa), `utils/` (validadores, fechas, montos) |
+| `core/` | Código sin pantallas que comparten varias features | `session/`, `network/`, `realtime/`, `catalogo/` (categorías del tenant), `notificaciones/` (contador del buzón), `geo/` (localidades y su mapa), `utils/` (validadores, fechas, montos) |
 | `shared/widgets/` | Widgets reutilizables | `MapaBogota`, `SelectorCategoria`, `iconoCategoria`, estados vacío, de error y de carga |
 | `app/` | Arranque, tema, rutas y el shell, que compone pantallas de varias features | `router/`, `theme/`, `shell/` (barra inferior, Inicio y la pestaña del medio de cada rol) |
 
@@ -22,4 +22,5 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 | `solicitudes/` | Nueva solicitud, detalle y seguimiento del cliente; servicios del técnico y su detalle |
 | `disponibilidad/` | Disponibilidad y cobertura del técnico |
 | `equipo/` | Equipo del proveedor e invitaciones |
+| `notificaciones/` | Buzón de notificaciones del usuario |
 | `cuenta/` | Pantalla de cuenta |

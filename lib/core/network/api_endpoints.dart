@@ -1,7 +1,8 @@
 /// Rutas REST que consume la app móvil.
 ///
-/// Fuente: `quickpatch-api-gateway/openapi/` en `61c3fa5` (identity 1.7.0,
-/// catalog 1.2.0, service-request 1.2.0 y matching 1.0.0). Las rutas marcadas
+/// Fuente: `quickpatch-api-gateway/openapi/` en `v0.6.0` (identity 1.7.0,
+/// catalog 1.2.0, service-request 1.3.0, matching 1.0.0 y communication
+/// 1.0.0). Las rutas marcadas
 /// "pendiente de contrato" vienen del catálogo del DD 3.1 y todavía no tienen
 /// especificación publicada: no deben usarse hasta que exista. No agregar
 /// rutas que no estén en el DD.
@@ -52,6 +53,10 @@ abstract final class ApiEndpoints {
 
   /// Desde service-request 1.2.0 (RF-17, SCRUM-464).
   static const historialTecnico = '/v1/technicians/me/service-requests';
+
+  // Communication Service (buzón, communication.v1.yaml 1.0.0, ADR-024)
+  static const notificaciones = '/v1/notifications';
+  static String notificacionLeida(String id) => '/v1/notifications/$id/read';
 
   // Payments Service
   static String pago(String id) => '/v1/service-requests/$id/payment';

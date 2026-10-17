@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/icono_categoria.dart';
 import '../../domain/modelos.dart';
 import 'chip_estado.dart';
@@ -142,15 +143,4 @@ class _Dato extends StatelessWidget {
       Expanded(child: Text(texto, style: estilo)),
     ],
   );
-}
-
-/// "Hace 5 min", "Hace 3 h", "Ayer" o la fecha `dd/mm/aaaa`.
-String fechaRelativa(DateTime fecha, DateTime ahora) {
-  final diferencia = ahora.difference(fecha);
-  if (diferencia.inMinutes < 1) return 'Hace un momento';
-  if (diferencia.inHours < 1) return 'Hace ${diferencia.inMinutes} min';
-  if (diferencia.inDays < 1) return 'Hace ${diferencia.inHours} h';
-  if (diferencia.inDays == 1) return 'Ayer';
-  String dos(int n) => n.toString().padLeft(2, '0');
-  return '${dos(fecha.day)}/${dos(fecha.month)}/${fecha.year}';
 }

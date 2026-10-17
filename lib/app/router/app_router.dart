@@ -12,6 +12,7 @@ import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.
 import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
+import '../../features/notificaciones/presentation/paginas/notificaciones_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/solicitud_asignada_page.dart';
@@ -96,6 +97,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: CuentaPage()),
           ),
         ],
+      ),
+      GoRoute(
+        path: Rutas.notificaciones,
+        builder: (context, state) => const NotificacionesPage(),
       ),
       GoRoute(
         path: Rutas.disponibilidad,

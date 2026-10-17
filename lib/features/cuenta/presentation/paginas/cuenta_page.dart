@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../app/router/rutas.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/notificaciones/contador_notificaciones.dart';
 import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/botones.dart';
 
-/// Pestaña de cuenta: datos de la sesión, licencias y cierre de sesión
-/// (SCRUM-441). Solo muestra lo que trae la sesión; no consulta endpoints.
+/// Pestaña de cuenta: datos de la sesión, buzón de notificaciones
+/// (SCRUM-459), licencias y cierre de sesión (SCRUM-441).
 class CuentaPage extends ConsumerWidget {
   const CuentaPage({super.key});
 
@@ -17,6 +21,9 @@ class CuentaPage extends ConsumerWidget {
     if (usuario == null) return const SizedBox.shrink();
     final esquema = Theme.of(context).colorScheme;
     final texto = Theme.of(context).textTheme;
+    final sinLeer = tieneBuzon(usuario.rol)
+        ? ref.watch(contadorNotificacionesProvider).value ?? 0
+        : 0;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Cuenta')),
@@ -60,6 +67,25 @@ class CuentaPage extends ConsumerWidget {
               ),
             ),
           ),
+          // Buzón (SCRUM-459); el proveedor no tiene (403).
+          if (tieneBuzon(usuario.rol)) ...[
+            const SizedBox(height: QpEspacio.e4),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                key: const Key('fila-notificaciones'),
+                leading: const Icon(Icons.notifications_none_rounded),
+                title: const Text('Notificaciones'),
+                subtitle: switch (sinLeer) {
+                  0 => null,
+                  1 => const Text('1 sin leer'),
+                  _ => Text('$sinLeer sin leer'),
+                },
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(Rutas.notificaciones),
+              ),
+            ),
+          ],
           const SizedBox(height: QpEspacio.e4),
           Card(
             clipBehavior: Clip.antiAlias,
