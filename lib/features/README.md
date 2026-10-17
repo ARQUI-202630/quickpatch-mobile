@@ -14,7 +14,7 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 | `shared/widgets/` | Widgets reutilizables | `MapaBogota`, `SelectorCategoria`, `iconoCategoria`, estados vacío, de error y de carga |
 | `app/` | Arranque, tema, rutas y el shell, que compone pantallas de varias features | `router/`, `theme/`, `shell/` (barra inferior, Inicio y la pestaña del medio de cada rol) |
 
-`core/` y `shared/` no importan de `features/`; `app/` sí, porque las compone.
+`core/` y `shared/` no importan de `features/`; `app/` sí, porque las compone. `shared/` puede usar `app/theme` (tokens y tema); ni `core/` ni `shared/` importan del resto de `app/`.
 
 | Feature | Qué hace |
 |---|---|
@@ -22,4 +22,4 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 | `solicitudes/` | Nueva solicitud, detalle y seguimiento del cliente; servicios del técnico y su detalle |
 | `disponibilidad/` | Disponibilidad y cobertura del técnico |
 | `equipo/` | Equipo del proveedor e invitaciones |
-| `inicio/` | Pantalla de cuenta |
+| `cuenta/` | Pantalla de cuenta |
