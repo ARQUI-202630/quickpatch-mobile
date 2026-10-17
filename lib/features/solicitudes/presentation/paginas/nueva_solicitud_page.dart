@@ -15,10 +15,13 @@ import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/proveedor_ubicacion.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
+import '../widgets/confirmar_ubicacion.dart';
 
 /// Nueva solicitud de servicio (RF-07, SCRUM-27). El cliente elige la
-/// categoría, describe el problema, comparte su ubicación y escribe la
-/// dirección. Contrato: `POST /v1/service-requests`.
+/// categoría, describe el problema, escribe la dirección y, de preferencia,
+/// comparte su ubicación. Sin ella, la app ubica la dirección y le pide
+/// confirmarla (SCRUM-457, ADR-024). Contratos: `POST /v1/service-requests`
+/// y `POST /v1/service-requests/location-preview` (1.3.0).
 class NuevaSolicitudPage extends ConsumerStatefulWidget {
   const NuevaSolicitudPage({this.categoriaInicial, super.key});
 
@@ -65,40 +68,74 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
     }
   }
 
+  /// Con GPS crea la solicitud con ese punto. Sin GPS, primero ubica la
+  /// dirección y le pregunta al cliente «¿Es aquí?» (service-request 1.3.0,
+  /// ADR-024): la localidad decide qué técnicos reciben la oferta (RN-M9).
   Future<void> _enviar() async {
     if (!_formulario.currentState!.validate()) return;
-    if (_ubicacion == null) {
-      setState(() => _error = 'Comparte tu ubicación para continuar.');
-      return;
-    }
     setState(() {
       _enviando = true;
       _error = null;
     });
     try {
+      final ubicacion = _ubicacion ?? await _confirmarDireccion();
+      if (ubicacion == null || !mounted) return;
       final solicitud = await ref
           .read(repositorioSolicitudesProvider)
           .crear(
             NuevaSolicitud(
               categoriaId: _categoriaId!,
               descripcion: _descripcion.text,
-              ubicacion: _ubicacion!,
+              ubicacion: ubicacion,
               direccion: _direccion.text,
             ),
           );
       if (mounted) context.go(Rutas.detalleSolicitud(solicitud.id));
     } on AppException catch (e) {
-      if (mounted) {
-        setState(() {
-          _error = [
-            e.mensaje,
-            for (final campo in e.erroresCampo) '• ${campo.mensaje}',
-          ].join('\n');
-        });
-      }
+      if (mounted) setState(() => _error = _mensajeDe(e));
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
+  }
+
+  /// Ubica la dirección escrita y la muestra para confirmar. Devuelve el
+  /// punto confirmado, o `null` si el cliente dice que no es ahí.
+  Future<Ubicacion?> _confirmarDireccion() async {
+    final vista = await ref
+        .read(repositorioSolicitudesProvider)
+        .vistaPrevia(_direccion.text);
+    if (!mounted) return null;
+    // Mientras el cliente decide, el botón no está cargando.
+    setState(() => _enviando = false);
+    final confirmado = await confirmarUbicacion(context, vista);
+    if (!mounted) return null;
+    if (confirmado) {
+      setState(() => _enviando = true);
+      return vista.ubicacion;
+    }
+    if (mounted) {
+      setState(
+        () => _error =
+            'Toca «Usar mi ubicación» para que el técnico llegue al lugar '
+            'correcto.',
+      );
+    }
+    return null;
+  }
+
+  String _mensajeDe(AppException e) {
+    if (e.esProblema('direccion-no-encontrada')) {
+      return 'No encontramos esa dirección en Bogotá. Revisa la calle y el '
+          'número, o toca «Usar mi ubicación».';
+    }
+    if (e.esProblema('ubicacion-fuera-de-cobertura')) {
+      return 'Esa ubicación queda fuera de Bogotá, donde trabaja QUICKPATCH. '
+          'Revisa la dirección o toca «Usar mi ubicación».';
+    }
+    return [
+      e.mensaje,
+      for (final campo in e.erroresCampo) '• ${campo.mensaje}',
+    ].join('\n');
   }
 
   @override
@@ -241,7 +278,10 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
             ),
             const SizedBox(height: QpEspacio.e1),
             Text(
-              'La usamos para encontrar técnicos cerca de ti.',
+              _ubicacion == null
+                  ? 'La usamos para encontrar técnicos cerca de ti. Si no la '
+                        'compartes, ubicamos la dirección en el mapa.'
+                  : 'La usamos para encontrar técnicos cerca de ti.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
