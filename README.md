@@ -25,7 +25,7 @@ test/                       Misma estructura que lib/
 config/                     dev.json y qa.json (sin secretos: quedan dentro del APK)
 ```
 
-Las opciones del inicio dependen del rol del usuario (`features/inicio/domain/opciones_por_rol.dart`, SCRUM-25).
+Las opciones del inicio dependen del rol del usuario (`app/shell/opciones_por_rol.dart`, SCRUM-25).
 
 ## Capacidades
 
@@ -35,6 +35,8 @@ Las opciones del inicio dependen del rol del usuario (`features/inicio/domain/op
 |Nueva solicitud: categoría, descripción, dirección y ubicación del GPS; confirmación con el estado|`catalog.v1.yaml` (`GET /v1/catalog/categories`), `service-request.v1.yaml` (`POST` y `GET /v1/service-requests`)|SCRUM-27 / SCRUM-71|
 |Seguimiento de la solicitud: línea de estado en 4 pasos, técnico asignado (nombre y especialidad, que es la categoría por RN-M9) y avisos en tiempo real, con consulta cada 30 s si el canal no está disponible|`service-request.v1.yaml` 1.1.0 (`GET /v1/service-requests/{id}`), `asyncapi/realtime.v1.yaml` (`/v1/realtime`, ADR-023)|SCRUM-31 / SCRUM-83|
 |Servicios del técnico: lista de sus servicios asignados con filtro por estado y paginación, y detalle con cliente, dirección y mapa de solo lectura; aviso «Te asignaron un servicio»|`service-request.v1.yaml` 1.2.0 (`GET /v1/technicians/me/service-requests`, `GET /v1/service-requests/{id}`), `asyncapi/realtime.v1.yaml`|SCRUM-34 / SCRUM-92 / SCRUM-467|
+|Disponibilidad y cobertura del técnico: interruptor de disponibilidad y localidades elegidas en un mapa de Bogotá o con chips|`matching.v1.yaml` (`/v1/technicians/me/availability`, `/v1/technicians/me/coverage`, `/v1/localities`)|SCRUM-89|
+|Equipo del proveedor: técnicos con filtro y paginación, alta con enlace de invitación para compartir y enlace nuevo|`identity.v1.yaml` 1.7.0 (`/v1/providers/me/technicians`)|SCRUM-36 / SCRUM-98|
 
 ## Sistema de diseño (SCRUM-439)
 

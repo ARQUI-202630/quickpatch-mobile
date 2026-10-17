@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/botones.dart';
-import '../../../autenticacion/presentation/controlador_sesion.dart';
 
 /// Pestaña de cuenta: datos de la sesión, licencias y cierre de sesión
 /// (SCRUM-441). Solo muestra lo que trae la sesión; no consulta endpoints.

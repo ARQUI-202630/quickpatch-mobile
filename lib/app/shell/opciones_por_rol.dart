@@ -1,5 +1,5 @@
-import '../../../app/router/rutas.dart';
-import '../../../core/session/rol_usuario.dart';
+import '../../core/session/rol_usuario.dart';
+import '../router/rutas.dart';
 
 /// Capacidad que ve un rol en su pantalla de inicio.
 class OpcionInicio {

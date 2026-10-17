@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
+import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
+import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';

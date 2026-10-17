@@ -5,9 +5,9 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../config/app_config.dart';
 import '../session/almacen_sesion.dart';
+import '../session/controlador_sesion.dart';
 import 'interceptores.dart';
 
 /// Crea el cliente HTTP hacia el API Gateway.

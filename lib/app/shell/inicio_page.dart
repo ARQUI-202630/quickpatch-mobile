@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../app/router/rutas.dart';
-import '../../../../app/theme/tokens.dart';
-import '../../../../core/session/rol_usuario.dart';
-import '../../../../core/session/sesion.dart';
-
-import '../../../../shared/widgets/vista_error.dart';
-import '../../../../shared/widgets/vista_estado.dart';
-import '../../../autenticacion/presentation/controlador_sesion.dart';
-import '../../../solicitudes/data/repositorio_solicitudes.dart';
-import '../../../solicitudes/domain/modelos.dart';
-import '../../../solicitudes/presentation/icono_categoria.dart';
-import '../../domain/opciones_por_rol.dart';
+import '../../core/catalogo/categoria.dart';
+import '../../core/catalogo/repositorio_catalogo.dart';
+import '../../core/session/controlador_sesion.dart';
+import '../../core/session/rol_usuario.dart';
+import '../../core/session/sesion.dart';
+import '../../shared/widgets/icono_categoria.dart';
+import '../../shared/widgets/vista_error.dart';
+import '../../shared/widgets/vista_estado.dart';
+import '../router/rutas.dart';
+import '../theme/tokens.dart';
+import 'opciones_por_rol.dart';
 
 /// Pantalla de inicio según el rol del usuario autenticado (SCRUM-441).
 ///

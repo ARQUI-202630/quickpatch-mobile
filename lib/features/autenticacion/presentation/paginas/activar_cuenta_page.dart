@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_activacion.dart';
 import '../../domain/enlace_invitacion.dart';
-import 'registro_page.dart' show validarContrasena;
 
 /// Activación de la cuenta de un técnico del equipo de un proveedor
 /// (SCRUM-98, identity 1.7.0): define su contraseña con la invitación.

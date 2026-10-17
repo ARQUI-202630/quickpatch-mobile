@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,12 +6,12 @@ import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../domain/datos_registro.dart';
-import '../controlador_sesion.dart';
-import 'inicio_sesion_page.dart' show validarEmail;
+import '../acciones_sesion.dart';
 
 /// Registro de cliente hogar (RF-01) o empresa cliente (RF-06).
 /// Al terminar inicia sesión y el router lleva al inicio.
@@ -58,7 +57,7 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
     setState(() => _enviando = true);
     try {
       await ref
-          .read(controladorSesionProvider.notifier)
+          .read(accionesSesionProvider)
           .registrarEIniciarSesion(
             DatosRegistro(
               tipo: _tipo,
@@ -282,13 +281,5 @@ String? _obligatorio(String? valor, int maximo) {
   final texto = valor?.trim() ?? '';
   if (texto.isEmpty) return 'Es obligatorio.';
   if (texto.length > maximo) return 'Máximo $maximo caracteres.';
-  return null;
-}
-
-/// Mismos límites que el contrato: entre 8 y 128 caracteres.
-String? validarContrasena(String? valor) {
-  final texto = valor ?? '';
-  if (texto.length < 8) return 'Usa al menos 8 caracteres.';
-  if (texto.length > 128) return 'Máximo 128 caracteres.';
   return null;
 }

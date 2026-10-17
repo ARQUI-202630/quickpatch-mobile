@@ -7,8 +7,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
+import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
@@ -426,10 +428,4 @@ class _Fila extends StatelessWidget {
     title: Text(titulo),
     subtitle: Text(valor),
   );
-}
-
-/// Fecha como `dd/mm/aaaa hh:mm`.
-String fechaCorta(DateTime f) {
-  String dos(int n) => n.toString().padLeft(2, '0');
-  return '${dos(f.day)}/${dos(f.month)}/${f.year} ${dos(f.hour)}:${dos(f.minute)}';
 }

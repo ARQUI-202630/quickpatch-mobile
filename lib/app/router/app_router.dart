@@ -2,23 +2,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/session/controlador_sesion.dart';
 import '../../core/session/sesion.dart';
 import '../../features/autenticacion/domain/enlace_invitacion.dart';
-import '../../features/autenticacion/presentation/controlador_sesion.dart';
 import '../../features/autenticacion/presentation/paginas/activar_cuenta_page.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
+import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
-import '../../features/inicio/presentation/paginas/cuenta_page.dart';
-import '../../features/inicio/presentation/paginas/inicio_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/solicitud_asignada_page.dart';
 import '../../shared/widgets/vista_cargando.dart';
 import '../shell/actividad_page.dart';
 import '../shell/estructura_principal.dart';
+import '../shell/inicio_page.dart';
 import 'rutas.dart';
 
 /// Decide a dónde redirigir según el estado de la sesión.
