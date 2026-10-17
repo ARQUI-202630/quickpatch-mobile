@@ -55,6 +55,10 @@ abstract final class ApiEndpoints {
   /// Desde service-request 1.2.0 (RF-17, SCRUM-464).
   static const historialTecnico = '/v1/technicians/me/service-requests';
 
+  // Communication Service (buzón, communication.v1.yaml 1.0.0, ADR-024)
+  static const notificaciones = '/v1/notifications';
+  static String notificacionLeida(String id) => '/v1/notifications/$id/read';
+
   // Payments Service
   static String pago(String id) => '/v1/service-requests/$id/payment';
   static String comprobante(String paymentId) =>
