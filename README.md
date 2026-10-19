@@ -65,8 +65,15 @@ Un teléfono no puede editar su archivo `hosts` ni confiar en el certificado aut
 - fija el certificado de VM1 por su huella SHA-256 (`CERT_SHA256`): la app solo confía en ese certificado. DevOps obtiene la huella desde la red del laboratorio con
   `openssl s_client -connect 10.43.100.168:443 </dev/null | openssl x509 -noout -fingerprint -sha256`
   y la escribe en `config/qa.json` antes de compilar el APK de QA. El valor no es secreto (es público en el propio certificado).
+  **Si VM1 regenera su certificado, hay que actualizar la huella**: con la anterior la app rechaza la conexión (`HandshakeException`). Pasó el 16 de octubre de 2026 (SCRUM-448).
 
 El teléfono o el emulador deben estar conectados a la VPN de la universidad.
+
+**Prueba de humo contra QA (SCRUM-448):** `integration_test/humo_qa_test.dart` corre la app real en un emulador o teléfono con la configuración de QA. Un cliente nuevo inicia sesión, crea una solicitud sin GPS (la app ubica la dirección y pregunta «¿Es aquí?») y la cancela; cada paso imprime su tiempo. Con el emulador encendido:
+
+```bash
+flutter test integration_test/humo_qa_test.dart --dart-define-from-file=config/qa.json
+```
 
 **APK de QA (SCRUM-447):** cada push a `release/*` compila el APK con `config/qa.json` y lo deja como artefacto `apk-qa` del workflow (pestaña Actions, 30 días). En local: `flutter build apk --release --dart-define-from-file=config/qa.json`.
 
