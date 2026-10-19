@@ -82,6 +82,23 @@ enum EstadoSolicitud {
 
   static EstadoSolicitud desdeValor(String valor) =>
       values.firstWhere((e) => e.valor == valor);
+
+  /// Estados anteriores al inicio del servicio, desde los que se puede
+  /// cancelar (RN-SR7; service-request 1.5.0).
+  bool get cancelable => switch (this) {
+    buscandoTecnico ||
+    enEspera ||
+    asignado ||
+    cotizado ||
+    cotizacionAceptada => true,
+    enProgreso || completado || pagado || cancelado => false,
+  };
+}
+
+/// Límites del motivo de cancelación (`CancelServiceRequest`, 1.5.0).
+abstract final class MotivoCancelacion {
+  static const minimo = 5;
+  static const maximo = 500;
 }
 
 /// Técnico asignado a la solicitud (`AssignedTechnician`, 1.1.0).
@@ -130,6 +147,8 @@ class Solicitud {
     this.tecnico,
     this.asignadaEn,
     this.cliente,
+    this.canceladaEn,
+    this.motivoCancelacion,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -150,6 +169,10 @@ class Solicitud {
     cliente: json['client'] == null
         ? null
         : ClienteSolicitud.desdeJson(json['client'] as Map<String, dynamic>),
+    canceladaEn: json['cancelledAt'] == null
+        ? null
+        : DateTime.parse(json['cancelledAt'] as String),
+    motivoCancelacion: json['cancellationReason'] as String?,
   );
 
   final String id;
@@ -169,6 +192,10 @@ class Solicitud {
 
   /// Contacto del cliente, solo para el técnico asignado (1.1.0).
   final ClienteSolicitud? cliente;
+
+  /// Momento y motivo de la cancelación; `null` si no se canceló (1.5.0).
+  final DateTime? canceladaEn;
+  final String? motivoCancelacion;
 }
 
 /// Solicitud en la lista del técnico (`TechnicianServiceRequest`,
