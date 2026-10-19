@@ -1,7 +1,8 @@
 /// Rutas REST que consume la app móvil.
 ///
-/// Fuente: `quickpatch-api-gateway/openapi/` en `61c3fa5` (identity 1.7.0,
-/// catalog 1.2.0, service-request 1.2.0 y matching 1.0.0). Las rutas marcadas
+/// Fuente: `quickpatch-api-gateway/openapi/` en `v0.6.0` (identity 1.7.0,
+/// catalog 1.2.0, service-request 1.3.0, matching 1.0.0 y communication
+/// 1.0.0). Las rutas marcadas
 /// "pendiente de contrato" vienen del catálogo del DD 3.1 y todavía no tienen
 /// especificación publicada: no deben usarse hasta que exista. No agregar
 /// rutas que no estén en el DD.
@@ -36,6 +37,7 @@ abstract final class ApiEndpoints {
 
   // ServiceRequest Service
   static const solicitudes = '/v1/service-requests';
+  static const vistaPreviaUbicacion = '/v1/service-requests/location-preview';
   static String solicitud(String id) => '/v1/service-requests/$id';
   static String cancelar(String id) => '/v1/service-requests/$id/cancel';
   static String cotizaciones(String id) => '/v1/service-requests/$id/quotes';

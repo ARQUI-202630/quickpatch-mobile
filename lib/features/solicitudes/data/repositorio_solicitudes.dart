@@ -22,6 +22,18 @@ class RepositorioSolicitudes {
     return Solicitud.desdeJson(respuesta.data!);
   });
 
+  /// Ubica la dirección en Bogotá sin crear nada (`POST
+  /// /v1/service-requests/location-preview`, 1.3.0). `422
+  /// direccion-no-encontrada` o `ubicacion-fuera-de-cobertura` si no puede.
+  Future<VistaPreviaUbicacion> vistaPrevia(String direccion) =>
+      _llamar(() async {
+        final respuesta = await _dio.post<Map<String, dynamic>>(
+          ApiEndpoints.vistaPreviaUbicacion,
+          data: {'addressText': direccion.trim()},
+        );
+        return VistaPreviaUbicacion.desdeJson(respuesta.data!);
+      });
+
   Future<Solicitud> obtener(String id) => _llamar(() async {
     final respuesta = await _dio.get<Map<String, dynamic>>(
       ApiEndpoints.solicitud(id),
