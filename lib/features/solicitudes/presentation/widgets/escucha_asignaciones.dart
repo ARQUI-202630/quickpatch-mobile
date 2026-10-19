@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/rutas.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
+import '../../data/repositorio_solicitudes.dart';
 
 /// Para el técnico: cuando el canal en tiempo real avisa que le asignaron una
 /// solicitud (`service-request.status-changed` con `asignado`, que también le
@@ -14,6 +15,11 @@ import '../../../../core/realtime/mensaje_tiempo_real.dart';
 /// «Ver» que abre su detalle (SCRUM-92). Mientras no exista el historial del
 /// técnico (RF-17) es la forma de llegar al servicio; con la SCRUM-80 se
 /// agrega la navegación al aceptar la oferta.
+///
+/// Si el cliente o el administrador cancelan un servicio que tenía asignado
+/// (`cancelado`, RF-36), avisa que se canceló y recarga su detalle (SCRUM-477).
+/// No ofrece «Ver»: fuera de `asignado`–`completado` el técnico ya no ve los
+/// datos del cliente (RN-SR13).
 class EscuchaAsignaciones extends ConsumerStatefulWidget {
   const EscuchaAsignaciones({super.key, required this.child});
 
@@ -37,10 +43,34 @@ class _EscuchaAsignacionesState extends ConsumerState<EscuchaAsignaciones> {
         .where(
           (m) =>
               m.tipo == MensajeTiempoReal.cambioDeEstado &&
-              m.status == 'asignado' &&
               m.serviceRequestId != null,
         )
-        .listen((m) => _avisar(m.serviceRequestId!));
+        .listen((m) {
+          switch (m.status) {
+            case 'asignado':
+              _avisar(m.serviceRequestId!);
+            case 'cancelado':
+              _avisarCancelacion(m.serviceRequestId!);
+          }
+        });
+  }
+
+  void _avisarCancelacion(String id) {
+    if (!mounted) return;
+    ref.invalidate(solicitudProvider(id));
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        const SnackBar(
+          key: Key('aviso-cancelacion'),
+          content: Text(
+            'Se canceló un servicio que tenías asignado. Volverás a '
+            'recibir ofertas.',
+          ),
+          duration: Duration(seconds: 30),
+          showCloseIcon: true,
+        ),
+      );
   }
 
   void _avisar(String id) {

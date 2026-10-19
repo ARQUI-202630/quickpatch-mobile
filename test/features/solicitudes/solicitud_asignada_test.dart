@@ -263,13 +263,17 @@ void main() {
       addTearDown(tester.view.reset);
       final conector = ConectorWsFalso();
       final memoria = AlmacenSeguroEnMemoria();
+      var consultas = 0;
       await AlmacenSesion(memoria)
           .guardar(sesionDePrueba(rol: RolUsuario.tecnico));
       final container = ProviderContainer(
         overrides: [
           almacenSeguroProvider.overrideWithValue(memoria),
           conectorWsProvider.overrideWithValue(conector.call),
-          solicitudProvider.overrideWith((ref, id) async => _solicitud()),
+          solicitudProvider.overrideWith((ref, id) async {
+            consultas++;
+            return _solicitud();
+          }),
           categoriasProvider.overrideWith(
             (ref) async => const [Categoria(id: 'c-1', nombre: 'Plomería')],
           ),
@@ -312,6 +316,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SolicitudAsignadaPage), findsOneWidget);
       expect(find.text('Laura Gómez'), findsOneWidget);
+
+      // Si luego se cancela, avisa sin «Ver» y recarga el detalle abierto.
+      consultas = 0;
+      conector.ultima.recibir({
+        'type': 'service-request.status-changed',
+        'serviceRequestId': 's-1',
+        'status': 'cancelado',
+      });
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('aviso-cancelacion')), findsOneWidget);
+      expect(find.textContaining('Se canceló un servicio'), findsOneWidget);
+      expect(find.widgetWithText(SnackBarAction, 'Ver'), findsNothing);
+      expect(consultas, 1);
     });
   });
 }
