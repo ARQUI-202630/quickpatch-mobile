@@ -8,7 +8,8 @@ import '../domain/modelos.dart';
 
 /// Solicitudes del cliente y del técnico. Contrato: `service-request.v1.yaml`
 /// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}` y, para el
-/// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0).
+/// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0; la
+/// cancelación, `POST /v1/service-requests/{id}/cancel`, desde 1.5.0).
 class RepositorioSolicitudes {
   const RepositorioSolicitudes(this._dio);
 
@@ -39,6 +40,16 @@ class RepositorioSolicitudes {
       ApiEndpoints.solicitud(id),
     );
     return Solicitud.desdeJson(respuesta.data!);
+  });
+
+  /// Cancela la solicitud antes de que inicie el servicio (RF-36). `409
+  /// transicion-invalida` si ya inició; `400` con el campo `reason` si el
+  /// motivo no cumple los límites.
+  Future<void> cancelar(String id, String motivo) => _llamar(() async {
+    await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.cancelar(id),
+      data: {'reason': motivo.trim()},
+    );
   });
 
   static const tamanoPagina = 20;

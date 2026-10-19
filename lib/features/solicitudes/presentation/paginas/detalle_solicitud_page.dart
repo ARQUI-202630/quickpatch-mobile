@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/catalogo/repositorio_catalogo.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/fechas.dart';
@@ -16,8 +17,9 @@ import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
 
-/// Detalle y seguimiento de una solicitud (SCRUM-27, SCRUM-83). Contrato:
-/// `GET /v1/service-requests/{id}`.
+/// Detalle y seguimiento de una solicitud (SCRUM-27, SCRUM-83) y su
+/// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
+/// `POST /v1/service-requests/{id}/cancel` (1.5.0).
 ///
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
@@ -106,11 +108,18 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               if (s.estado != EstadoSolicitud.cancelado) ...[
                 _LineaDeTiempo(s.estado),
                 const SizedBox(height: QpEspacio.e4),
+              ] else ...[
+                _TarjetaCancelacion(s),
+                const SizedBox(height: QpEspacio.e4),
               ],
               _TarjetaTecnico(s),
               const SizedBox(height: QpEspacio.e4),
               _Datos(s),
               const SizedBox(height: QpEspacio.e4),
+              if (s.estado.cancelable) ...[
+                _BotonCancelar(solicitudId: s.id, alTerminar: _actualizar),
+                const SizedBox(height: QpEspacio.e4),
+              ],
               Text(
                 'Desliza hacia abajo para actualizar el estado.',
                 textAlign: TextAlign.center,
@@ -413,6 +422,188 @@ class _Datos extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// Cuándo y por qué se canceló la solicitud (1.5.0).
+class _TarjetaCancelacion extends StatelessWidget {
+  const _TarjetaCancelacion(this.solicitud);
+
+  final Solicitud solicitud;
+
+  @override
+  Widget build(BuildContext context) {
+    final cancelada = solicitud.canceladaEn;
+    final motivo = solicitud.motivoCancelacion;
+    if (cancelada == null && motivo == null) return const SizedBox.shrink();
+    return Card(
+      key: const Key('tarjeta-cancelacion'),
+      child: Column(
+        children: [
+          if (cancelada != null)
+            _Fila(
+              Icons.event_busy_outlined,
+              'Cancelada',
+              fechaCorta(cancelada.toLocal()),
+            ),
+          if (motivo != null) _Fila(Icons.notes_rounded, 'Motivo', motivo),
+        ],
+      ),
+    );
+  }
+}
+
+/// Cancela la solicitud mientras el servicio no haya iniciado (RF-36,
+/// SCRUM-477). Solo se muestra en los estados cancelables; el backend vuelve a
+/// validarlo y responde `409` si el servicio ya inició.
+class _BotonCancelar extends StatelessWidget {
+  const _BotonCancelar({required this.solicitudId, required this.alTerminar});
+
+  final String solicitudId;
+  final VoidCallback alTerminar;
+
+  Future<void> _cancelar(BuildContext context) async {
+    final mensajero = ScaffoldMessenger.of(context);
+    final aviso = await showDialog<String>(
+      context: context,
+      builder: (_) => _DialogoCancelar(solicitudId),
+    );
+    if (aviso == null) return;
+    mensajero.showSnackBar(SnackBar(content: Text(aviso)));
+    alTerminar();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final peligro = context.estados.peligro;
+    return OutlinedButton.icon(
+      key: const Key('boton-cancelar-solicitud'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: peligro,
+        side: BorderSide(color: peligro),
+      ),
+      onPressed: () => _cancelar(context),
+      icon: const Icon(Icons.cancel_outlined),
+      label: const Text('Cancelar solicitud'),
+    );
+  }
+}
+
+/// Pide el motivo y cancela. Se cierra con el aviso para el cliente, o con
+/// `null` si vuelve sin cancelar.
+class _DialogoCancelar extends ConsumerStatefulWidget {
+  const _DialogoCancelar(this.solicitudId);
+
+  final String solicitudId;
+
+  @override
+  ConsumerState<_DialogoCancelar> createState() => _DialogoCancelarState();
+}
+
+class _DialogoCancelarState extends ConsumerState<_DialogoCancelar> {
+  final _motivo = TextEditingController();
+  String? _error;
+  var _enviando = false;
+
+  @override
+  void dispose() {
+    _motivo.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirmar() async {
+    final motivo = _motivo.text.trim();
+    if (motivo.length < MotivoCancelacion.minimo) {
+      setState(
+        () => _error =
+            'Escribe el motivo (mínimo ${MotivoCancelacion.minimo} '
+            'caracteres).',
+      );
+      return;
+    }
+    setState(() {
+      _enviando = true;
+      _error = null;
+    });
+    try {
+      await ref
+          .read(repositorioSolicitudesProvider)
+          .cancelar(widget.solicitudId, motivo);
+      if (mounted) Navigator.of(context).pop('Cancelaste la solicitud.');
+    } on AppException catch (e) {
+      if (!mounted) return;
+      if (e.esProblema('transicion-invalida')) {
+        Navigator.of(
+          context,
+        ).pop('El servicio ya inició: la solicitud ya no se puede cancelar.');
+        return;
+      }
+      setState(() {
+        _enviando = false;
+        _error = e.errorDe('reason') ?? e.mensaje;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final esquema = Theme.of(context).colorScheme;
+    final peligro = context.estados.peligro;
+    return AlertDialog(
+      title: const Text('¿Cancelar la solicitud?'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Dejaremos de buscar técnico o le avisaremos al técnico '
+              'asignado. No podrás reactivarla.',
+            ),
+            const SizedBox(height: QpEspacio.e4),
+            TextField(
+              key: const Key('campo-motivo-cancelacion'),
+              controller: _motivo,
+              enabled: !_enviando,
+              autofocus: true,
+              minLines: 2,
+              maxLines: 4,
+              maxLength: MotivoCancelacion.maximo,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: 'Motivo',
+                hintText: 'Por ejemplo: ya no necesito el servicio',
+                errorText: _error,
+                errorMaxLines: 3,
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _enviando ? null : () => Navigator.of(context).pop(),
+          child: const Text('Volver'),
+        ),
+        FilledButton(
+          key: const Key('confirmar-cancelacion'),
+          style: FilledButton.styleFrom(
+            backgroundColor: peligro,
+            foregroundColor: esquema.surface,
+          ),
+          onPressed: _enviando ? null : _confirmar,
+          child: _enviando
+              ? Semantics(
+                  label: 'Cancelando',
+                  child: const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : const Text('Cancelar solicitud'),
+        ),
+      ],
+    );
+  }
 }
 
 class _Fila extends StatelessWidget {
