@@ -1,4 +1,5 @@
 import '../../../core/geo/localidad.dart';
+import '../../../core/utils/monto.dart';
 
 /// Punto geográfico WGS 84 (`GeoPoint` en `service-request.v1.yaml`).
 class Ubicacion {
@@ -251,4 +252,120 @@ class PaginaServiciosTecnico {
   final List<ServicioTecnico> servicios;
   final int pagina;
   final int total;
+}
+
+/// Estado de la cotización (`QuoteStatus`, service-request 1.6.0; DD 5.11).
+enum EstadoCotizacion {
+  pendiente('pendiente', 'Pendiente'),
+  aceptada('aceptada', 'Aceptada'),
+  rechazada('rechazada', 'Rechazada'),
+  anulada('anulada', 'Anulada'),
+  expirada('expirada', 'Vencida');
+
+  const EstadoCotizacion(this.valor, this.etiqueta);
+
+  final String valor;
+  final String etiqueta;
+
+  static EstadoCotizacion desdeValor(String valor) =>
+      values.firstWhere((e) => e.valor == valor);
+}
+
+/// Límites de la cotización (`IssueQuote` y `RejectQuote`, 1.6.0; RN-Q7).
+abstract final class LimitesCotizacion {
+  /// Cotizaciones por solicitud: la cuarta responde `409
+  /// limite-de-cotizaciones`.
+  static const maximo = 3;
+
+  /// `Money` admite hasta 10 dígitos enteros.
+  static const digitosMaximos = 10;
+  static const detalleMaximo = 1000;
+  static const motivoMinimo = 5;
+  static const motivoMaximo = 500;
+}
+
+/// Cotización de la solicitud (`Quote`, service-request 1.6.0). Los montos
+/// llegan como texto con dos decimales y se conservan así ([Monto]).
+class Cotizacion {
+  const Cotizacion({
+    required this.id,
+    required this.numero,
+    required this.estado,
+    required this.manoDeObra,
+    required this.materiales,
+    required this.total,
+    required this.creadaEn,
+    required this.venceEn,
+    this.detalle,
+    this.respondidaEn,
+    this.motivoRechazo,
+  });
+
+  factory Cotizacion.desdeJson(Map<String, dynamic> json) => Cotizacion(
+    id: json['id'] as String,
+    numero: json['quoteNumber'] as int,
+    estado: EstadoCotizacion.desdeValor(json['status'] as String),
+    manoDeObra: Monto(json['laborAmount'] as String),
+    materiales: Monto(json['materialsAmount'] as String),
+    total: Monto(json['totalAmount'] as String),
+    detalle: json['detail'] as String?,
+    creadaEn: DateTime.parse(json['createdAt'] as String),
+    venceEn: DateTime.parse(json['expiresAt'] as String),
+    respondidaEn: json['respondedAt'] == null
+        ? null
+        : DateTime.parse(json['respondedAt'] as String),
+    motivoRechazo: json['rejectionReason'] as String?,
+  );
+
+  final String id;
+
+  /// Posición en la solicitud, de 1 a 3 (RN-Q7).
+  final int numero;
+  final EstadoCotizacion estado;
+  final Monto manoDeObra;
+  final Monto materiales;
+  final Monto total;
+  final String? detalle;
+  final DateTime creadaEn;
+
+  /// Límite para responder (RN-Q8); después la solicitud se cancela.
+  final DateTime venceEn;
+  final DateTime? respondidaEn;
+  final String? motivoRechazo;
+
+  /// Si el cliente todavía puede aceptarla o rechazarla en [ahora].
+  bool respondibleEn(DateTime ahora) =>
+      estado == EstadoCotizacion.pendiente && ahora.isBefore(venceEn);
+
+  /// Si al rechazarla se cancela la solicitud (la tercera, RN-Q7).
+  bool get esLaUltima => numero >= LimitesCotizacion.maximo;
+}
+
+/// Resultado de aceptar o rechazar (`QuoteDecision`, 1.6.0).
+class DecisionCotizacion {
+  const DecisionCotizacion({
+    required this.cotizacionId,
+    required this.estadoCotizacion,
+    required this.estadoSolicitud,
+    required this.restantes,
+  });
+
+  factory DecisionCotizacion.desdeJson(Map<String, dynamic> json) =>
+      DecisionCotizacion(
+        cotizacionId: json['quoteId'] as String,
+        estadoCotizacion: EstadoCotizacion.desdeValor(
+          json['quoteStatus'] as String,
+        ),
+        estadoSolicitud: EstadoSolicitud.desdeValor(
+          json['serviceRequestStatus'] as String,
+        ),
+        restantes: json['remainingQuotes'] as int,
+      );
+
+  final String cotizacionId;
+  final EstadoCotizacion estadoCotizacion;
+  final EstadoSolicitud estadoSolicitud;
+
+  /// Cotizaciones que el técnico todavía puede emitir.
+  final int restantes;
 }

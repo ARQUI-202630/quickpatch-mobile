@@ -83,6 +83,8 @@ void main() {
         .guardar(sesionDePrueba(rol: RolUsuario.tecnico));
     final container = ProviderContainer(
       overrides: [
+        // Sin cotizaciones (SCRUM-489); sus pruebas están en cotizacion_*_test.
+        cotizacionesProvider.overrideWith((ref, id) async => const []),
         almacenSeguroProvider.overrideWithValue(memoria),
         conectorWsProvider.overrideWithValue(conector.call),
         categoriasProvider.overrideWith(

@@ -14,6 +14,7 @@ import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../widgets/chip_estado.dart';
+import '../widgets/cotizacion_tecnico.dart';
 
 /// Detalle de la solicitud asignada, para el técnico (RF-14, SCRUM-34 /
 /// SCRUM-92). Contrato: `GET /v1/service-requests/{id}` (service-request
@@ -23,8 +24,9 @@ import '../widgets/chip_estado.dart';
 ///
 /// La ubicación se ve sobre el mapa de localidades de la app, sin mapa de
 /// fondo (R5). Para usar su app de mapas, el técnico copia la dirección: la
-/// app no se la pasa a un tercero (K12). Iniciar el servicio requiere una
-/// cotización aceptada (DD 7.4), que todavía no existe.
+/// app no se la pasa a un tercero (K12). En `asignado` el técnico cotiza
+/// (SCRUM-489, 1.6.0). Iniciar el servicio requiere la cotización aceptada
+/// (DD 7.4) y todavía no tiene contrato.
 class SolicitudAsignadaPage extends ConsumerWidget {
   const SolicitudAsignadaPage({super.key, required this.id});
 
@@ -41,7 +43,10 @@ class SolicitudAsignadaPage extends ConsumerWidget {
           error: (e, _) =>
               Center(child: SingleChildScrollView(child: _Error(e, id))),
           data: (s) => RefreshIndicator(
-            onRefresh: () => ref.refresh(solicitudProvider(id).future),
+            onRefresh: () {
+              ref.invalidate(cotizacionesProvider(id));
+              return ref.refresh(solicitudProvider(id).future);
+            },
             child: ListView(
               padding: const EdgeInsets.fromLTRB(
                 QpEspacio.pantalla,
@@ -60,8 +65,17 @@ class SolicitudAsignadaPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: QpEspacio.e4),
                 _Ubicacion(s),
+                if (CotizacionTecnico.aplica(s.estado)) ...[
+                  const SizedBox(height: QpEspacio.e4),
+                  CotizacionTecnico(
+                    solicitud: s,
+                    alCambiar: () => ref
+                      ..invalidate(solicitudProvider(id))
+                      ..invalidate(cotizacionesProvider(id)),
+                  ),
+                ],
                 const SizedBox(height: QpEspacio.e6),
-                const _IniciarServicio(),
+                _IniciarServicio(s.estado),
               ],
             ),
           ),
@@ -269,7 +283,9 @@ class _UbicacionState extends ConsumerState<_Ubicacion> {
 }
 
 class _IniciarServicio extends StatelessWidget {
-  const _IniciarServicio();
+  const _IniciarServicio(this.estado);
+
+  final EstadoSolicitud estado;
 
   @override
   Widget build(BuildContext context) => Column(
@@ -282,7 +298,10 @@ class _IniciarServicio extends StatelessWidget {
       ),
       const SizedBox(height: QpEspacio.e2),
       Text(
-        'Podrás iniciarlo cuando el cliente acepte tu cotización.',
+        estado == EstadoSolicitud.cotizacionAceptada
+            ? 'El cliente aceptó tu cotización. Iniciar el servicio desde la '
+                  'app llega en una próxima versión.'
+            : 'Podrás iniciarlo cuando el cliente acepte tu cotización.',
         textAlign: TextAlign.center,
         style: Theme.of(context).textTheme.bodySmall
             ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
