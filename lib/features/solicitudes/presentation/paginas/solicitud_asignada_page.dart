@@ -15,6 +15,7 @@ import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../widgets/chip_estado.dart';
 import '../widgets/cotizacion_tecnico.dart';
+import '../widgets/ejecucion_tecnico.dart';
 
 /// Detalle de la solicitud asignada, para el técnico (RF-14, SCRUM-34 /
 /// SCRUM-92). Contrato: `GET /v1/service-requests/{id}` (service-request
@@ -25,8 +26,8 @@ import '../widgets/cotizacion_tecnico.dart';
 /// La ubicación se ve sobre el mapa de localidades de la app, sin mapa de
 /// fondo (R5). Para usar su app de mapas, el técnico copia la dirección: la
 /// app no se la pasa a un tercero (K12). En `asignado` el técnico cotiza
-/// (SCRUM-489, 1.6.0). Iniciar el servicio requiere la cotización aceptada
-/// (DD 7.4) y todavía no tiene contrato.
+/// (SCRUM-489, 1.6.0). Con la cotización aceptada inicia el servicio, sube
+/// fotos y lo completa (SCRUM-95, 1.7.0).
 class SolicitudAsignadaPage extends ConsumerWidget {
   const SolicitudAsignadaPage({super.key, required this.id});
 
@@ -35,6 +36,10 @@ class SolicitudAsignadaPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final solicitud = ref.watch(solicitudProvider(id));
+    void actualizar() => ref
+      ..invalidate(solicitudProvider(id))
+      ..invalidate(cotizacionesProvider(id))
+      ..invalidate(evidenciasProvider(id));
     return Scaffold(
       appBar: AppBar(title: const Text('Servicio asignado')),
       body: SafeArea(
@@ -44,7 +49,9 @@ class SolicitudAsignadaPage extends ConsumerWidget {
               Center(child: SingleChildScrollView(child: _Error(e, id))),
           data: (s) => RefreshIndicator(
             onRefresh: () {
-              ref.invalidate(cotizacionesProvider(id));
+              ref
+                ..invalidate(cotizacionesProvider(id))
+                ..invalidate(evidenciasProvider(id));
               return ref.refresh(solicitudProvider(id).future);
             },
             child: ListView(
@@ -67,15 +74,12 @@ class SolicitudAsignadaPage extends ConsumerWidget {
                 _Ubicacion(s),
                 if (CotizacionTecnico.aplica(s.estado)) ...[
                   const SizedBox(height: QpEspacio.e4),
-                  CotizacionTecnico(
-                    solicitud: s,
-                    alCambiar: () => ref
-                      ..invalidate(solicitudProvider(id))
-                      ..invalidate(cotizacionesProvider(id)),
-                  ),
+                  CotizacionTecnico(solicitud: s, alCambiar: actualizar),
                 ],
-                const SizedBox(height: QpEspacio.e6),
-                _IniciarServicio(s.estado),
+                if (EjecucionTecnico.aplica(s.estado)) ...[
+                  const SizedBox(height: QpEspacio.e6),
+                  EjecucionTecnico(solicitud: s, alCambiar: actualizar),
+                ],
               ],
             ),
           ),
@@ -280,34 +284,6 @@ class _UbicacionState extends ConsumerState<_Ubicacion> {
       ),
     );
   }
-}
-
-class _IniciarServicio extends StatelessWidget {
-  const _IniciarServicio(this.estado);
-
-  final EstadoSolicitud estado;
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      const FilledButton(
-        key: Key('boton-iniciar-servicio'),
-        onPressed: null,
-        child: Text('Iniciar servicio'),
-      ),
-      const SizedBox(height: QpEspacio.e2),
-      Text(
-        estado == EstadoSolicitud.cotizacionAceptada
-            ? 'El cliente aceptó tu cotización. Iniciar el servicio desde la '
-                  'app llega en una próxima versión.'
-            : 'Podrás iniciarlo cuando el cliente acepte tu cotización.',
-        textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.bodySmall
-            ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-      ),
-    ],
-  );
 }
 
 class _Seccion extends StatelessWidget {

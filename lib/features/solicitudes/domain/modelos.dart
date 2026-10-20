@@ -150,6 +150,8 @@ class Solicitud {
     this.cliente,
     this.canceladaEn,
     this.motivoCancelacion,
+    this.iniciadaEn,
+    this.completadaEn,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -174,6 +176,12 @@ class Solicitud {
         ? null
         : DateTime.parse(json['cancelledAt'] as String),
     motivoCancelacion: json['cancellationReason'] as String?,
+    iniciadaEn: json['startedAt'] == null
+        ? null
+        : DateTime.parse(json['startedAt'] as String),
+    completadaEn: json['completedAt'] == null
+        ? null
+        : DateTime.parse(json['completedAt'] as String),
   );
 
   final String id;
@@ -197,6 +205,10 @@ class Solicitud {
   /// Momento y motivo de la cancelación; `null` si no se canceló (1.5.0).
   final DateTime? canceladaEn;
   final String? motivoCancelacion;
+
+  /// Inicio y fin del servicio; `null` antes de cada paso (1.7.0).
+  final DateTime? iniciadaEn;
+  final DateTime? completadaEn;
 }
 
 /// Solicitud en la lista del técnico (`TechnicianServiceRequest`,
@@ -368,4 +380,27 @@ class DecisionCotizacion {
 
   /// Cotizaciones que el técnico todavía puede emitir.
   final int restantes;
+}
+
+/// Límites de la evidencia del servicio (service-request 1.7.0, DD 8.3.10).
+abstract final class LimitesEvidencia {
+  /// Fotos por solicitud (RN-E4).
+  static const maximo = 10;
+
+  /// Tamaño máximo de una foto: 10 MB.
+  static const bytesMaximos = 10 * 1024 * 1024;
+}
+
+/// Foto de evidencia (`Evidence`, service-request 1.7.0). El archivo se
+/// descarga aparte con su `id`; la app nunca recibe dónde está guardado.
+class Evidencia {
+  const Evidencia({required this.id, required this.subidaEn});
+
+  factory Evidencia.desdeJson(Map<String, dynamic> json) => Evidencia(
+    id: json['id'] as String,
+    subidaEn: DateTime.parse(json['uploadedAt'] as String),
+  );
+
+  final String id;
+  final DateTime subidaEn;
 }

@@ -17,6 +17,7 @@ import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
 import '../widgets/cotizacion_cliente.dart';
+import '../widgets/evidencia_cliente.dart';
 
 /// Detalle y seguimiento de una solicitud (SCRUM-27, SCRUM-83) y su
 /// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
@@ -52,7 +53,8 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
   void _actualizar() {
     ref
       ..invalidate(solicitudProvider(widget.id))
-      ..invalidate(cotizacionesProvider(widget.id));
+      ..invalidate(cotizacionesProvider(widget.id))
+      ..invalidate(evidenciasProvider(widget.id));
   }
 
   /// Se suscribe al canal actual; cambia si la sesión crea uno nuevo.
@@ -104,7 +106,9 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
         ),
         data: (s) => RefreshIndicator(
           onRefresh: () {
-            ref.invalidate(cotizacionesProvider(widget.id));
+            ref
+              ..invalidate(cotizacionesProvider(widget.id))
+              ..invalidate(evidenciasProvider(widget.id));
             return ref.refresh(solicitudProvider(widget.id).future);
           },
           child: ListView(
@@ -116,6 +120,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               const SizedBox(height: QpEspacio.e4),
               if (CotizacionCliente.aplica(s.estado)) ...[
                 CotizacionCliente(solicitud: s, alCambiar: _actualizar),
+                const SizedBox(height: QpEspacio.e4),
+              ],
+              if (EvidenciaCliente.aplica(s.estado)) ...[
+                EvidenciaCliente(solicitud: s),
                 const SizedBox(height: QpEspacio.e4),
               ],
               if (s.estado != EstadoSolicitud.cancelado) ...[
