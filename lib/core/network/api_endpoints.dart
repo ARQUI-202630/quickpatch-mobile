@@ -22,11 +22,11 @@ abstract final class ApiEndpoints {
   static const refresh = '/v1/auth/refresh';
   static const usuariosEmpresa = '/v1/companies/me/users';
 
-  // Catalog Service
-  static const categorias = '/v1/catalog/categories';
+  // Catalog Service: la administración del catálogo queda en Catalog como
+  // excepción del ADR-025; la app no la usa.
 
-  // Matching Service
-  static const localidades = '/v1/localities';
+  // Matching Service: disponibilidad, cobertura y ofertas son excepción del
+  // ADR-025 (el técnico necesita la respuesta al instante).
   static const disponibilidad = '/v1/technicians/me/availability';
   static const cobertura = '/v1/technicians/me/coverage';
   static const ofertas = '/v1/matching/offers';
@@ -35,7 +35,11 @@ abstract final class ApiEndpoints {
   static String rechazarOferta(String attemptId) =>
       '/v1/matching/offers/$attemptId/reject';
 
-  // ServiceRequest Service
+  // ServiceRequest Service. Desde 1.8.0 (ADR-025) también sirve las
+  // categorías y las localidades: el gateway solo tiene REST hacia Identity,
+  // ServiceRequest y Payments.
+  static const categorias = '/v1/service-requests/categories';
+  static const localidades = '/v1/service-requests/localities';
   static const solicitudes = '/v1/service-requests';
   static const vistaPreviaUbicacion = '/v1/service-requests/location-preview';
   static String solicitud(String id) => '/v1/service-requests/$id';

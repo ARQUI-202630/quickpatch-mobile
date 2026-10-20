@@ -1,4 +1,4 @@
-/// Localidad de Bogotá D.C. (`Locality`, matching.v1.yaml).
+/// Localidad de Bogotá D.C. (`Locality`, service-request.v1.yaml 1.8.0).
 class Localidad {
   const Localidad({required this.codigo, required this.nombre});
 

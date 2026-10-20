@@ -17,7 +17,7 @@ import 'opciones_por_rol.dart';
 /// Pantalla de inicio según el rol del usuario autenticado (SCRUM-441).
 ///
 /// El cliente ve un acceso directo a la nueva solicitud y las categorías de
-/// servicio que entrega Catalog (`GET /v1/catalog/categories`); al tocar una,
+/// servicio de `GET /v1/service-requests/categories` (ADR-025); al tocar una,
 /// la solicitud se abre con esa categoría elegida. Los demás roles ven sus
 /// opciones, habilitadas a medida que se implementa cada feature.
 class InicioPage extends ConsumerWidget {
