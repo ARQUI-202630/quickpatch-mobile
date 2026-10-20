@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/utils/monto.dart';
 import '../domain/modelos.dart';
 
 /// Solicitudes del cliente y del técnico. Contrato: `service-request.v1.yaml`
 /// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}` y, para el
 /// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0; la
-/// cancelación, `POST /v1/service-requests/{id}/cancel`, desde 1.5.0).
+/// cancelación, `POST /v1/service-requests/{id}/cancel`, desde 1.5.0; las
+/// cotizaciones, `/v1/service-requests/{id}/quotes`, desde 1.6.0).
 class RepositorioSolicitudes {
   const RepositorioSolicitudes(this._dio);
 
@@ -52,6 +54,66 @@ class RepositorioSolicitudes {
     );
   });
 
+  /// Cotizaciones de la solicitud, de la más antigua a la más reciente
+  /// (RF-34, RF-35). Las ven el cliente dueño y el técnico asignado.
+  Future<List<Cotizacion>> cotizaciones(String id) => _llamar(() async {
+    final respuesta = await _dio.get<List<dynamic>>(
+      ApiEndpoints.cotizaciones(id),
+    );
+    return respuesta.data!
+        .cast<Map<String, dynamic>>()
+        .map(Cotizacion.desdeJson)
+        .toList();
+  });
+
+  /// El técnico asignado cotiza (RF-34). Los montos van como texto con dos
+  /// decimales (`Money`). `409 transicion-invalida` si la solicitud ya no está
+  /// en `asignado`; `409 limite-de-cotizaciones` si ya emitió 3.
+  Future<Cotizacion> cotizar(
+    String id, {
+    required Monto manoDeObra,
+    required Monto materiales,
+    String? detalle,
+  }) => _llamar(() async {
+    final texto = detalle?.trim();
+    final respuesta = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.cotizaciones(id),
+      data: {
+        'laborAmount': manoDeObra.valor,
+        'materialsAmount': materiales.valor,
+        if (texto != null && texto.isNotEmpty) 'detail': texto,
+      },
+    );
+    return Cotizacion.desdeJson(respuesta.data!);
+  });
+
+  /// El cliente acepta la cotización pendiente (RF-35). `409
+  /// transicion-invalida` si ya venció o ya se respondió.
+  Future<DecisionCotizacion> aceptarCotizacion(
+    String id,
+    String cotizacionId,
+  ) => _llamar(() async {
+    final respuesta = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.aceptarCotizacion(id, cotizacionId),
+    );
+    return DecisionCotizacion.desdeJson(respuesta.data!);
+  });
+
+  /// El cliente rechaza la cotización pendiente, con un motivo opcional
+  /// (RF-35). Sin motivo no se envía cuerpo. La tercera cancela la solicitud.
+  Future<DecisionCotizacion> rechazarCotizacion(
+    String id,
+    String cotizacionId, {
+    String? motivo,
+  }) => _llamar(() async {
+    final texto = motivo?.trim();
+    final respuesta = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.rechazarCotizacion(id, cotizacionId),
+      data: texto == null || texto.isEmpty ? null : {'reason': texto},
+    );
+    return DecisionCotizacion.desdeJson(respuesta.data!);
+  });
+
   static const tamanoPagina = 20;
 
   /// Solicitudes asignadas al técnico de la sesión, de la asignación más
@@ -88,3 +150,9 @@ final repositorioSolicitudesProvider = Provider<RepositorioSolicitudes>(
 final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>(
   (ref, id) => ref.watch(repositorioSolicitudesProvider).obtener(id),
 );
+
+/// Cotizaciones de una solicitud (service-request 1.6.0).
+final cotizacionesProvider = FutureProvider.autoDispose
+    .family<List<Cotizacion>, String>(
+      (ref, id) => ref.watch(repositorioSolicitudesProvider).cotizaciones(id),
+    );

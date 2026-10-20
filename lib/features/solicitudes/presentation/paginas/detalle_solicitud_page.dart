@@ -16,10 +16,12 @@ import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
+import '../widgets/cotizacion_cliente.dart';
 
 /// Detalle y seguimiento de una solicitud (SCRUM-27, SCRUM-83) y su
 /// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
-/// `POST /v1/service-requests/{id}/cancel` (1.5.0).
+/// `POST /v1/service-requests/{id}/cancel` (1.5.0). En `cotizado` el cliente
+/// acepta o rechaza la cotización (SCRUM-489, 1.6.0).
 ///
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
@@ -47,7 +49,11 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
     });
   }
 
-  void _actualizar() => ref.invalidate(solicitudProvider(widget.id));
+  void _actualizar() {
+    ref
+      ..invalidate(solicitudProvider(widget.id))
+      ..invalidate(cotizacionesProvider(widget.id));
+  }
 
   /// Se suscribe al canal actual; cambia si la sesión crea uno nuevo.
   void _escuchar(CanalTiempoReal canal) {
@@ -97,7 +103,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
           ),
         ),
         data: (s) => RefreshIndicator(
-          onRefresh: () => ref.refresh(solicitudProvider(widget.id).future),
+          onRefresh: () {
+            ref.invalidate(cotizacionesProvider(widget.id));
+            return ref.refresh(solicitudProvider(widget.id).future);
+          },
           child: ListView(
             padding: const EdgeInsets.all(QpEspacio.pantalla),
             children: [
@@ -105,6 +114,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               const SizedBox(height: QpEspacio.e3),
               _EncabezadoEstado(s.estado),
               const SizedBox(height: QpEspacio.e4),
+              if (CotizacionCliente.aplica(s.estado)) ...[
+                CotizacionCliente(solicitud: s, alCambiar: _actualizar),
+                const SizedBox(height: QpEspacio.e4),
+              ],
               if (s.estado != EstadoSolicitud.cancelado) ...[
                 _LineaDeTiempo(s.estado),
                 const SizedBox(height: QpEspacio.e4),

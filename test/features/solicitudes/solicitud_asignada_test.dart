@@ -90,6 +90,8 @@ void main() {
         // La misma política de reintentos de main.dart.
         retry: politicaReintento,
         overrides: [
+          // Sin cotizaciones (SCRUM-489); sus pruebas están en cotizacion_*_test.
+          cotizacionesProvider.overrideWith((ref, id) async => const []),
           solicitudProvider.overrideWith((ref, id) {
             consultas++;
             return obtener();
@@ -175,6 +177,12 @@ void main() {
     tester,
   ) async {
     await abrir(tester, () async => _solicitud());
+    // Debajo queda el formulario de la cotización (SCRUM-489).
+    await tester.dragUntilVisible(
+      texto('boton-iniciar-servicio'),
+      find.byType(ListView),
+      const Offset(0, -300),
+    );
 
     final boton = tester.widget<FilledButton>(texto('boton-iniciar-servicio'));
     expect(boton.onPressed, isNull);
@@ -268,6 +276,8 @@ void main() {
           .guardar(sesionDePrueba(rol: RolUsuario.tecnico));
       final container = ProviderContainer(
         overrides: [
+          // Sin cotizaciones (SCRUM-489); sus pruebas están en cotizacion_*_test.
+          cotizacionesProvider.overrideWith((ref, id) async => const []),
           almacenSeguroProvider.overrideWithValue(memoria),
           conectorWsProvider.overrideWithValue(conector.call),
           solicitudProvider.overrideWith((ref, id) async {

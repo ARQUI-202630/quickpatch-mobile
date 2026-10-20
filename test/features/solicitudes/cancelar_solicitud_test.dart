@@ -62,6 +62,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          // Sin cotizaciones (SCRUM-489); sus pruebas están en cotizacion_*_test.
+          cotizacionesProvider.overrideWith((ref, id) async => const []),
           solicitudProvider.overrideWith((ref, id) async {
             consultas++;
             return actual;
