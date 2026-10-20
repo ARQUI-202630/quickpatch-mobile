@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,7 +13,8 @@ import '../domain/modelos.dart';
 /// (`POST /v1/service-requests`, `GET /v1/service-requests/{id}` y, para el
 /// técnico, `GET /v1/technicians/me/service-requests` desde 1.2.0; la
 /// cancelación, `POST /v1/service-requests/{id}/cancel`, desde 1.5.0; las
-/// cotizaciones, `/v1/service-requests/{id}/quotes`, desde 1.6.0).
+/// cotizaciones, `/v1/service-requests/{id}/quotes`, desde 1.6.0; iniciar,
+/// evidencias y completar desde 1.7.0).
 class RepositorioSolicitudes {
   const RepositorioSolicitudes(this._dio);
 
@@ -114,6 +117,64 @@ class RepositorioSolicitudes {
     return DecisionCotizacion.desdeJson(respuesta.data!);
   });
 
+  /// El técnico asignado inicia el servicio (RF-14). `409 transicion-invalida`
+  /// si la solicitud no está en `cotizacion_aceptada` (RN-SR6).
+  Future<void> iniciar(String id) => _llamar(() async {
+    await _dio.post<Map<String, dynamic>>(ApiEndpoints.iniciar(id));
+  });
+
+  /// El técnico asignado completa el servicio (RF-15). `422
+  /// evidencia-requerida` sin fotos (RN-SR3); `409 transicion-invalida` si no
+  /// está en `en_progreso`.
+  Future<void> completar(String id) => _llamar(() async {
+    await _dio.post<Map<String, dynamic>>(ApiEndpoints.completar(id));
+  });
+
+  /// Fotos de evidencia de la solicitud, de la más antigua a la más reciente.
+  /// Las ven el cliente dueño y el técnico asignado.
+  Future<List<Evidencia>> evidencias(String id) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.evidencias(id),
+    );
+    return (respuesta.data!['items'] as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map(Evidencia.desdeJson)
+        .toList();
+  });
+
+  /// Sube una foto en el campo `file` (`multipart/form-data`). El backend
+  /// reconoce el tipo por el contenido: `400` con el error en `file` si no es
+  /// JPEG, PNG o WebP de hasta 10 MB; `409 limite-de-evidencias` con 10.
+  Future<Evidencia> subirEvidencia(
+    String id,
+    Uint8List foto, {
+    required String nombre,
+    void Function(double avance)? alAvanzar,
+  }) => _llamar(() async {
+    final respuesta = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.evidencias(id),
+      data: FormData.fromMap({
+        'file': MultipartFile.fromBytes(foto, filename: nombre),
+      }),
+      onSendProgress: alAvanzar == null
+          ? null
+          : (enviados, total) {
+              if (total > 0) alAvanzar(enviados / total);
+            },
+    );
+    return Evidencia.desdeJson(respuesta.data!);
+  });
+
+  /// Archivo de una foto, con el token de la sesión: la URL sola no sirve.
+  Future<Uint8List> archivoEvidencia(String id, String evidenciaId) =>
+      _llamar(() async {
+        final respuesta = await _dio.get<List<int>>(
+          ApiEndpoints.archivoEvidencia(id, evidenciaId),
+          options: Options(responseType: ResponseType.bytes),
+        );
+        return Uint8List.fromList(respuesta.data!);
+      });
+
   static const tamanoPagina = 20;
 
   /// Solicitudes asignadas al técnico de la sesión, de la asignación más
@@ -155,4 +216,19 @@ final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>(
 final cotizacionesProvider = FutureProvider.autoDispose
     .family<List<Cotizacion>, String>(
       (ref, id) => ref.watch(repositorioSolicitudesProvider).cotizaciones(id),
+    );
+
+/// Fotos de evidencia de una solicitud (service-request 1.7.0).
+final evidenciasProvider = FutureProvider.autoDispose
+    .family<List<Evidencia>, String>(
+      (ref, id) => ref.watch(repositorioSolicitudesProvider).evidencias(id),
+    );
+
+/// Bytes de una foto de evidencia. El archivo no cambia, así que se conserva
+/// mientras la pantalla lo use.
+final archivoEvidenciaProvider = FutureProvider.autoDispose
+    .family<Uint8List, ({String solicitudId, String evidenciaId})>(
+      (ref, clave) => ref
+          .watch(repositorioSolicitudesProvider)
+          .archivoEvidencia(clave.solicitudId, clave.evidenciaId),
     );
