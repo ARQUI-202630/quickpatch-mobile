@@ -8,7 +8,7 @@ import '../network/politica_reintento.dart';
 import '../session/controlador_sesion.dart';
 import '../session/rol_usuario.dart';
 
-/// Roles con buzón en la app (`communication.v1.yaml` 1.0.0). El proveedor
+/// Roles con buzón en la app (`communication.v1.yaml` 1.2.0). El proveedor
 /// recibe 403; el `admin_tenant` lo tendrá en el panel web.
 bool tieneBuzon(RolUsuario rol) => switch (rol) {
   RolUsuario.cliente ||

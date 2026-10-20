@@ -25,7 +25,7 @@ import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/soli
 
 import '../../helpers/fakes.dart';
 
-/// SCRUM-459: buzón de notificaciones (communication.v1.yaml 1.0.0).
+/// SCRUM-459: buzón de notificaciones (communication.v1.yaml 1.2.0).
 final _mapa = MapaLocalidades.desdeGeoJson(
   File(rutaMapaLocalidades).readAsStringSync(),
 );
@@ -62,6 +62,8 @@ void main() {
   late List<RequestOptions> peticiones;
   late ResponseBody Function(RequestOptions) buzon;
   late ResponseBody Function(RequestOptions) marcar;
+  // Comprobación de que la solicitud sigue disponible antes de abrirla.
+  late ResponseBody Function(RequestOptions) detalle;
   late ConectorWsFalso conector;
 
   setUp(() {
@@ -74,6 +76,7 @@ void main() {
       200,
     );
     marcar = (o) => respuestaJson(_notificacion('n-1', leida: true), 200);
+    detalle = (o) => respuestaJson(<String, dynamic>{'id': 's-1'}, 200);
     conector = ConectorWsFalso();
   });
 
@@ -114,9 +117,16 @@ void main() {
       peticiones.add(o);
       if (o.path == '/v1/notifications') return buzon(o);
       if (o.path.startsWith('/v1/notifications/')) return marcar(o);
-      if (o.path == '/v1/technicians/me/service-requests') {
+      if (RegExp(r'^/v1/service-requests/[^/]+$').hasMatch(o.path)) {
+        return detalle(o);
+      }
+      // Sin servicios ni oferta pendiente en la pestaña Servicios.
+      if (o.path == '/v1/technicians/me/service-requests' ||
+          o.path == '/v1/matching/offers') {
         return respuestaJson(_pagina(const []), 200);
       }
+      // Sin cotizaciones en el detalle (SCRUM-489).
+      if (o.path.endsWith('/quotes')) return respuestaJson(<dynamic>[], 200);
       return respuestaJson(<String, dynamic>{}, 404);
     });
     await tester.pumpWidget(
@@ -276,6 +286,33 @@ void main() {
       expect(find.byType(DetalleSolicitudPage), findsOneWidget);
     });
 
+    testWidgets('cada tipo de 1.2.0 tiene su icono', (tester) async {
+      buzon = (o) => respuestaJson(
+        _pagina([
+          _notificacion('n-1', tipo: 'solicitud-cancelada'),
+          _notificacion('n-2', tipo: 'cotizacion-recibida'),
+          _notificacion('n-3', tipo: 'cotizacion-aceptada'),
+          _notificacion('n-4', tipo: 'cotizacion-rechazada'),
+          _notificacion('n-5', tipo: 'pago-aprobado'),
+        ]),
+        200,
+      );
+      await abrir(tester);
+      await abrirBuzon(tester);
+
+      Finder iconoDe(String id) => find.descendant(
+        of: clave('notificacion-$id'),
+        matching: find.byType(Icon),
+      );
+      IconData? icono(String id) => tester.widget<Icon>(iconoDe(id).first).icon;
+      expect(icono('n-1'), Icons.cancel_outlined);
+      for (final id in ['n-2', 'n-3', 'n-4']) {
+        expect(icono(id), Icons.request_quote_outlined);
+      }
+      // Un tipo que la app no conoce usa el icono genérico.
+      expect(icono('n-5'), Icons.notifications_none_rounded);
+    });
+
     testWidgets('un tipo que la app no conoce se muestra y no navega', (
       tester,
     ) async {
@@ -403,6 +440,83 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(InicioPage), findsOneWidget);
       expect(find.byType(NotificacionesPage), findsNothing);
+    });
+  });
+
+  group('tipos de 1.2.0 y solicitudes que ya no están disponibles', () {
+    Future<void> tocar(
+      WidgetTester tester,
+      String tipo, {
+      RolUsuario rol = RolUsuario.cliente,
+    }) async {
+      buzon = (o) =>
+          respuestaJson(_pagina([_notificacion('n-1', tipo: tipo)]), 200);
+      await abrir(tester, rol: rol);
+      await abrirBuzon(tester);
+      await tester.tap(find.text('Título n-1'));
+      await tester.pumpAndSettle();
+    }
+
+    Iterable<RequestOptions> consultasDetalle() =>
+        peticiones.where((o) => o.path == '/v1/service-requests/s-1');
+
+    testWidgets('solicitud-cancelada abre el detalle del cliente', (
+      tester,
+    ) async {
+      await tocar(tester, 'solicitud-cancelada');
+      expect(find.byType(DetalleSolicitudPage), findsOneWidget);
+    });
+
+    testWidgets('solicitud-cancelada no navega para el técnico', (
+      tester,
+    ) async {
+      await tocar(tester, 'solicitud-cancelada', rol: RolUsuario.tecnico);
+      expect(marcados().single.path, '/v1/notifications/n-1/read');
+      expect(find.byType(NotificacionesPage), findsOneWidget);
+      // Sin destino no consulta el detalle (RN-SR13).
+      expect(consultasDetalle(), isEmpty);
+    });
+
+    testWidgets('cotizacion-recibida abre el detalle del cliente', (
+      tester,
+    ) async {
+      await tocar(tester, 'cotizacion-recibida');
+      expect(find.byType(DetalleSolicitudPage), findsOneWidget);
+    });
+
+    for (final tipo in ['cotizacion-aceptada', 'cotizacion-rechazada']) {
+      testWidgets('$tipo abre el servicio asignado del técnico', (
+        tester,
+      ) async {
+        await tocar(tester, tipo, rol: RolUsuario.tecnico);
+        expect(consultasDetalle(), hasLength(1));
+        expect(find.byType(SolicitudAsignadaPage), findsOneWidget);
+      });
+    }
+
+    for (final status in [403, 404]) {
+      testWidgets('con $status la marca leída y avisa sin abrir el detalle', (
+        tester,
+      ) async {
+        detalle = (o) => respuestaJson(<String, dynamic>{}, status);
+        await tocar(tester, 'cotizacion-rechazada', rol: RolUsuario.tecnico);
+        expect(marcados().single.path, '/v1/notifications/n-1/read');
+        expect(
+          find.text('Esta solicitud ya no está disponible.'),
+          findsOneWidget,
+        );
+        expect(find.byType(NotificacionesPage), findsOneWidget);
+        expect(find.byType(SolicitudAsignadaPage), findsNothing);
+        expect(clave('punto-no-leida'), findsNothing);
+      });
+    }
+
+    testWidgets('con otro error abre el detalle, que lo muestra', (
+      tester,
+    ) async {
+      detalle = (o) => respuestaJson(<String, dynamic>{}, 500);
+      await tocar(tester, 'tecnico-asignado');
+      expect(find.byType(DetalleSolicitudPage), findsOneWidget);
     });
   });
 }

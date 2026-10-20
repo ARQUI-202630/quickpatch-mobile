@@ -1,4 +1,4 @@
-/// Notificación del buzón (`Notification`, communication.v1.yaml 1.0.0).
+/// Notificación del buzón (`Notification`, communication.v1.yaml 1.2.0).
 /// Communication arma el título y el mensaje en español, sin dirección ni
 /// teléfono (RN-SR13).
 class Notificacion {

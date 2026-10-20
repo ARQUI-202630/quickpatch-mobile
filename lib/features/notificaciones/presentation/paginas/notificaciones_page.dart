@@ -11,26 +11,34 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/notificaciones/contador_notificaciones.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
+import '../../../../core/session/controlador_sesion.dart';
+import '../../../../core/session/rol_usuario.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_notificaciones.dart';
 import '../../domain/notificacion.dart';
 
-/// Pantalla a la que lleva una notificación al tocarla, o `null` si no
-/// tiene (por ejemplo, un tipo que la app todavía no conoce).
-String? destinoDe(Notificacion n) {
+/// Pantalla a la que lleva una notificación al tocarla para el [rol] de la
+/// sesión, o `null` si no tiene (por ejemplo, un tipo que la app todavía no
+/// conoce). `solicitud-cancelada` llega al cliente y al técnico: el técnico
+/// no navega, porque fuera de asignado a completado ya no ve la solicitud
+/// (RN-SR13), igual que en su aviso en vivo (SCRUM-477).
+String? destinoDe(Notificacion n, RolUsuario? rol) {
   final solicitud = n.serviceRequestId;
   return switch (n.tipo) {
+    'solicitud-cancelada' when rol == RolUsuario.tecnico => null,
     'solicitud-creada' ||
     'tecnico-asignado' ||
     'sin-tecnico-disponible' ||
-    'busqueda-reanudada' when solicitud != null => Rutas.detalleSolicitud(
+    'busqueda-reanudada' ||
+    'solicitud-cancelada' ||
+    'cotizacion-recibida' when solicitud != null => Rutas.detalleSolicitud(
       solicitud,
     ),
-    'solicitud-asignada' when solicitud != null => Rutas.solicitudAsignada(
-      solicitud,
-    ),
+    'solicitud-asignada' || 'cotizacion-aceptada' || 'cotizacion-rechazada'
+        when solicitud != null =>
+      Rutas.solicitudAsignada(solicitud),
     'oferta-recibida' => Rutas.actividad,
     'registro-recibido' || 'verificacion-actualizada' => Rutas.inicio,
     _ => null,
@@ -42,6 +50,10 @@ IconData _iconoDe(String tipo) => switch (tipo) {
   'tecnico-asignado' || 'solicitud-asignada' => Icons.engineering_outlined,
   'sin-tecnico-disponible' => Icons.hourglass_empty_rounded,
   'busqueda-reanudada' => Icons.search_rounded,
+  'solicitud-cancelada' => Icons.cancel_outlined,
+  'cotizacion-recibida' ||
+  'cotizacion-aceptada' ||
+  'cotizacion-rechazada' => Icons.request_quote_outlined,
   'oferta-recibida' => Icons.work_outline_rounded,
   'registro-recibido' ||
   'verificacion-actualizada' => Icons.verified_user_outlined,
@@ -50,7 +62,7 @@ IconData _iconoDe(String tipo) => switch (tipo) {
 
 /// Buzón de notificaciones del usuario (RIE-03, ADR-024, SCRUM-459), con
 /// `GET /v1/notifications` y `POST /v1/notifications/{id}/read`
-/// (communication.v1.yaml 1.0.0). Se recarga con cada aviso del canal en
+/// (communication.v1.yaml 1.2.0). Se recarga con cada aviso del canal en
 /// tiempo real y, si el canal no está conectado, cada 30 s.
 class NotificacionesPage extends ConsumerStatefulWidget {
   const NotificacionesPage({super.key});
@@ -65,6 +77,9 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage> {
   int _total = 0;
   bool _cargando = true;
   bool _cargandoMas = false;
+
+  /// Comprobando que la solicitud de la notificación tocada sigue disponible.
+  bool _abriendo = false;
   Object? _error;
   CanalTiempoReal? _canal;
   StreamSubscription<MensajeTiempoReal>? _avisos;
@@ -148,8 +163,11 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage> {
   }
 
   /// La marca leída (sin esperar al servidor) y abre su pantalla. Si el
-  /// marcado falla, la siguiente recarga lo corrige.
-  void _abrir(Notificacion n) {
+  /// marcado falla, la siguiente recarga lo corrige. Antes de abrir una
+  /// solicitud comprueba que el usuario todavía la ve: un aviso viejo puede
+  /// apuntar a una que ya pasó a pagado o cancelado.
+  Future<void> _abrir(Notificacion n) async {
+    if (_abriendo) return;
     if (!n.leida) {
       setState(() {
         _notificaciones = [
@@ -159,13 +177,40 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage> {
       });
       unawaited(_marcarLeida(n.id));
     }
-    final destino = destinoDe(n);
+    final rol = ref.read(controladorSesionProvider).value?.usuario.rol;
+    final destino = destinoDe(n, rol);
     if (destino == null) return;
     // Inicio y Servicios son pestañas: se cambia de pestaña.
     if (destino == Rutas.inicio || destino == Rutas.actividad) {
       context.go(destino);
-    } else {
-      unawaited(context.push(destino));
+      return;
+    }
+    if (n.serviceRequestId case final id?) {
+      if (!await _solicitudDisponible(id) || !mounted) return;
+    }
+    if (mounted) unawaited(context.push(destino));
+  }
+
+  /// `false` si la solicitud ya no está disponible (403 o 404), con el aviso
+  /// en un SnackBar. Con otro error se navega igual: el detalle lo muestra.
+  Future<bool> _solicitudDisponible(String id) async {
+    setState(() => _abriendo = true);
+    try {
+      if (await _repositorio.solicitudDisponible(id)) return true;
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('Esta solicitud ya no está disponible.'),
+            ),
+          );
+      }
+      return false;
+    } on AppException {
+      return true;
+    } finally {
+      if (mounted) setState(() => _abriendo = false);
     }
   }
 
@@ -183,7 +228,18 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage> {
     _escuchar(ref.watch(canalTiempoRealProvider));
     return Scaffold(
       appBar: AppBar(title: const Text('Notificaciones')),
-      body: SafeArea(child: _contenido()),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (_abriendo)
+              const LinearProgressIndicator(
+                key: Key('abriendo-notificacion'),
+                semanticsLabel: 'Abriendo la notificación',
+              ),
+            Expanded(child: _contenido()),
+          ],
+        ),
+      ),
     );
   }
 
@@ -242,7 +298,7 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage> {
             _FilaNotificacion(
               key: Key('notificacion-${n.id}'),
               notificacion: n,
-              alTocar: () => _abrir(n),
+              alTocar: () => unawaited(_abrir(n)),
             ),
           if (hayMas)
             Padding(
