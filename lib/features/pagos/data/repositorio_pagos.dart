@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,8 +8,9 @@ import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
 import '../domain/pago.dart';
 
-/// Pago de la solicitud. Contrato: `payments.v1.yaml` 1.0.0
-/// (`GET` y `POST /v1/service-requests/{id}/payment`).
+/// Pago de la solicitud y su comprobante. Contrato: `payments.v1.yaml` 1.1.0
+/// (`GET` y `POST /v1/service-requests/{id}/payment` y
+/// `GET /v1/payments/{id}/invoice`).
 class RepositorioPagos {
   const RepositorioPagos(this._dio);
 
@@ -37,6 +40,26 @@ class RepositorioPagos {
     return Pago.desdeJson(respuesta.data!);
   });
 
+  /// Comprobante del pago aprobado [pagoId] en JSON.
+  Future<Comprobante> comprobante(String pagoId) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.comprobante(pagoId),
+    );
+    return Comprobante.desdeJson(respuesta.data!);
+  });
+
+  /// El mismo comprobante en PDF (`Accept: application/pdf`).
+  Future<Uint8List> comprobantePdf(String pagoId) => _llamar(() async {
+    final respuesta = await _dio.get<List<int>>(
+      ApiEndpoints.comprobante(pagoId),
+      options: Options(
+        responseType: ResponseType.bytes,
+        headers: {'Accept': 'application/pdf'},
+      ),
+    );
+    return Uint8List.fromList(respuesta.data!);
+  });
+
   Future<T> _llamar<T>(Future<T> Function() llamada) async {
     try {
       return await llamada();
@@ -54,3 +77,8 @@ final pagoProvider = FutureProvider.autoDispose.family<Pago, String>(
   (ref, solicitudId) =>
       ref.watch(repositorioPagosProvider).obtener(solicitudId),
 );
+
+final comprobanteProvider = FutureProvider.autoDispose
+    .family<Comprobante, String>(
+      (ref, pagoId) => ref.watch(repositorioPagosProvider).comprobante(pagoId),
+    );

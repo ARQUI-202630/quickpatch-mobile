@@ -13,6 +13,7 @@ import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
 import '../../features/notificaciones/presentation/paginas/notificaciones_page.dart';
+import '../../features/pagos/presentation/paginas/comprobante_page.dart';
 import '../../features/pagos/presentation/paginas/pagar_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
@@ -131,6 +132,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Rutas.pagarSolicitudPatron,
         builder: (context, state) =>
             PagarPage(solicitudId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Rutas.comprobantePatron,
+        builder: (context, state) =>
+            ComprobantePage(pagoId: state.pathParameters['id']!),
       ),
     ],
   );
