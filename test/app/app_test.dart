@@ -149,52 +149,127 @@ void main() {
   });
 
   testWidgets(
-    'registro de cliente valida, muestra el error del contrato y oculta empresa',
+    'registro de empresa: NIT, 409 junto al campo y luego inicia sesión',
     (tester) async {
-      adaptador.responder = (_) => respuestaJson({
-        'type': 'https://quickpatch.internal/problems/validacion',
-        'title': 'La solicitud tiene datos inválidos',
-        'status': 400,
-        'errors': {
-          'email': ['El correo no tiene un formato válido.'],
-        },
-      }, 400);
+      final cuerpos = <Object?>[];
+      var nitRepetido = true;
+      adaptador.responder = (o) {
+        if (o.path.endsWith('/categories')) {
+          return respuestaJson(<Object>[], 200);
+        }
+        if (o.path.endsWith('/login')) {
+          return respuestaJson(loginJson(rol: 'empresa_contacto'), 200);
+        }
+        if (!o.path.endsWith('/register/company')) {
+          return respuestaJson(<String, dynamic>{}, 404);
+        }
+        cuerpos.add(o.data);
+        if (nitRepetido) {
+          nitRepetido = false;
+          return respuestaJson({
+            'type': 'https://quickpatch.internal/problems/nit-registrado',
+            'title': 'Ya hay una empresa con ese NIT',
+            'status': 409,
+          }, 409);
+        }
+        return respuestaJson({'company': {}, 'user': {}}, 201);
+      };
       await abrirApp(tester);
       await tester.tap(find.byKey(const Key('boton-ir-registro')));
       await tester.pumpAndSettle();
-      expect(find.text('Empresa'), findsNothing);
-
-      await tester.ensureVisible(find.byKey(const Key('boton-registrar')));
-      await tester.tap(find.byKey(const Key('boton-registrar')));
+      await tester.tap(find.text('Empresa'));
       await tester.pumpAndSettle();
-      expect(adaptador.ultima, isNull);
 
-      await tester.enterText(find.byKey(const Key('campo-nombre')), 'Ana');
-      await tester.enterText(find.byKey(const Key('campo-email')), 'a@e.co');
-      await tester.enterText(
-        find.byKey(const Key('campo-password')),
-        'secreta123',
-      );
-      await tester.enterText(
-        find.byKey(const Key('campo-confirmacion')),
-        'secreta123',
-      );
-      await tester.ensureVisible(find.byKey(const Key('boton-registrar')));
-      await tester.tap(find.byKey(const Key('boton-registrar')));
-      await tester.pumpAndSettle();
-      expect(adaptador.ultima!.path, '/v1/auth/register/client');
+      Future<void> escribir(String clave, String texto) =>
+          tester.enterText(find.byKey(Key(clave)), texto);
+      await escribir('campo-razon-social', 'Andinas S.A.S.');
+      await escribir('campo-nit', '900.123.456');
+      await escribir('campo-correo-contacto', 'compras@andinas.co');
+      await escribir('campo-nombre', 'Laura Mora');
+      await escribir('campo-email', 'laura@andinas.co');
+      await escribir('campo-password', 'secreta123');
+      await escribir('campo-confirmacion', 'secreta123');
+      Future<void> registrar() async {
+        await tester.ensureVisible(find.byKey(const Key('boton-registrar')));
+        await tester.tap(find.byKey(const Key('boton-registrar')));
+        await tester.pumpAndSettle();
+      }
+
+      await registrar();
+      expect(cuerpos, isEmpty);
+      expect(find.textContaining('dígito de verificación'), findsOneWidget);
+
+      await escribir('campo-nit', '900123456-7');
+      await registrar();
+      expect(adaptador.ultima!.path, '/v1/auth/register/company');
       expect(
-        find.text('El correo no tiene un formato válido.'),
+        find.text('Ya hay una empresa registrada con este NIT.'),
         findsOneWidget,
       );
-      expect(find.byKey(const Key('mensaje-error')), findsOneWidget);
+      expect(find.byKey(const Key('mensaje-error')), findsNothing);
 
-      await tester.ensureVisible(find.text('Ya tengo cuenta'));
-      await tester.tap(find.text('Ya tengo cuenta'));
-      await tester.pumpAndSettle();
-      expect(find.byType(InicioSesionPage), findsOneWidget);
+      await escribir('campo-nit', '800111222-3');
+      await registrar();
+      expect(cuerpos.last, {
+        'company': {
+          'legalName': 'Andinas S.A.S.',
+          'nit': '800111222-3',
+          'contactEmail': 'compras@andinas.co',
+        },
+        'user': {
+          'email': 'laura@andinas.co',
+          'password': 'secreta123',
+          'fullName': 'Laura Mora',
+        },
+      });
+      expect(find.textContaining('Hola'), findsOneWidget);
     },
   );
+
+  testWidgets('registro de cliente valida y muestra el error del contrato', (
+    tester,
+  ) async {
+    adaptador.responder = (_) => respuestaJson({
+      'type': 'https://quickpatch.internal/problems/validacion',
+      'title': 'La solicitud tiene datos inválidos',
+      'status': 400,
+      'errors': {
+        'email': ['El correo no tiene un formato válido.'],
+      },
+    }, 400);
+    await abrirApp(tester);
+    await tester.tap(find.byKey(const Key('boton-ir-registro')));
+    await tester.pumpAndSettle();
+    // Hogar por defecto: sin los campos de la empresa.
+    expect(find.byKey(const Key('campo-nit')), findsNothing);
+
+    await tester.ensureVisible(find.byKey(const Key('boton-registrar')));
+    await tester.tap(find.byKey(const Key('boton-registrar')));
+    await tester.pumpAndSettle();
+    expect(adaptador.ultima, isNull);
+
+    await tester.enterText(find.byKey(const Key('campo-nombre')), 'Ana');
+    await tester.enterText(find.byKey(const Key('campo-email')), 'a@e.co');
+    await tester.enterText(
+      find.byKey(const Key('campo-password')),
+      'secreta123',
+    );
+    await tester.enterText(
+      find.byKey(const Key('campo-confirmacion')),
+      'secreta123',
+    );
+    await tester.ensureVisible(find.byKey(const Key('boton-registrar')));
+    await tester.tap(find.byKey(const Key('boton-registrar')));
+    await tester.pumpAndSettle();
+    expect(adaptador.ultima!.path, '/v1/auth/register/client');
+    expect(find.text('El correo no tiene un formato válido.'), findsOneWidget);
+    expect(find.byKey(const Key('mensaje-error')), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Ya tengo cuenta'));
+    await tester.tap(find.text('Ya tengo cuenta'));
+    await tester.pumpAndSettle();
+    expect(find.byType(InicioSesionPage), findsOneWidget);
+  });
 
   group('calcularRedireccion', () {
     final sesion = sesionDePrueba();

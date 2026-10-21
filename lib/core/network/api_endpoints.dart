@@ -17,10 +17,15 @@ abstract final class ApiEndpoints {
   static String invitacionTecnico(String userId) =>
       '/v1/providers/me/technicians/$userId/invitation';
 
-  // Pendientes de contrato (DD 3.1).
+  // Cuenta corporativa (identity 1.8.0, RF-06).
   static const registroEmpresa = '/v1/auth/register/company';
-  static const refresh = '/v1/auth/refresh';
+  static const empresaActual = '/v1/companies/me';
   static const usuariosEmpresa = '/v1/companies/me/users';
+  static String invitacionUsuarioEmpresa(String userId) =>
+      '/v1/companies/me/users/$userId/invitation';
+
+  // Pendientes de contrato (DD 3.1).
+  static const refresh = '/v1/auth/refresh';
 
   // Catalog Service
   static const categorias = '/v1/catalog/categories';

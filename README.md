@@ -32,6 +32,7 @@ Las opciones del inicio dependen del rol del usuario (`app/shell/opciones_por_ro
 |Capacidad|Contrato|Historia|
 |---|---|---|
 |Registro de cliente y técnico, inicio de sesión y perfil|`identity.v1.yaml`|SCRUM-63|
+|Cuenta corporativa: registro «Empresa» con razón social, NIT y contacto corporativo (quien la registra queda como su primer usuario), y «Usuarios de la empresa» para agregar usuarios con su invitación de un solo uso y generar un enlace nuevo a quien no ha activado su cuenta|`identity.v1.yaml` 1.8.0 (`POST /v1/auth/register/company`, `/v1/companies/me` y `/v1/companies/me/users`)|SCRUM-26 / SCRUM-67|
 |Nueva solicitud: categoría, descripción, dirección y ubicación del GPS; sin GPS, la app ubica la dirección y pregunta «¿Es aquí?» con la localidad y el mapa antes de crearla; confirmación con el estado|`catalog.v1.yaml` (`GET /v1/catalog/categories`), `service-request.v1.yaml` 1.3.0 (`POST /v1/service-requests`, `POST /v1/service-requests/location-preview`, `GET /v1/service-requests/{id}`)|SCRUM-27 / SCRUM-71 / SCRUM-457|
 |Seguimiento de la solicitud: línea de estado en 4 pasos, técnico asignado (nombre y especialidad, que es la categoría por RN-M9) y avisos en tiempo real, con consulta cada 30 s si el canal no está disponible|`service-request.v1.yaml` 1.1.0 (`GET /v1/service-requests/{id}`), `asyncapi/realtime.v1.yaml` (`/v1/realtime`, ADR-023)|SCRUM-31 / SCRUM-83|
 |Cancelar la solicitud antes de que inicie el servicio, con el motivo (de 5 a 500 caracteres); si ya inició, lo explica y recarga el estado. Una solicitud cancelada muestra la fecha y el motivo|`service-request.v1.yaml` 1.5.0 (`POST /v1/service-requests/{id}/cancel`, `GET /v1/service-requests/{id}`)|SCRUM-472 / SCRUM-477|
@@ -96,4 +97,4 @@ flutter build apk --release
 
 ## Pendiente
 
-- Registro de empresa (`POST /v1/auth/register/company`), refresh tokens y rutas marcadas "pendiente de contrato" en `api_endpoints.dart`: dependen del DD 3.1.
+- Refresh tokens y rutas marcadas "pendiente de contrato" en `api_endpoints.dart`: dependen del DD 3.1.

@@ -25,6 +25,10 @@ abstract final class Rutas {
 
   static const altaTecnico = '/equipo/nuevo';
 
+  /// Usuarios de la empresa cliente y alta de otro usuario (SCRUM-67).
+  static const usuariosEmpresa = '/empresa/usuarios';
+  static const agregarUsuarioEmpresa = '/empresa/usuarios/nuevo';
+
   static const nuevaSolicitud = '/solicitudes/nueva';
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';

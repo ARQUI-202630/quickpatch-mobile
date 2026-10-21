@@ -59,6 +59,8 @@ class DatosRegistro {
     this.telefono,
     this.razonSocial,
     this.nit,
+    this.correoContacto,
+    this.telefonoContacto,
   });
 
   final TipoCuenta tipo;
@@ -67,20 +69,33 @@ class DatosRegistro {
   final String password;
   final String? telefono;
 
-  /// Solo para [TipoCuenta.empresa].
+  /// Solo para [TipoCuenta.empresa] (`CompanyData`, identity 1.8.0).
   final String? razonSocial;
   final String? nit;
+  final String? correoContacto;
+  final String? telefonoContacto;
 
-  Map<String, dynamic> toJson() => {
-    'fullName': nombreCompleto.trim(),
-    'email': email.trim(),
-    'password': password,
-    if (_conTexto(telefono)) 'phone': telefono!.trim(),
-    if (tipo == TipoCuenta.empresa) ...{
-      'legalName': razonSocial?.trim(),
-      'nit': nit?.trim(),
-    },
-  };
+  /// Hogar: `RegisterClientRequest`. Empresa: `RegisterCompanyRequest`, con
+  /// la empresa en `company` y su primer usuario en `user` (RF-06).
+  Map<String, dynamic> toJson() {
+    final usuario = {
+      'email': email.trim(),
+      'password': password,
+      'fullName': nombreCompleto.trim(),
+      if (_conTexto(telefono)) 'phone': telefono!.trim(),
+    };
+    if (tipo == TipoCuenta.hogar) return usuario;
+    return {
+      'company': {
+        'legalName': razonSocial?.trim(),
+        'nit': nit?.trim(),
+        'contactEmail': correoContacto?.trim(),
+        if (_conTexto(telefonoContacto))
+          'contactPhone': telefonoContacto!.trim(),
+      },
+      'user': usuario,
+    };
+  }
 
   static bool _conTexto(String? v) => v != null && v.trim().isNotEmpty;
 }

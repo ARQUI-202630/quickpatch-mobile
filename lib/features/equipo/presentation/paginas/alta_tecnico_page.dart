@@ -7,12 +7,12 @@ import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/hoja_invitacion.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/selector_categoria.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_equipo.dart';
 import '../../domain/modelos.dart';
-import '../widgets/hoja_invitacion.dart';
 
 /// Alta de un técnico en el equipo del proveedor (RF-16, SCRUM-98).
 ///
@@ -72,6 +72,10 @@ class _AltaTecnicoPageState extends ConsumerState<AltaTecnicoPage> {
         nombre: creado.nombre,
         invitacion: creado.invitacion,
         esNueva: false,
+        explicacion:
+            '${creado.nombre} quedó en tu equipo, pendiente de que el '
+            'administrador lo apruebe. Compártele este enlace para que defina '
+            'su contraseña.',
       );
       if (mounted) context.pop(true);
     } on AppException catch (e) {
