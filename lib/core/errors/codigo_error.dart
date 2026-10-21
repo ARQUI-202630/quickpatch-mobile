@@ -90,6 +90,11 @@ enum CodigoError {
     'tenant-inactivo': tenantInactive,
     'cuenta-bloqueada': accountLocked,
     'canal-sin-tenant': serviceUnavailable,
+    // payments.v1.yaml 1.0.0 (SCRUM-42).
+    'pago-no-disponible': paymentNotReady,
+    'pago-en-curso': paymentInProgress,
+    'ya-pagado': alreadyPaid,
+    'pasarela-sin-respuesta': paymentProviderError,
   };
 
   static CodigoError desdeTipo(String? tipo) {

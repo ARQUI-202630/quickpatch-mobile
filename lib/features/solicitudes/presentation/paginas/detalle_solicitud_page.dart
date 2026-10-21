@@ -13,6 +13,8 @@ import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/vista_error.dart';
+import '../../../pagos/data/repositorio_pagos.dart';
+import '../../../pagos/presentation/widgets/pago_cliente.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
@@ -22,7 +24,8 @@ import '../widgets/evidencia_cliente.dart';
 /// Detalle y seguimiento de una solicitud (SCRUM-27, SCRUM-83) y su
 /// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
 /// `POST /v1/service-requests/{id}/cancel` (1.5.0). En `cotizado` el cliente
-/// acepta o rechaza la cotización (SCRUM-489, 1.6.0).
+/// acepta o rechaza la cotización (SCRUM-489, 1.6.0) y, con el servicio
+/// completado, lo paga (SCRUM-116, payments 1.0.0).
 ///
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
@@ -54,7 +57,8 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
     ref
       ..invalidate(solicitudProvider(widget.id))
       ..invalidate(cotizacionesProvider(widget.id))
-      ..invalidate(evidenciasProvider(widget.id));
+      ..invalidate(evidenciasProvider(widget.id))
+      ..invalidate(pagoProvider(widget.id));
   }
 
   /// Se suscribe al canal actual; cambia si la sesión crea uno nuevo.
@@ -108,7 +112,8 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
           onRefresh: () {
             ref
               ..invalidate(cotizacionesProvider(widget.id))
-              ..invalidate(evidenciasProvider(widget.id));
+              ..invalidate(evidenciasProvider(widget.id))
+              ..invalidate(pagoProvider(widget.id));
             return ref.refresh(solicitudProvider(widget.id).future);
           },
           child: ListView(
@@ -120,6 +125,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               const SizedBox(height: QpEspacio.e4),
               if (CotizacionCliente.aplica(s.estado)) ...[
                 CotizacionCliente(solicitud: s, alCambiar: _actualizar),
+                const SizedBox(height: QpEspacio.e4),
+              ],
+              if (PagoCliente.aplica(s.estado)) ...[
+                PagoCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
               if (EvidenciaCliente.aplica(s.estado)) ...[
