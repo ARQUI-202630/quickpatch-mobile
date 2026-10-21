@@ -33,6 +33,10 @@ abstract final class Rutas {
   static const pagarSolicitudPatron = '/solicitudes/:id/pagar';
   static String pagarSolicitud(String id) => '/solicitudes/$id/pagar';
 
+  /// Comprobante de un pago aprobado (SCRUM-494).
+  static const comprobantePatron = '/pagos/:id/comprobante';
+  static String comprobante(String pagoId) => '/pagos/$pagoId/comprobante';
+
   /// Nueva solicitud con la categoría ya elegida desde el inicio.
   static String nuevaSolicitudEn(String categoriaId) => Uri(
     path: nuevaSolicitud,

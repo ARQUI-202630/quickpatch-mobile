@@ -15,7 +15,8 @@ import '../../domain/pago.dart';
 /// Pago que ve el cliente en el detalle (RF-22, SCRUM-116; payments 1.0.0):
 /// desde que el técnico completa el servicio. Muestra el total y el botón de
 /// pagar; tras un rechazo, el motivo y el reintento; mientras la pasarela no
-/// responde, que se está confirmando; y al final, el pago aprobado.
+/// responde, que se está confirmando; y al final, el pago aprobado con el
+/// acceso a su comprobante (SCRUM-494).
 class PagoCliente extends ConsumerWidget {
   const PagoCliente({
     required this.solicitud,
@@ -101,12 +102,26 @@ class _Contenido extends StatelessWidget {
         total,
         const SizedBox(height: QpEspacio.e3),
         switch (pago.estado) {
-          EstadoPago.aprobado => _Aviso(
-            key: const Key('pago-aprobado'),
-            icono: Icons.check_circle_rounded,
-            color: estados.exito,
-            fondo: estados.exitoFondo,
-            texto: 'Pago aprobado. Tu comprobante quedó emitido.',
+          EstadoPago.aprobado => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _Aviso(
+                key: const Key('pago-aprobado'),
+                icono: Icons.check_circle_rounded,
+                color: estados.exito,
+                fondo: estados.exitoFondo,
+                texto: 'Pago aprobado. Tu comprobante quedó emitido.',
+              ),
+              if (pago.comprobanteId != null) ...[
+                const SizedBox(height: QpEspacio.e3),
+                OutlinedButton.icon(
+                  key: const Key('ver-comprobante'),
+                  onPressed: () => context.push(Rutas.comprobante(pago.id)),
+                  icon: const Icon(Icons.receipt_long_rounded),
+                  label: const Text('Ver comprobante'),
+                ),
+              ],
+            ],
           ),
           EstadoPago.procesando => Column(
             key: const Key('pago-procesando'),

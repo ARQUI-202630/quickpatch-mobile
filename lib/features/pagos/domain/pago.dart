@@ -78,6 +78,12 @@ enum TipoDocumento {
 
   final String valor;
   final String nombre;
+
+  static TipoDocumento desdeValor(String valor) => values.firstWhere(
+    (e) => e.valor == valor,
+    orElse: () =>
+        throw FormatException('Tipo de documento desconocido: $valor'),
+  );
 }
 
 /// Datos del pagador para el comprobante (RF-24). Nunca datos de la tarjeta.
@@ -100,4 +106,56 @@ class DatosFacturacion {
     'documentNumber': numeroDocumento.trim(),
     'email': correo.trim(),
   };
+}
+
+/// Comprobante de un pago aprobado (RF-24, SCRUM-494; payments 1.1.0,
+/// esquema `Invoice`). Es un comprobante de pago sin validez fiscal: no es una
+/// factura electrónica (SRS DR-03).
+class Comprobante {
+  const Comprobante({
+    required this.id,
+    required this.numero,
+    required this.pagoId,
+    required this.solicitudId,
+    required this.pagador,
+    required this.monto,
+    required this.moneda,
+    required this.concepto,
+    required this.emitidoEn,
+  });
+
+  factory Comprobante.desdeJson(Map<String, dynamic> json) {
+    final pagador = json['payer'] as Map<String, dynamic>;
+    return Comprobante(
+      id: json['invoiceId'] as String,
+      numero: json['invoiceNumber'] as String,
+      pagoId: json['paymentId'] as String,
+      solicitudId: json['serviceRequestId'] as String,
+      pagador: DatosFacturacion(
+        nombre: pagador['name'] as String,
+        tipoDocumento: TipoDocumento.desdeValor(
+          pagador['documentType'] as String,
+        ),
+        numeroDocumento: pagador['documentNumber'] as String,
+        correo: pagador['email'] as String,
+      ),
+      monto: Monto(json['amount'] as String),
+      moneda: json['currency'] as String,
+      concepto: json['concept'] as String,
+      emitidoEn: DateTime.parse(json['issuedAt'] as String),
+    );
+  }
+
+  final String id;
+  final String numero;
+  final String pagoId;
+  final String solicitudId;
+  final DatosFacturacion pagador;
+  final Monto monto;
+  final String moneda;
+  final String concepto;
+  final DateTime emitidoEn;
+
+  /// Nombre del PDF, el mismo que propone el servidor.
+  String get archivoPdf => '$numero.pdf';
 }
