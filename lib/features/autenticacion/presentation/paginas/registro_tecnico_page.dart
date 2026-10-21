@@ -19,7 +19,7 @@ import '../acciones_sesion.dart';
 ///
 /// Contrato: `POST /v1/auth/register/technician` (identity.v1.yaml). La
 /// especialidad sale de las categorías activas del tenant del canal
-/// (`GET /v1/catalog/categories` sin sesión, con `X-Channel-Id`). El tenant
+/// (`GET /v1/service-requests/categories` sin sesión, con `X-Channel-Id`). El tenant
 /// nunca se pide: sale del canal (RN-U5). Al terminar inicia sesión y el
 /// inicio le muestra que su cuenta está en verificación.
 class RegistroTecnicoPage extends ConsumerStatefulWidget {

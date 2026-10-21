@@ -29,7 +29,7 @@ class MapaBogota extends StatefulWidget {
 
   final MapaLocalidades mapa;
 
-  /// Códigos que vienen en `GET /v1/localities`: las demás se ven en gris y
+  /// Códigos que vienen en `GET /v1/service-requests/localities`: las demás se ven en gris y
   /// no se pueden tocar.
   final Set<String> disponibles;
   final Set<String> elegidas;
