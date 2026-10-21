@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/catalogo/categoria.dart';
 import '../../core/catalogo/repositorio_catalogo.dart';
+import '../../core/notificaciones/contador_notificaciones.dart';
 import '../../core/session/controlador_sesion.dart';
 import '../../core/session/rol_usuario.dart';
 import '../../core/session/sesion.dart';
+import '../../shared/widgets/campana_notificaciones.dart';
 import '../../shared/widgets/icono_categoria.dart';
 import '../../shared/widgets/vista_error.dart';
 import '../../shared/widgets/vista_estado.dart';
@@ -57,7 +59,25 @@ class InicioPage extends ConsumerWidget {
               ),
               sliver: SliverList.list(
                 children: [
-                  _Saludo(usuario: usuario, puedeSolicitar: puedeSolicitar),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _Saludo(
+                          usuario: usuario,
+                          puedeSolicitar: puedeSolicitar,
+                        ),
+                      ),
+                      // Buzón (SCRUM-459); el proveedor no tiene (403).
+                      if (tieneBuzon(usuario.rol))
+                        CampanaNotificaciones(
+                          sinLeer:
+                              ref.watch(contadorNotificacionesProvider).value ??
+                              0,
+                          alTocar: () => context.push(Rutas.notificaciones),
+                        ),
+                    ],
+                  ),
                   if (_enVerificacion(usuario)) ...[
                     const SizedBox(height: QpEspacio.e5),
                     const _AvisoVerificacion(),

@@ -14,6 +14,9 @@ abstract final class Rutas {
   static const actividad = '/actividad';
   static const cuenta = '/cuenta';
 
+  /// Buzón de notificaciones (SCRUM-459).
+  static const notificaciones = '/notificaciones';
+
   static const disponibilidad = '/tecnico/disponibilidad';
 
   /// Detalle de la solicitud asignada, para el técnico (SCRUM-92).

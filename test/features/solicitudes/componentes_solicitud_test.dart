@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
+import 'package:quickpatch_mobile/core/utils/fechas.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/chip_estado.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/tarjeta_solicitud.dart';
