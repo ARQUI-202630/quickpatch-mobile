@@ -23,10 +23,15 @@ class NuevaSolicitud {
     required this.descripcion,
     required this.direccion,
     this.ubicacion,
+    this.sede,
   });
 
   final String categoriaId;
   final String descripcion;
+
+  /// Solo del `empresa_contacto` (service-request 1.9.0): nombre de la sede
+  /// de la empresa. La empresa y el tipo de cliente salen del token.
+  final String? sede;
 
   /// Opcional desde service-request 1.3.0: sin ella, ServiceRequest
   /// geocodifica [direccion] dentro de Bogotá (ADR-024).
@@ -38,7 +43,22 @@ class NuevaSolicitud {
     'description': descripcion.trim(),
     'location': ?ubicacion?.toJson(),
     'addressText': direccion.trim(),
+    if (sede != null && sede!.trim().isNotEmpty) 'siteName': sede!.trim(),
   };
+}
+
+/// Tipo de cliente de la solicitud (`ClientType`, service-request 1.9.0).
+enum TipoCliente {
+  hogar('hogar'),
+  empresa('empresa');
+
+  const TipoCliente(this.valor);
+
+  final String valor;
+
+  /// Un backend anterior a la 1.9.0 no lo envía: es de hogar.
+  static TipoCliente desdeValor(String? valor) =>
+      valor == 'empresa' ? empresa : hogar;
 }
 
 /// Dónde ubicó el geocodificador una dirección (`LocationPreview`,
@@ -152,6 +172,8 @@ class Solicitud {
     this.motivoCancelacion,
     this.iniciadaEn,
     this.completadaEn,
+    this.tipoCliente = TipoCliente.hogar,
+    this.sede,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -182,6 +204,8 @@ class Solicitud {
     completadaEn: json['completedAt'] == null
         ? null
         : DateTime.parse(json['completedAt'] as String),
+    tipoCliente: TipoCliente.desdeValor(json['clientType'] as String?),
+    sede: json['siteName'] as String?,
   );
 
   final String id;
@@ -209,6 +233,72 @@ class Solicitud {
   /// Inicio y fin del servicio; `null` antes de cada paso (1.7.0).
   final DateTime? iniciadaEn;
   final DateTime? completadaEn;
+
+  /// Hogar o empresa, y la sede de la empresa (1.9.0).
+  final TipoCliente tipoCliente;
+  final String? sede;
+}
+
+/// Solicitud en la lista del cliente o de la empresa (`AdminServiceRequest`,
+/// service-request 1.9.0). Sin dirección, ubicación ni contacto: el detalle
+/// sigue en `GET /v1/service-requests/{id}`.
+class SolicitudResumen {
+  const SolicitudResumen({
+    required this.id,
+    required this.estado,
+    required this.categoriaId,
+    required this.clienteId,
+    required this.descripcion,
+    required this.creadaEn,
+    this.tipoCliente = TipoCliente.hogar,
+    this.sede,
+  });
+
+  factory SolicitudResumen.desdeJson(Map<String, dynamic> json) =>
+      SolicitudResumen(
+        id: json['id'] as String,
+        estado: EstadoSolicitud.desdeValor(json['status'] as String),
+        categoriaId: json['categoryId'] as String,
+        clienteId: json['clientId'] as String,
+        descripcion: json['description'] as String? ?? '',
+        creadaEn: DateTime.parse(json['createdAt'] as String),
+        tipoCliente: TipoCliente.desdeValor(json['clientType'] as String?),
+        sede: json['siteName'] as String?,
+      );
+
+  final String id;
+  final EstadoSolicitud estado;
+  final String categoriaId;
+
+  /// Quien la creó: en una empresa puede ser otro usuario (RN-SR14).
+  final String clienteId;
+  final String descripcion;
+  final DateTime creadaEn;
+  final TipoCliente tipoCliente;
+  final String? sede;
+}
+
+/// Página de `GET /v1/service-requests` (`AdminServiceRequestPage`).
+class PaginaSolicitudes {
+  const PaginaSolicitudes({
+    required this.solicitudes,
+    required this.pagina,
+    required this.total,
+  });
+
+  factory PaginaSolicitudes.desdeJson(Map<String, dynamic> json) =>
+      PaginaSolicitudes(
+        solicitudes: (json['items'] as List<dynamic>)
+            .cast<Map<String, dynamic>>()
+            .map(SolicitudResumen.desdeJson)
+            .toList(),
+        pagina: json['page'] as int,
+        total: json['totalItems'] as int,
+      );
+
+  final List<SolicitudResumen> solicitudes;
+  final int pagina;
+  final int total;
 }
 
 /// Solicitud en la lista del técnico (`TechnicianServiceRequest`,

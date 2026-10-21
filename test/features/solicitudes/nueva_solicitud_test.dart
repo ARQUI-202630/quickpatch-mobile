@@ -67,6 +67,7 @@ void main() {
   Map<String, dynamic>? cuerpoEnviado;
   Map<String, dynamic>? cuerpoVistaPrevia;
   late ResponseBody Function() vistaPrevia;
+  var rolLogin = 'cliente';
 
   Future<void> abrirComoCliente(
     WidgetTester tester, {
@@ -126,6 +127,7 @@ void main() {
   }
 
   setUp(() {
+    rolLogin = 'cliente';
     cuerpoEnviado = null;
     cuerpoVistaPrevia = null;
     vistaPrevia = () => respuestaJson(_vistaPreviaJson(), 200);
@@ -137,7 +139,7 @@ void main() {
         return vistaPrevia();
       }
       if (ruta.endsWith('/v1/auth/login')) {
-        return respuestaJson(loginJson(), 200);
+        return respuestaJson(loginJson(rol: rolLogin), 200);
       }
       if (ruta.endsWith('/v1/catalog/categories')) {
         return respuestaJson([
@@ -445,5 +447,37 @@ void main() {
       EstadoSolicitud.values.map((e) => EstadoSolicitud.desdeValor(e.valor)),
       EstadoSolicitud.values,
     );
+  });
+
+  testWidgets('el cliente no ve el campo de la sede', (tester) async {
+    await abrirComoCliente(tester);
+
+    expect(find.byKey(const Key('campo-sede')), findsNothing);
+  });
+
+  testWidgets('la empresa indica la sede y la envía como siteName (SCRUM-74)', (
+    tester,
+  ) async {
+    rolLogin = 'empresa_contacto';
+    await abrirComoCliente(tester);
+    await llenarFormulario(tester);
+    await tester.ensureVisible(find.byKey(const Key('campo-sede')));
+    await tester.enterText(find.byKey(const Key('campo-sede')), 'S');
+    await tester.tap(find.byKey(const Key('boton-ubicacion')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('boton-enviar')));
+    await tester.tap(find.byKey(const Key('boton-enviar')));
+    await tester.pumpAndSettle();
+    expect(cuerpoEnviado, isNull);
+    expect(find.textContaining('nombre de la sede'), findsOneWidget);
+
+    await tester.enterText(find.byKey(const Key('campo-sede')), ' Sede Norte ');
+    await tester.ensureVisible(find.byKey(const Key('boton-enviar')));
+    await tester.tap(find.byKey(const Key('boton-enviar')));
+    await tester.pumpAndSettle();
+
+    expect(cuerpoEnviado!['siteName'], 'Sede Norte');
+    expect(cuerpoEnviado!.containsKey('clientType'), isFalse);
+    expect(cuerpoEnviado!.containsKey('companyId'), isFalse);
   });
 }
