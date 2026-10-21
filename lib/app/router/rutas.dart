@@ -29,6 +29,10 @@ abstract final class Rutas {
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';
 
+  /// Pago con tarjeta de una solicitud completada (SCRUM-116).
+  static const pagarSolicitudPatron = '/solicitudes/:id/pagar';
+  static String pagarSolicitud(String id) => '/solicitudes/$id/pagar';
+
   /// Nueva solicitud con la categoría ya elegida desde el inicio.
   static String nuevaSolicitudEn(String categoriaId) => Uri(
     path: nuevaSolicitud,
