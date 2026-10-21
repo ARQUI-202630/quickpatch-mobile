@@ -18,6 +18,7 @@ import '../../../pagos/presentation/widgets/pago_cliente.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
+import '../widgets/boton_chat.dart';
 import '../widgets/cotizacion_cliente.dart';
 import '../widgets/evidencia_cliente.dart';
 
@@ -25,7 +26,8 @@ import '../widgets/evidencia_cliente.dart';
 /// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
 /// `POST /v1/service-requests/{id}/cancel` (1.5.0). En `cotizado` el cliente
 /// acepta o rechaza la cotización (SCRUM-489, 1.6.0) y, con el servicio
-/// completado, lo paga (SCRUM-116, payments 1.0.0).
+/// completado, lo paga (SCRUM-116, payments 1.0.0). Con técnico asignado se
+/// abre el chat con él (SCRUM-482, communication 1.3.0).
 ///
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
@@ -144,6 +146,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               ],
               _TarjetaTecnico(s),
               const SizedBox(height: QpEspacio.e4),
+              if (BotonChat.aplica(s)) ...[
+                BotonChat(solicitudId: s.id, con: 'el técnico'),
+                const SizedBox(height: QpEspacio.e4),
+              ],
               _Datos(s),
               const SizedBox(height: QpEspacio.e4),
               if (s.estado.cancelable) ...[

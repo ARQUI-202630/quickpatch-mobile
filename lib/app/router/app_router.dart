@@ -9,6 +9,7 @@ import '../../features/autenticacion/presentation/paginas/activar_cuenta_page.da
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
+import '../../features/chat/presentation/paginas/chat_page.dart';
 import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
@@ -127,6 +128,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Rutas.detalleSolicitudPatron,
         builder: (context, state) =>
             DetalleSolicitudPage(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Rutas.chatSolicitudPatron,
+        builder: (context, state) =>
+            ChatPage(solicitudId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: Rutas.pagarSolicitudPatron,

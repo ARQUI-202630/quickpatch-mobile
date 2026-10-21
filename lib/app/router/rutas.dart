@@ -29,6 +29,11 @@ abstract final class Rutas {
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';
 
+  /// Chat entre el cliente y el técnico asignado (SCRUM-482). La usan los dos
+  /// detalles: el del cliente y el del técnico.
+  static const chatSolicitudPatron = '/solicitudes/:id/chat';
+  static String chatSolicitud(String id) => '/solicitudes/$id/chat';
+
   /// Pago con tarjeta de una solicitud completada (SCRUM-116).
   static const pagarSolicitudPatron = '/solicitudes/:id/pagar';
   static String pagarSolicitud(String id) => '/solicitudes/$id/pagar';

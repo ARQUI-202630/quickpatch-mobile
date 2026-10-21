@@ -13,6 +13,7 @@ class MensajeTiempoReal {
     this.attemptId,
     this.ocurridoEn,
     this.expiraEn,
+    this.mensajeChat,
   });
 
   /// Lee una trama del servidor. Devuelve `null` si no trae `type`.
@@ -26,6 +27,9 @@ class MensajeTiempoReal {
       attemptId: json['attemptId'] as String?,
       ocurridoEn: _fecha(json['occurredAt']),
       expiraEn: _fecha(json['expiresAt']),
+      mensajeChat: json['message'] is Map<String, dynamic>
+          ? json['message'] as Map<String, dynamic>
+          : null,
     );
   }
 
@@ -38,11 +42,16 @@ class MensajeTiempoReal {
 
   static const intervaloRespaldo = Duration(seconds: 30);
 
-  /// Tipos de aviso del contrato 1.0.0. Los demás se ignoran.
+  /// Tipos de aviso del contrato 1.1.0. Los demás se ignoran.
   static const autenticacionAceptada = 'auth.accepted';
   static const cambioDeEstado = 'service-request.status-changed';
   static const ofertaCreada = 'offer.created';
   static const conteosCambiaron = 'service-request.counts-changed';
+
+  /// Mensaje nuevo en el chat de una solicitud (1.1.0, ADR-026). A diferencia
+  /// de los demás avisos, trae el mensaje completo: la conversación lo agrega
+  /// sin volver a pedir el historial.
+  static const mensajeDeChat = 'chat.message';
 
   final String tipo;
   final String? serviceRequestId;
@@ -53,7 +62,14 @@ class MensajeTiempoReal {
   /// Solo en `auth.accepted`: vencimiento del token.
   final DateTime? expiraEn;
 
+  /// Solo en `chat.message`: el `ChatMessage` de `communication.v1.yaml`.
+  final Map<String, dynamic>? mensajeChat;
+
   /// Si avisa un cambio de estado de la solicitud [id].
   bool cambiaSolicitud(String id) =>
       tipo == cambioDeEstado && serviceRequestId == id;
+
+  /// Si trae un mensaje nuevo del chat de la solicitud [id].
+  bool esChatDe(String id) =>
+      tipo == mensajeDeChat && serviceRequestId == id && mensajeChat != null;
 }
