@@ -17,3 +17,16 @@ String? validarContrasena(String? valor) {
   if (texto.length > 128) return 'Máximo 128 caracteres.';
   return null;
 }
+
+/// NIT de una empresa cliente: de 5 a 15 dígitos y, opcionalmente, el dígito
+/// de verificación (`900123456-7`), como pide `CompanyData.nit` (identity
+/// 1.8.0). Sin puntos ni espacios.
+String? validarNit(String? valor) {
+  final nit = valor?.trim() ?? '';
+  if (nit.isEmpty) return 'Es obligatorio.';
+  if (!RegExp(r'^[0-9]{5,15}(-[0-9])?$').hasMatch(nit)) {
+    return 'Escribe solo números y, si quieres, el dígito de verificación '
+        '(900123456-7).';
+  }
+  return null;
+}

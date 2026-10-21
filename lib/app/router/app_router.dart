@@ -12,6 +12,8 @@ import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.
 import '../../features/chat/presentation/paginas/chat_page.dart';
 import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
+import '../../features/empresa/presentation/paginas/agregar_usuario_empresa_page.dart';
+import '../../features/empresa/presentation/paginas/usuarios_empresa_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
 import '../../features/notificaciones/presentation/paginas/notificaciones_page.dart';
 import '../../features/pagos/presentation/paginas/comprobante_page.dart';
@@ -112,6 +114,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.altaTecnico,
         builder: (context, state) => const AltaTecnicoPage(),
+      ),
+      GoRoute(
+        path: Rutas.usuariosEmpresa,
+        builder: (context, state) => const UsuariosEmpresaPage(),
+      ),
+      GoRoute(
+        path: Rutas.agregarUsuarioEmpresa,
+        builder: (context, state) => const AgregarUsuarioEmpresaPage(),
       ),
       GoRoute(
         path: Rutas.nuevaSolicitud,

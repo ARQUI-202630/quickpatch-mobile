@@ -23,6 +23,7 @@ Una feature no importa a otra. Lo que usan varias va fuera de `features/`:
 | `disponibilidad/` | Disponibilidad y cobertura del técnico |
 | `equipo/` | Equipo del proveedor e invitaciones |
 | `notificaciones/` | Buzón de notificaciones del usuario |
+| `empresa/` | Usuarios de la empresa cliente del `empresa_contacto` y alta de otros usuarios con invitación |
 | `chat/` | Chat de la solicitud entre el cliente y el técnico asignado (se abre por ruta desde los detalles de `solicitudes/`) |
 | `ofertas/` | Oferta pendiente del técnico: aceptar o rechazar con su cuenta regresiva |
 | `cuenta/` | Pantalla de cuenta |

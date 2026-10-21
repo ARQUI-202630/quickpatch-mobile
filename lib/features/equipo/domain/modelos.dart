@@ -1,3 +1,7 @@
+import '../../../core/invitaciones/invitacion.dart';
+
+export '../../../core/invitaciones/invitacion.dart';
+
 /// Estado de verificación del técnico (`VerificationStatus`, DD 5.3).
 enum EstadoVerificacion {
   pendiente('pendiente', 'Pendiente'),
@@ -72,20 +76,6 @@ class PaginaEquipo {
   final List<TecnicoEquipo> tecnicos;
   final int pagina;
   final int total;
-}
-
-/// Invitación para que el técnico defina su contraseña (`Invitation`): un
-/// enlace de un solo uso que vence a las 72 horas. Solo se ve al crearla.
-class Invitacion {
-  const Invitacion({required this.enlace, required this.venceEn});
-
-  factory Invitacion.desdeJson(Map<String, dynamic> json) => Invitacion(
-    enlace: json['link'] as String,
-    venceEn: DateTime.parse(json['expiresAt'] as String),
-  );
-
-  final String enlace;
-  final DateTime venceEn;
 }
 
 /// Técnico recién dado de alta con su invitación (`ProviderTechnicianCreated`).

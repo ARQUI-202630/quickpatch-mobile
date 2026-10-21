@@ -6,11 +6,11 @@ import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../shared/widgets/hoja_invitacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_equipo.dart';
 import '../../domain/modelos.dart';
-import '../widgets/hoja_invitacion.dart';
 
 /// Equipo del proveedor (RF-16, SCRUM-36 / SCRUM-98): sus técnicos, filtrables
 /// por activo (aprobado) o inactivo, con su especialidad y su verificación.
@@ -131,6 +131,7 @@ class _EquipoPageState extends ConsumerState<EquipoPage> {
         nombre: tecnico.nombre,
         invitacion: invitacion,
         esNueva: true,
+        explicacion: '',
       );
     } on AppException catch (e) {
       if (e.esProblema('contrasena-definida')) {

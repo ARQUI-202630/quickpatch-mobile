@@ -76,7 +76,7 @@ void main() {
     });
   });
 
-  test('registro de empresa agrega razón social y NIT', () async {
+  test('registro de empresa envía la empresa y su primer usuario', () async {
     adaptador.responder = (_) => respuestaJson({'userId': 'u'}, 201);
     await repositorio.registrar(
       const DatosRegistro(
@@ -86,17 +86,24 @@ void main() {
         password: 'secreta123',
         telefono: '6011234567',
         razonSocial: ' Empresa SAS ',
-        nit: '900',
+        nit: ' 900123456-7 ',
+        correoContacto: ' compras@empresa.co ',
+        telefonoContacto: '  ',
       ),
     );
     expect(adaptador.ultima!.path, ApiEndpoints.registroEmpresa);
     expect(adaptador.ultima!.data, {
-      'fullName': 'Laura',
-      'email': 'l@e.co',
-      'password': 'secreta123',
-      'phone': '6011234567',
-      'legalName': 'Empresa SAS',
-      'nit': '900',
+      'company': {
+        'legalName': 'Empresa SAS',
+        'nit': '900123456-7',
+        'contactEmail': 'compras@empresa.co',
+      },
+      'user': {
+        'email': 'l@e.co',
+        'password': 'secreta123',
+        'fullName': 'Laura',
+        'phone': '6011234567',
+      },
     });
   });
 
