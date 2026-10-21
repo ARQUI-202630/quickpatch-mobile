@@ -136,8 +136,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: Rutas.detalleSolicitudPatron,
-        builder: (context, state) =>
-            DetalleSolicitudPage(id: state.pathParameters['id']!),
+        builder: (context, state) => DetalleSolicitudPage(
+          id: state.pathParameters['id']!,
+          soloLectura: state.uri.queryParameters['soloLectura'] == '1',
+        ),
       ),
       GoRoute(
         path: Rutas.chatSolicitudPatron,

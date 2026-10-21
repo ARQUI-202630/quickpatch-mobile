@@ -7,6 +7,8 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/catalogo/categoria.dart';
 import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/session/controlador_sesion.dart';
+import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/icono_categoria.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
@@ -22,6 +24,9 @@ import '../widgets/confirmar_ubicacion.dart';
 /// comparte su ubicación. Sin ella, la app ubica la dirección y le pide
 /// confirmarla (SCRUM-457, ADR-024). Contratos: `POST /v1/service-requests`
 /// y `POST /v1/service-requests/location-preview` (1.3.0).
+///
+/// El `empresa_contacto` la crea a nombre de su empresa con el nombre de la
+/// sede, opcional (RF-08, SCRUM-74, service-request 1.9.0).
 class NuevaSolicitudPage extends ConsumerStatefulWidget {
   const NuevaSolicitudPage({this.categoriaInicial, super.key});
 
@@ -36,6 +41,7 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
   final _formulario = GlobalKey<FormState>();
   final _descripcion = TextEditingController();
   final _direccion = TextEditingController();
+  final _sede = TextEditingController();
   late String? _categoriaId = widget.categoriaInicial;
   Ubicacion? _ubicacion;
   bool _ubicando = false;
@@ -46,8 +52,13 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
   void dispose() {
     _descripcion.dispose();
     _direccion.dispose();
+    _sede.dispose();
     super.dispose();
   }
+
+  bool get _esEmpresa =>
+      ref.read(controladorSesionProvider).value?.usuario.rol ==
+      RolUsuario.empresaContacto;
 
   Future<void> _ubicar() async {
     setState(() {
@@ -88,6 +99,7 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
               descripcion: _descripcion.text,
               ubicacion: ubicacion,
               direccion: _direccion.text,
+              sede: _esEmpresa ? _sede.text : null,
             ),
           );
       if (mounted) context.go(Rutas.detalleSolicitud(solicitud.id));
@@ -235,6 +247,26 @@ class _NuevaSolicitudPageState extends ConsumerState<NuevaSolicitudPage> {
             ),
             const SizedBox(height: QpEspacio.e4),
             const _Paso(3, '¿Dónde es?'),
+            if (_esEmpresa) ...[
+              TextFormField(
+                key: const Key('campo-sede'),
+                controller: _sede,
+                maxLength: 100,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Sede (opcional)',
+                  hintText: 'Por ejemplo, Sede Chapinero',
+                  prefixIcon: Icon(Icons.business_outlined),
+                ),
+                validator: (valor) {
+                  final sede = (valor ?? '').trim();
+                  return sede.isNotEmpty && sede.length < 2
+                      ? 'Escribe el nombre de la sede (mínimo 2 caracteres).'
+                      : null;
+                },
+              ),
+              const SizedBox(height: QpEspacio.e2),
+            ],
             TextFormField(
               key: const Key('campo-direccion'),
               controller: _direccion,

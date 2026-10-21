@@ -194,6 +194,24 @@ class RepositorioSolicitudes {
     return PaginaServiciosTecnico.desdeJson(respuesta.data!);
   });
 
+  /// `GET /v1/service-requests` (1.9.0): las solicitudes del cliente o, para
+  /// el `empresa_contacto`, las de su empresa (RN-SR14), de la más reciente a
+  /// la más antigua.
+  Future<PaginaSolicitudes> misSolicitudes({
+    EstadoSolicitud? estado,
+    int pagina = 1,
+  }) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.solicitudes,
+      queryParameters: {
+        'status': ?estado?.valor,
+        'page': pagina,
+        'size': tamanoPagina,
+      },
+    );
+    return PaginaSolicitudes.desdeJson(respuesta.data!);
+  });
+
   Future<T> _llamar<T>(Future<T> Function() llamada) async {
     try {
       return await llamada();

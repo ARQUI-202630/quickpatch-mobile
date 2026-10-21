@@ -33,6 +33,12 @@ abstract final class Rutas {
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';
 
+  /// Solicitud de la empresa creada por otro usuario (RN-SR14): solo lectura.
+  static String detalleSolicitudSoloLectura(String id) => Uri(
+    path: detalleSolicitud(id),
+    queryParameters: {'soloLectura': '1'},
+  ).toString();
+
   /// Chat entre el cliente y el técnico asignado (SCRUM-482). La usan los dos
   /// detalles: el del cliente y el del técnico.
   static const chatSolicitudPatron = '/solicitudes/:id/chat';

@@ -32,10 +32,19 @@ import '../widgets/evidencia_cliente.dart';
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
 /// no está conectado, consulta el detalle cada 30 s (RNF-06).
+///
+/// Con [soloLectura], la solicitud es de la empresa pero la creó otro usuario
+/// (RN-SR14, service-request 1.9.0): se sigue igual, sin cotización, pago,
+/// cancelación ni chat, que son de quien la creó.
 class DetalleSolicitudPage extends ConsumerStatefulWidget {
-  const DetalleSolicitudPage({required this.id, super.key});
+  const DetalleSolicitudPage({
+    required this.id,
+    this.soloLectura = false,
+    super.key,
+  });
 
   final String id;
+  final bool soloLectura;
 
   @override
   ConsumerState<DetalleSolicitudPage> createState() =>
@@ -125,11 +134,26 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               const SizedBox(height: QpEspacio.e3),
               _EncabezadoEstado(s.estado),
               const SizedBox(height: QpEspacio.e4),
-              if (CotizacionCliente.aplica(s.estado)) ...[
+              if (widget.soloLectura) ...[
+                const Card(
+                  key: Key('aviso-solo-lectura'),
+                  child: ListTile(
+                    leading: Icon(Icons.visibility_outlined),
+                    title: Text('La creó otro usuario de tu empresa'),
+                    subtitle: Text(
+                      'Puedes seguir su estado. Responder la cotización, '
+                      'pagar o cancelar le corresponde a quien la creó.',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: QpEspacio.e4),
+              ],
+              if (!widget.soloLectura &&
+                  CotizacionCliente.aplica(s.estado)) ...[
                 CotizacionCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
-              if (PagoCliente.aplica(s.estado)) ...[
+              if (!widget.soloLectura && PagoCliente.aplica(s.estado)) ...[
                 PagoCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
@@ -146,13 +170,13 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               ],
               _TarjetaTecnico(s),
               const SizedBox(height: QpEspacio.e4),
-              if (BotonChat.aplica(s)) ...[
+              if (!widget.soloLectura && BotonChat.aplica(s)) ...[
                 BotonChat(solicitudId: s.id, con: 'el técnico'),
                 const SizedBox(height: QpEspacio.e4),
               ],
               _Datos(s),
               const SizedBox(height: QpEspacio.e4),
-              if (s.estado.cancelable) ...[
+              if (!widget.soloLectura && s.estado.cancelable) ...[
                 _BotonCancelar(solicitudId: s.id, alTerminar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
@@ -448,6 +472,12 @@ class _Datos extends StatelessWidget {
     child: Column(
       children: [
         _Fila(Icons.description_outlined, 'Descripción', solicitud.descripcion),
+        if (solicitud.tipoCliente == TipoCliente.empresa)
+          _Fila(
+            Icons.business_outlined,
+            'Sede',
+            solicitud.sede ?? 'Solicitud de la empresa',
+          ),
         _Fila(Icons.place_outlined, 'Dirección', solicitud.direccion),
         _Fila(
           Icons.schedule_rounded,
