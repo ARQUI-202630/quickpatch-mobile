@@ -59,6 +59,9 @@ abstract final class ApiEndpoints {
   static const notificaciones = '/v1/notifications';
   static String notificacionLeida(String id) => '/v1/notifications/$id/read';
 
+  /// Chat de la solicitud (communication.v1.yaml 1.3.0, ADR-026).
+  static String mensajesChat(String id) => '/v1/service-requests/$id/messages';
+
   // Payments Service
   static String pago(String id) => '/v1/service-requests/$id/payment';
   static String comprobante(String paymentId) =>
