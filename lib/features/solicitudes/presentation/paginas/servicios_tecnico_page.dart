@@ -60,10 +60,6 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
   Object? _error;
   CanalTiempoReal? _canal;
   StreamSubscription<MensajeTiempoReal>? _avisos;
-  Timer? _respaldo;
-
-  /// Espera de la recarga de respaldo cuando el aviso llega antes que el dato.
-  static const esperaRespaldo = Duration(seconds: 2);
 
   @override
   void initState() {
@@ -73,7 +69,6 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
 
   @override
   void dispose() {
-    _respaldo?.cancel();
     unawaited(_avisos?.cancel());
     super.dispose();
   }
@@ -91,22 +86,10 @@ class _ServiciosTecnicoPageState extends ConsumerState<ServiciosTecnicoPage> {
         .listen(_alCambiarEstado);
   }
 
-  Future<void> _alCambiarEstado(MensajeTiempoReal aviso) async {
-    _respaldo?.cancel();
-    await _cargar(silencioso: true);
-    final id = aviso.serviceRequestId;
-    if (!mounted || id == null) return;
-    // Con un filtro de otro estado es normal que el servicio no aparezca.
-    final estado = _filtro.estado;
-    if (estado != null && estado.valor != aviso.status) return;
-    if (_servicios.any((s) => s.id == id)) return;
-    // TODO(SCRUM-466): quitar este respaldo cuando el aviso salga de
-    // ServiceRequest después de guardar el cambio. Hoy Communication lo arma
-    // de los eventos de Matching y puede llegar antes que el dato: se recarga
-    // una sola vez más, solo si el servicio del aviso no apareció.
-    _respaldo = Timer(esperaRespaldo, () {
-      if (mounted) _cargar(silencioso: true);
-    });
+  /// El aviso sale de ServiceRequest después de guardar el cambio
+  /// (SCRUM-466), así que una recarga ya trae el dato.
+  void _alCambiarEstado(MensajeTiempoReal aviso) {
+    unawaited(_cargar(silencioso: true));
   }
 
   /// Carga la primera página del filtro actual. [silencioso] la recarga sin
