@@ -232,63 +232,28 @@ void main() {
       return antes;
     }
 
-    Future<void> esperarRespaldo(WidgetTester tester) async {
-      await tester.pump(const Duration(seconds: 2));
-      await tester.pumpAndSettle();
-    }
-
-    ResponseBody conS3(RequestOptions o) =>
-        respuestaJson(_pagina([_servicio('s-3'), _servicio('s-1')]), 200);
-
-    testWidgets('recarga la lista y, si ya trae el servicio, no repite', (
+    testWidgets('recarga la lista una vez y muestra el servicio', (
       tester,
     ) async {
       await abrir(tester);
-      responder = conS3;
+      responder = (o) =>
+          respuestaJson(_pagina([_servicio('s-3'), _servicio('s-1')]), 200);
       final antes = await avisar(tester, 's-3');
       expect(consultas.length, antes + 1);
       expect(find.text('Fuga de agua en s-3'), findsOneWidget);
-
-      await esperarRespaldo(tester);
-      expect(consultas.length, antes + 1);
     });
 
-    testWidgets(
-      'si el servicio aún no aparece, recarga una vez más a los 2 s',
-      (tester) async {
-        await abrir(tester);
-        // ServiceRequest todavía no guardó la asignación (SCRUM-466).
-        final antes = await avisar(tester, 's-3');
-        expect(consultas.length, antes + 1);
-        expect(find.text('Fuga de agua en s-3'), findsNothing);
-
-        responder = conS3;
-        await esperarRespaldo(tester);
-        expect(consultas.length, antes + 2);
-        expect(find.text('Fuga de agua en s-3'), findsOneWidget);
-      },
-    );
-
-    testWidgets('el respaldo es uno solo aunque el servicio no aparezca', (
+    testWidgets('sin el servicio en la respuesta no vuelve a recargar', (
       tester,
     ) async {
       await abrir(tester);
       final antes = await avisar(tester, 's-3');
-      await esperarRespaldo(tester);
-      await esperarRespaldo(tester);
-      expect(consultas.length, antes + 2);
-    });
+      expect(find.text('Fuga de agua en s-3'), findsNothing);
 
-    testWidgets('con un filtro de otro estado no hay respaldo', (tester) async {
-      await abrir(tester);
-      responder = (o) =>
-          respuestaJson(_pagina([_servicio('s-2', status: 'completado')]), 200);
-      await tester.tap(clave('filtro-completados'));
+      // El aviso sale de ServiceRequest después de guardar (SCRUM-466): ya
+      // no hay recarga de respaldo a los 2 s.
+      await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
-
-      final antes = await avisar(tester, 's-3');
-      expect(consultas.length, antes + 1);
-      await esperarRespaldo(tester);
       expect(consultas.length, antes + 1);
     });
   });
