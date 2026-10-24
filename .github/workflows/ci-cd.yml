@@ -3,8 +3,10 @@
 # Qué corre en cada rama:
 #   PR a develop, push develop → formato, análisis, pruebas y compilación del APK de release
 #   push release/*             → además, el APK contra el API Gateway de QA (config/qa.json) como artefacto `apk-qa`
+#                                y lo publica como GitHub Release vX.Y.Z-qa con el asset quickpatch.apk (SCRUM-628)
 #   push main                  → además, el APK como artefacto `apk` (falta config/produccion.json)
-# La app no se despliega en las VMs: el APK se descarga desde la pestaña Actions.
+# La app no se despliega en las VMs: el APK se descarga desde el último release, que es el que enlaza
+# el botón Descargar de la landing (releases/latest/download/quickpatch.apk).
 name: CI/CD
 
 on:
@@ -28,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
       APK: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
       # release/* es QA (SCRUM-447): la app toma la URL del gateway, el Host y la huella del certificado de
       # config/qa.json, sin secretos (quedan dentro del APK). En PR y develop no se fija ambiente.
@@ -58,6 +61,24 @@ jobs:
       - name: Cobertura mínima
         run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
 
+      # Con los secretos ANDROID_KEYSTORE_* el APK sale firmado con la clave de release; sin ellos,
+      # con la de depuración (android/app/build.gradle.kts). El keystore nunca queda en el repositorio.
+      - name: Firma de release
+        if: env.APK == 'true' && env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+
       - name: APK de release
         run: flutter build apk --release $CONFIG_APK
 
@@ -68,6 +89,37 @@ jobs:
           name: ${{ env.NOMBRE_APK }}
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
+
+  # Publica el APK de QA como GitHub Release (SCRUM-628). La etiqueta sale del nombre de la rama
+  # (release/0.5.0 → v0.5.0-qa) y el release queda como el último para que la landing lo descargue.
+  # Un nuevo push a la misma rama reemplaza el asset del release existente.
+  publicar-apk:
+    name: Publicar el APK
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk-qa
+
+      - name: Crear o actualizar el release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RAMA: ${{ github.ref_name }}
+        run: |
+          VERSION="${RAMA#release/}"
+          ETIQUETA="v${VERSION}-qa"
+          mv app-release.apk quickpatch.apk
+          if gh release view "$ETIQUETA" > /dev/null 2>&1; then
+            gh release upload "$ETIQUETA" quickpatch.apk --clobber
+          else
+            gh release create "$ETIQUETA" quickpatch.apk --target "$GITHUB_SHA" --latest               --title "QUICKPATCH ${VERSION} (QA)"               --notes "APK de la app QUICKPATCH ${VERSION} contra el ambiente de QA (https://qa.quickpatch.internal). Requiere la VPN de la universidad. Compilado desde ${RAMA} (${GITHUB_SHA::7})."
+          fi
 
   dependency-review:
     name: dependency-review
