@@ -66,9 +66,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cobertura
+          name: cobertura-y-resultados
           path: coverage/lcov.info
           if-no-files-found: ignore
+          retention-days: 14
 
       # Con los secretos ANDROID_KEYSTORE_* el APK sale firmado con la clave de release; sin ellos,
       # con la de depuración (android/app/build.gradle.kts). El keystore nunca queda en el repositorio.
