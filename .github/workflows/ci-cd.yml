@@ -61,6 +61,15 @@ jobs:
       - name: Cobertura mínima
         run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
 
+      # SCRUM-602: informe de cobertura, descargable desde la ejecución.
+      - name: Guardar la cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+
       # Con los secretos ANDROID_KEYSTORE_* el APK sale firmado con la clave de release; sin ellos,
       # con la de depuración (android/app/build.gradle.kts). El keystore nunca queda en el repositorio.
       - name: Firma de release
