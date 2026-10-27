@@ -37,7 +37,9 @@ void main() {
     adaptador = AdaptadorFalso((opciones) {
       peticiones.add(opciones);
       final ruta = opciones.path;
-      if (ruta.endsWith('/v1/catalog/categories')) return respuestaCategorias();
+      if (ruta.endsWith('/v1/service-requests/categories')) {
+        return respuestaCategorias();
+      }
       if (ruta.endsWith('/v1/auth/register/technician')) {
         return respuestaRegistro();
       }
@@ -127,7 +129,7 @@ void main() {
     expect(find.text('Plomería'), findsOneWidget);
     expect(find.text('Electricidad'), findsOneWidget);
     final categorias = peticiones.firstWhere(
-      (p) => p.path.endsWith('/v1/catalog/categories'),
+      (p) => p.path.endsWith('/v1/service-requests/categories'),
     );
     expect(categorias.headers['X-Channel-Id'], isNotNull);
     expect(categorias.headers['Authorization'], isNull);

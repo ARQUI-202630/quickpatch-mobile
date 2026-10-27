@@ -141,7 +141,7 @@ void main() {
       if (ruta.endsWith('/v1/auth/login')) {
         return respuestaJson(loginJson(rol: rolLogin), 200);
       }
-      if (ruta.endsWith('/v1/catalog/categories')) {
+      if (ruta.endsWith('/v1/service-requests/categories')) {
         return respuestaJson([
           {'id': _categoria, 'name': 'Plomería', 'description': null},
         ], 200);
@@ -384,7 +384,7 @@ void main() {
     final normal = adaptador.responder;
     var catalogoArriba = false;
     adaptador.responder = (o) =>
-        o.path.endsWith('/v1/catalog/categories') && !catalogoArriba
+        o.path.endsWith('/v1/service-requests/categories') && !catalogoArriba
         ? respuestaJson({'status': 503}, 503)
         : normal(o);
     await abrirComoCliente(tester);

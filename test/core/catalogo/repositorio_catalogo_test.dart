@@ -6,7 +6,7 @@ import 'package:quickpatch_mobile/core/network/api_endpoints.dart';
 
 import '../../helpers/fakes.dart';
 
-/// Catálogo de categorías (`GET /v1/catalog/categories`, catalog.v1.yaml).
+/// Catálogo de categorías (`GET /v1/service-requests/categories`, service-request.v1.yaml 1.8.0, ADR-025).
 void main() {
   late AdaptadorFalso adaptador;
   late RepositorioCatalogo repositorio;

@@ -13,7 +13,7 @@ import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/nuev
 
 import '../../helpers/fakes.dart';
 
-/// Categorías según `Category` de `catalog.v1.yaml`.
+/// Categorías según `Category` de `service-request.v1.yaml 1.8.0, ADR-025`.
 const _categorias = [
   {'id': 'c-plomeria', 'name': 'Plomería', 'description': 'Fugas y tuberías'},
   {'id': 'c-electrico', 'name': 'Eléctrico'},
@@ -87,7 +87,7 @@ void main() {
   );
 
   bool consultoCategorias() =>
-      peticiones.any((o) => o.path == '/v1/catalog/categories');
+      peticiones.any((o) => o.path == '/v1/service-requests/categories');
 
   group('cliente', () {
     testWidgets('ve las categorías de Catalog y su barra de navegación', (

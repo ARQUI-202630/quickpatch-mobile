@@ -17,7 +17,7 @@ class RepositorioLocalidades {
 
   final Dio _dio;
 
-  /// `GET /v1/localities` (`matching.v1.yaml`): catálogo igual para todos los
+  /// `GET /v1/service-requests/localities` (`service-request.v1.yaml` 1.8.0, ADR-025): catálogo igual para todos los
   /// tenants, sin token.
   Future<List<Localidad>> localidades() async {
     try {
