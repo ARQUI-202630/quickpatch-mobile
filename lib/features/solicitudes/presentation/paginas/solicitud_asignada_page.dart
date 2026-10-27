@@ -13,6 +13,7 @@ import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
+import '../widgets/boton_chat.dart';
 import '../widgets/chip_estado.dart';
 import '../widgets/cotizacion_tecnico.dart';
 import '../widgets/ejecucion_tecnico.dart';
@@ -27,7 +28,8 @@ import '../widgets/ejecucion_tecnico.dart';
 /// fondo (R5). Para usar su app de mapas, el técnico copia la dirección: la
 /// app no se la pasa a un tercero (K12). En `asignado` el técnico cotiza
 /// (SCRUM-489, 1.6.0). Con la cotización aceptada inicia el servicio, sube
-/// fotos y lo completa (SCRUM-95, 1.7.0).
+/// fotos y lo completa (SCRUM-95, 1.7.0). Desde aquí abre el chat con el
+/// cliente (SCRUM-482, communication 1.3.0).
 class SolicitudAsignadaPage extends ConsumerWidget {
   const SolicitudAsignadaPage({super.key, required this.id});
 
@@ -65,6 +67,8 @@ class SolicitudAsignadaPage extends ConsumerWidget {
                 _Encabezado(s),
                 const SizedBox(height: QpEspacio.e4),
                 _Cliente(s.cliente),
+                const SizedBox(height: QpEspacio.e3),
+                BotonChat(solicitudId: s.id, con: 'el cliente'),
                 const SizedBox(height: QpEspacio.e4),
                 _Seccion(
                   titulo: 'Qué pasa',

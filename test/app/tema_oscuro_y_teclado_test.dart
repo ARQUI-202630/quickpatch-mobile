@@ -47,6 +47,7 @@ void main() {
       }
       if (o.path.endsWith('/login')) return respuestaJson(loginJson(), 200);
       if (o.path == '/v1/technicians/me/service-requests' ||
+          o.path == '/v1/service-requests' && o.method == 'GET' ||
           o.path == '/v1/matching/offers') {
         return respuestaJson({
           'items': <dynamic>[],

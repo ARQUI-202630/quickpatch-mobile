@@ -26,14 +26,18 @@ class OpcionInicio {
 List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
   RolUsuario.cliente => const [
     OpcionInicio('Nueva solicitud', 'RF-07', ruta: Rutas.nuevaSolicitud),
-    OpcionInicio('Mis solicitudes', 'RF-11'),
+    OpcionInicio('Mis solicitudes', 'RF-11', ruta: Rutas.actividad),
     OpcionInicio('Pagos y comprobantes', 'RF-22'),
   ],
   RolUsuario.empresaContacto => const [
-    OpcionInicio('Nueva solicitud', 'RF-08'),
-    OpcionInicio('Solicitudes de la empresa', 'RF-11'),
+    OpcionInicio('Nueva solicitud', 'RF-08', ruta: Rutas.nuevaSolicitud),
+    OpcionInicio('Solicitudes de la empresa', 'RF-11', ruta: Rutas.actividad),
     OpcionInicio('Pagos y comprobantes', 'RF-22'),
-    OpcionInicio('Usuarios de la empresa', 'RF-06'),
+    OpcionInicio(
+      'Usuarios de la empresa',
+      'RF-06',
+      ruta: Rutas.usuariosEmpresa,
+    ),
   ],
   RolUsuario.tecnico => const [
     OpcionInicio(

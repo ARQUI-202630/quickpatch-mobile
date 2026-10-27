@@ -17,10 +17,15 @@ abstract final class ApiEndpoints {
   static String invitacionTecnico(String userId) =>
       '/v1/providers/me/technicians/$userId/invitation';
 
-  // Pendientes de contrato (DD 3.1).
+  // Cuenta corporativa (identity 1.8.0, RF-06).
   static const registroEmpresa = '/v1/auth/register/company';
-  static const refresh = '/v1/auth/refresh';
+  static const empresaActual = '/v1/companies/me';
   static const usuariosEmpresa = '/v1/companies/me/users';
+  static String invitacionUsuarioEmpresa(String userId) =>
+      '/v1/companies/me/users/$userId/invitation';
+
+  // Pendientes de contrato (DD 3.1).
+  static const refresh = '/v1/auth/refresh';
 
   // Catalog Service: la administración del catálogo queda en Catalog como
   // excepción del ADR-025; la app no la usa.
@@ -62,6 +67,9 @@ abstract final class ApiEndpoints {
   // Communication Service (buzón, communication.v1.yaml 1.2.0, ADR-024)
   static const notificaciones = '/v1/notifications';
   static String notificacionLeida(String id) => '/v1/notifications/$id/read';
+
+  /// Chat de la solicitud (communication.v1.yaml 1.3.0, ADR-026).
+  static String mensajesChat(String id) => '/v1/service-requests/$id/messages';
 
   // Payments Service
   static String pago(String id) => '/v1/service-requests/$id/payment';

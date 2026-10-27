@@ -8,10 +8,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/router/app_router.dart';
 import 'package:quickpatch_mobile/app/router/rutas.dart';
+import 'package:quickpatch_mobile/core/compartir/compartir.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
-import 'package:quickpatch_mobile/features/equipo/data/compartir.dart';
 
 import '../../helpers/fakes.dart';
 

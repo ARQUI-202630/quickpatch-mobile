@@ -25,9 +25,32 @@ abstract final class Rutas {
 
   static const altaTecnico = '/equipo/nuevo';
 
+  /// Usuarios de la empresa cliente y alta de otro usuario (SCRUM-67).
+  static const usuariosEmpresa = '/empresa/usuarios';
+  static const agregarUsuarioEmpresa = '/empresa/usuarios/nuevo';
+
   static const nuevaSolicitud = '/solicitudes/nueva';
   static const detalleSolicitudPatron = '/solicitudes/:id';
   static String detalleSolicitud(String id) => '/solicitudes/$id';
+
+  /// Solicitud de la empresa creada por otro usuario (RN-SR14): solo lectura.
+  static String detalleSolicitudSoloLectura(String id) => Uri(
+    path: detalleSolicitud(id),
+    queryParameters: {'soloLectura': '1'},
+  ).toString();
+
+  /// Chat entre el cliente y el técnico asignado (SCRUM-482). La usan los dos
+  /// detalles: el del cliente y el del técnico.
+  static const chatSolicitudPatron = '/solicitudes/:id/chat';
+  static String chatSolicitud(String id) => '/solicitudes/$id/chat';
+
+  /// Pago con tarjeta de una solicitud completada (SCRUM-116).
+  static const pagarSolicitudPatron = '/solicitudes/:id/pagar';
+  static String pagarSolicitud(String id) => '/solicitudes/$id/pagar';
+
+  /// Comprobante de un pago aprobado (SCRUM-494).
+  static const comprobantePatron = '/pagos/:id/comprobante';
+  static String comprobante(String pagoId) => '/pagos/$pagoId/comprobante';
 
   /// Nueva solicitud con la categoría ya elegida desde el inicio.
   static String nuevaSolicitudEn(String categoriaId) => Uri(

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
-import '../../../../core/config/app_config.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
@@ -13,8 +12,11 @@ import '../../../../shared/widgets/mensaje_error.dart';
 import '../../domain/datos_registro.dart';
 import '../acciones_sesion.dart';
 
-/// Registro de cliente hogar (RF-01) o empresa cliente (RF-06).
-/// Al terminar inicia sesión y el router lleva al inicio.
+/// Registro de cliente hogar (RF-01) o empresa cliente (RF-06, SCRUM-67).
+/// La empresa se registra con su razón social, su NIT y su contacto
+/// corporativo, y quien la registra queda como su primer usuario
+/// (`POST /v1/auth/register/company`, identity 1.8.0). Al terminar inicia
+/// sesión y el router lleva al inicio.
 class RegistroPage extends ConsumerStatefulWidget {
   const RegistroPage({super.key});
 
@@ -31,6 +33,8 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
   final _confirmacion = TextEditingController();
   final _razonSocial = TextEditingController();
   final _nit = TextEditingController();
+  final _correoContacto = TextEditingController();
+  final _telefonoContacto = TextEditingController();
   TipoCuenta _tipo = TipoCuenta.hogar;
   bool _enviando = false;
   AppException? _error;
@@ -45,6 +49,8 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
       _confirmacion,
       _razonSocial,
       _nit,
+      _correoContacto,
+      _telefonoContacto,
     ]) {
       c.dispose();
     }
@@ -67,6 +73,8 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
               telefono: _telefono.text,
               razonSocial: _razonSocial.text,
               nit: _nit.text,
+              correoContacto: _correoContacto.text,
+              telefonoContacto: _telefonoContacto.text,
             ),
           );
     } on AppException catch (e) {
@@ -76,13 +84,37 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
     }
   }
 
+  /// Error del backend para [campo]. En el registro de empresa los errores
+  /// llegan con prefijo (`company.nit`, `user.email`); un `409` se muestra
+  /// junto al dato repetido.
+  String? _errorDe(String campo) {
+    final error = _error;
+    if (error == null) return null;
+    if (campo == 'nit' && error.esProblema('nit-registrado')) {
+      return 'Ya hay una empresa registrada con este NIT.';
+    }
+    if (campo == 'email' && error.esProblema('correo-registrado')) {
+      return 'Ya hay una cuenta con este correo.';
+    }
+    const deEmpresa = {'legalName', 'nit', 'contactEmail', 'contactPhone'};
+    final prefijo = deEmpresa.contains(campo) ? 'company.' : 'user.';
+    return error.errorDe('$prefijo$campo') ?? error.errorDe(campo);
+  }
+
   /// Muestra junto al campo el error que devolvió el backend para ese campo.
   InputDecoration _decoracion(String etiqueta, String campo, IconData icono) =>
       InputDecoration(
         labelText: etiqueta,
-        errorText: _error?.errorDe(campo),
+        errorText: _errorDe(campo),
         prefixIcon: Icon(icono),
       );
+
+  /// Un `409` ya se explica junto al dato repetido; los demás errores
+  /// también se resumen debajo del formulario.
+  bool get _errorGeneral =>
+      _error != null &&
+      !_error!.esProblema('nit-registrado') &&
+      !_error!.esProblema('correo-registrado');
 
   @override
   Widget build(BuildContext context) {
@@ -111,29 +143,26 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
                     style: texto.bodyMedium?.copyWith(color: secundario),
                   ),
                   const SizedBox(height: QpEspacio.e5),
-                  if (AppConfig.registroEmpresaHabilitado)
-                    SegmentedButton<TipoCuenta>(
-                      key: const Key('selector-tipo'),
-                      segments: const [
-                        ButtonSegment(
-                          value: TipoCuenta.hogar,
-                          label: Text('Hogar'),
-                          icon: Icon(Icons.home_outlined),
-                        ),
-                        ButtonSegment(
-                          value: TipoCuenta.empresa,
-                          label: Text('Empresa'),
-                          icon: Icon(Icons.business_outlined),
-                        ),
-                      ],
-                      selected: {_tipo},
-                      onSelectionChanged: (s) =>
-                          setState(() => _tipo = s.first),
-                    ),
-                  if (AppConfig.registroEmpresaHabilitado)
-                    const SizedBox(height: QpEspacio.e5),
-                  const _Seccion('Tus datos'),
+                  SegmentedButton<TipoCuenta>(
+                    key: const Key('selector-tipo'),
+                    segments: const [
+                      ButtonSegment(
+                        value: TipoCuenta.hogar,
+                        label: Text('Hogar'),
+                        icon: Icon(Icons.home_outlined),
+                      ),
+                      ButtonSegment(
+                        value: TipoCuenta.empresa,
+                        label: Text('Empresa'),
+                        icon: Icon(Icons.business_outlined),
+                      ),
+                    ],
+                    selected: {_tipo},
+                    onSelectionChanged: (s) => setState(() => _tipo = s.first),
+                  ),
+                  const SizedBox(height: QpEspacio.e5),
                   if (esEmpresa) ...[
+                    const _Seccion('Tu empresa'),
                     TextFormField(
                       key: const Key('campo-razon-social'),
                       controller: _razonSocial,
@@ -155,10 +184,40 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
                         'nit',
                         Icons.badge_outlined,
                       ),
-                      validator: (v) => _obligatorio(v, 30),
+                      keyboardType: TextInputType.phone,
+                      validator: validarNit,
                     ),
                     const SizedBox(height: QpEspacio.e4),
+                    TextFormField(
+                      key: const Key('campo-correo-contacto'),
+                      controller: _correoContacto,
+                      keyboardType: TextInputType.emailAddress,
+                      textInputAction: TextInputAction.next,
+                      decoration: _decoracion(
+                        'Correo de contacto de la empresa',
+                        'contactEmail',
+                        Icons.alternate_email_rounded,
+                      ),
+                      validator: validarEmail,
+                    ),
+                    const SizedBox(height: QpEspacio.e4),
+                    TextFormField(
+                      key: const Key('campo-telefono-contacto'),
+                      controller: _telefonoContacto,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      decoration: _decoracion(
+                        'Teléfono de la empresa (opcional)',
+                        'contactPhone',
+                        Icons.call_outlined,
+                      ),
+                      validator: (v) => (v ?? '').trim().length > 30
+                          ? 'Máximo 30 caracteres.'
+                          : null,
+                    ),
+                    const SizedBox(height: QpEspacio.e6),
                   ],
+                  const _Seccion('Tus datos'),
                   TextFormField(
                     key: const Key('campo-nombre'),
                     controller: _nombre,
@@ -211,7 +270,7 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
                     etiqueta: 'Contraseña',
                     accionTeclado: TextInputAction.next,
                     pistasAutocompletado: const [AutofillHints.newPassword],
-                    textoError: _error?.errorDe('password'),
+                    textoError: _errorDe('password'),
                     validador: validarContrasena,
                   ),
                   const SizedBox(height: QpEspacio.e1),
@@ -233,7 +292,7 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
                         ? null
                         : 'Las contraseñas no coinciden.',
                   ),
-                  if (_error != null) ...[
+                  if (_errorGeneral) ...[
                     const SizedBox(height: QpEspacio.e4),
                     MensajeError(
                       _error!.mensaje,

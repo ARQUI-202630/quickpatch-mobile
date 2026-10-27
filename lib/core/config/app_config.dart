@@ -49,11 +49,6 @@ class AppConfig {
   /// pública). Si se define, la app confía solo en ese certificado; vacío: se
   /// validan los certificados con las CA del sistema.
   final String certificadoSha256;
-
-  /// El registro de empresa cliente (RF-06) depende de `client_companies`
-  /// (DD 3.1, pendiente de aprobación): se habilita cuando Identity publique
-  /// `POST /v1/auth/register/company`.
-  static const registroEmpresaHabilitado = false;
 }
 
 final appConfigProvider = Provider<AppConfig>(

@@ -8,6 +8,7 @@ import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/core/session/sesion.dart';
+import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/mis_solicitudes_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 
 import '../../helpers/fakes.dart';
@@ -59,6 +60,7 @@ void main() {
       peticiones.add(o);
       if (o.path == '/v1/providers/me/technicians' ||
           o.path == '/v1/technicians/me/service-requests' ||
+          o.path == '/v1/service-requests' ||
           o.path == '/v1/matching/offers') {
         return respuestaJson({
           'items': <dynamic>[],
@@ -172,7 +174,7 @@ void main() {
       expect(find.byKey(const Key('categorias-vacio')), findsOneWidget);
     });
 
-    testWidgets('la pestaña Solicitudes explica lo pendiente y deja crear', (
+    testWidgets('la pestaña Solicitudes lista las suyas y deja crear', (
       tester,
     ) async {
       await abrir(tester);
@@ -180,8 +182,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ActividadPage), findsOneWidget);
-      expect(find.textContaining('RF-11'), findsOneWidget);
-      await tester.tap(find.text('Crear una solicitud'));
+      expect(find.byType(MisSolicitudesPage), findsOneWidget);
+      expect(find.byKey(const Key('solicitudes-vacio')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('boton-nueva-solicitud')));
       await tester.pumpAndSettle();
       expect(find.byType(NuevaSolicitudPage), findsOneWidget);
     });
@@ -256,13 +259,16 @@ void main() {
     );
   });
 
-  testWidgets('empresa cliente ve Solicitudes pero aún no solicita', (
+  testWidgets('empresa cliente solicita y ve las de su empresa (SCRUM-74)', (
     tester,
   ) async {
     await abrir(tester, rol: RolUsuario.empresaContacto);
-    expect(find.text('Bienvenido a QUICKPATCH'), findsOneWidget);
-    expect(find.text('Solicitudes'), findsOneWidget);
-    expect(consultoCategorias(), isFalse);
+    expect(find.text('¿Qué necesitas arreglar hoy?'), findsOneWidget);
+    expect(consultoCategorias(), isTrue);
+    expect(find.text('Usuarios de la empresa'), findsOneWidget);
+    await tester.tap(pestana('Solicitudes'));
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitudes de la empresa'), findsWidgets);
   });
 
   testWidgets('la administración no tiene barra de navegación', (tester) async {

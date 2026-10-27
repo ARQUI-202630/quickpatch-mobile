@@ -9,10 +9,15 @@ import '../../features/autenticacion/presentation/paginas/activar_cuenta_page.da
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
+import '../../features/chat/presentation/paginas/chat_page.dart';
 import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
+import '../../features/empresa/presentation/paginas/agregar_usuario_empresa_page.dart';
+import '../../features/empresa/presentation/paginas/usuarios_empresa_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
 import '../../features/notificaciones/presentation/paginas/notificaciones_page.dart';
+import '../../features/pagos/presentation/paginas/comprobante_page.dart';
+import '../../features/pagos/presentation/paginas/pagar_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/solicitud_asignada_page.dart';
@@ -111,6 +116,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AltaTecnicoPage(),
       ),
       GoRoute(
+        path: Rutas.usuariosEmpresa,
+        builder: (context, state) => const UsuariosEmpresaPage(),
+      ),
+      GoRoute(
+        path: Rutas.agregarUsuarioEmpresa,
+        builder: (context, state) => const AgregarUsuarioEmpresaPage(),
+      ),
+      GoRoute(
         path: Rutas.nuevaSolicitud,
         builder: (context, state) => NuevaSolicitudPage(
           categoriaInicial: state.uri.queryParameters['categoria'],
@@ -123,8 +136,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: Rutas.detalleSolicitudPatron,
+        builder: (context, state) => DetalleSolicitudPage(
+          id: state.pathParameters['id']!,
+          soloLectura: state.uri.queryParameters['soloLectura'] == '1',
+        ),
+      ),
+      GoRoute(
+        path: Rutas.chatSolicitudPatron,
         builder: (context, state) =>
-            DetalleSolicitudPage(id: state.pathParameters['id']!),
+            ChatPage(solicitudId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Rutas.pagarSolicitudPatron,
+        builder: (context, state) =>
+            PagarPage(solicitudId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: Rutas.comprobantePatron,
+        builder: (context, state) =>
+            ComprobantePage(pagoId: state.pathParameters['id']!),
       ),
     ],
   );

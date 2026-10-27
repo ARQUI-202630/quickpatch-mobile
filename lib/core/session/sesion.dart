@@ -29,7 +29,7 @@ class UsuarioSesion {
   final String fullName;
   final RolUsuario rol;
 
-  /// Solo para `empresa_contacto` (pendiente del registro de empresa).
+  /// Solo para `empresa_contacto`: su empresa cliente (identity 1.8.0).
   final String? companyId;
 
   /// Solo para `tecnico` y `proveedor`: `pendiente`, `aprobado`, etc.
