@@ -36,9 +36,13 @@ Map<String, dynamic> _item(
   'siteName': sede,
 };
 
-Map<String, dynamic> _detalle(String id, {String tipo = 'empresa'}) => {
+Map<String, dynamic> _detalle(
+  String id, {
+  String tipo = 'empresa',
+  String estado = 'cotizado',
+}) => {
   'id': id,
-  'status': 'cotizado',
+  'status': estado,
   'categoryId': 'c-1',
   'technicianId': 't-1',
   'description': 'Descripción de $id',
@@ -54,9 +58,11 @@ void main() {
   late List<RequestOptions> peticiones;
   late ResponseBody Function(RequestOptions) listar;
   late ProviderContainer container;
+  late String estadoDetalle;
 
   setUp(() {
     peticiones = [];
+    estadoDetalle = 'cotizado';
     listar = (o) => respuestaJson({
       'items': [
         _item('s-1', tipo: 'empresa', sede: 'Sede Norte'),
@@ -91,7 +97,22 @@ void main() {
       if (o.path == '/v1/service-requests') return listar(o);
       if (o.path.startsWith('/v1/service-requests/s-')) {
         if (o.path.endsWith('/quotes')) return respuestaJson(<dynamic>[], 200);
-        return respuestaJson(_detalle(o.path.split('/').last), 200);
+        if (o.path.endsWith('/evidence')) {
+          return respuestaJson({'items': <dynamic>[]}, 200);
+        }
+        if (o.path.endsWith('/payment')) {
+          return respuestaJson({
+            'paymentId': 'p-1',
+            'serviceRequestId': o.path.split('/')[3],
+            'status': 'pendiente',
+            'amount': '185000.00',
+            'createdAt': '2026-10-21T16:00:00Z',
+          }, 200);
+        }
+        return respuestaJson(
+          _detalle(o.path.split('/').last, estado: estadoDetalle),
+          200,
+        );
       }
       if (o.path.endsWith('/categories')) {
         return respuestaJson([
@@ -144,6 +165,25 @@ void main() {
     expect(clave('boton-chat'), findsNothing);
     expect(find.text('Sede Norte'), findsOneWidget);
   });
+
+  testWidgets(
+    'otro usuario de la empresa puede pagar la solicitud de la empresa (RN-P6)',
+    (tester) async {
+      estadoDetalle = 'completado';
+      await abrir(tester);
+
+      await tester.tap(clave('solicitud-s-2'));
+      await tester.pumpAndSettle();
+
+      expect(clave('aviso-solo-lectura'), findsOneWidget);
+      expect(clave('pago-cliente'), findsOneWidget);
+      expect(clave('boton-cancelar-solicitud'), findsNothing);
+      expect(
+        peticiones.any((p) => p.path == '/v1/service-requests/s-2/payment'),
+        isTrue,
+      );
+    },
+  );
 
   testWidgets('la propia se abre con sus acciones', (tester) async {
     await abrir(tester);

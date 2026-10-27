@@ -141,8 +141,9 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
                     leading: Icon(Icons.visibility_outlined),
                     title: Text('La creó otro usuario de tu empresa'),
                     subtitle: Text(
-                      'Puedes seguir su estado. Responder la cotización, '
-                      'pagar o cancelar le corresponde a quien la creó.',
+                      'Puedes seguir su estado y pagarla a nombre de la '
+                      'empresa. Responder la cotización o cancelar le '
+                      'corresponde a quien la creó.',
                     ),
                   ),
                 ),
@@ -153,7 +154,9 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
                 CotizacionCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
-              if (!widget.soloLectura && PagoCliente.aplica(s.estado)) ...[
+              // El pago de una solicitud de empresa lo hace cualquier usuario de
+              // la empresa (RN-P6, SCRUM-43), no solo quien la creó.
+              if (PagoCliente.aplica(s.estado)) ...[
                 PagoCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
