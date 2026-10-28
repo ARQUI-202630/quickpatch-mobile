@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
-import 'package:quickpatch_mobile/app/shell/inicio_page.dart';
+import 'package:quickpatch_mobile/app/shell/actividad_page.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/core/geo/mapa_localidades.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
@@ -408,35 +408,38 @@ void main() {
     expect(find.text('No pudimos obtener tu ubicación.'), findsOneWidget);
   });
 
-  testWidgets('el detalle se actualiza al deslizar y vuelve al inicio', (
-    tester,
-  ) async {
-    await abrirComoCliente(tester);
-    await llenarFormulario(tester);
-    await tester.tap(find.byKey(const Key('boton-ubicacion')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('boton-enviar')));
-    await tester.pumpAndSettle();
-    expect(find.byType(DetalleSolicitudPage), findsOneWidget);
+  testWidgets(
+    'el detalle se actualiza al deslizar y atrás vuelve a Mis solicitudes',
+    (tester) async {
+      await abrirComoCliente(tester);
+      await llenarFormulario(tester);
+      await tester.tap(find.byKey(const Key('boton-ubicacion')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('boton-enviar')));
+      await tester.pumpAndSettle();
+      expect(find.byType(DetalleSolicitudPage), findsOneWidget);
 
-    var consultas = 0;
-    final normal = adaptador.responder;
-    adaptador.responder = (o) {
-      if (o.path.endsWith('/v1/service-requests/$_solicitud')) consultas++;
-      return normal(o);
-    };
-    await tester.fling(
-      find.byKey(const Key('estado-solicitud')),
-      const Offset(0, 400),
-      1000,
-    );
-    await tester.pumpAndSettle();
-    expect(consultas, 1);
+      var consultas = 0;
+      final normal = adaptador.responder;
+      adaptador.responder = (o) {
+        if (o.path.endsWith('/v1/service-requests/$_solicitud')) consultas++;
+        return normal(o);
+      };
+      await tester.fling(
+        find.byKey(const Key('estado-solicitud')),
+        const Offset(0, 400),
+        1000,
+      );
+      await tester.pumpAndSettle();
+      expect(consultas, 1);
 
-    await tester.tap(find.byTooltip('Inicio'));
-    await tester.pumpAndSettle();
-    expect(find.byType(InicioPage), findsOneWidget);
-  });
+      // Recién creada no hay pantalla anterior: la flecha lleva a Mis solicitudes
+      // (SCRUM-617).
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.byType(ActividadPage), findsOneWidget);
+    },
+  );
 
   test('Solicitud y estados se leen según el contrato', () {
     final s = Solicitud.desdeJson(_solicitudJson());

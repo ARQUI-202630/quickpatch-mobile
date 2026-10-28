@@ -9,6 +9,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/selector_categoria.dart';
 import '../../../../shared/widgets/vista_error.dart';
@@ -114,7 +115,19 @@ class _RegistroTecnicoPageState extends ConsumerState<RegistroTecnicoPage> {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [
+      _nombre,
+      _email,
+      _telefono,
+      _documento,
+      _password,
+      _confirmacion,
+    ],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(

@@ -9,6 +9,7 @@ import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/utils/fechas.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_chat.dart';
 import '../../domain/mensaje_chat.dart';
@@ -174,7 +175,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [_texto],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     _escuchar(ref.watch(canalTiempoRealProvider));
     final yo = ref.watch(controladorSesionProvider).value?.usuario.userId;
 

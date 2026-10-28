@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
@@ -12,6 +11,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/fechas.dart';
+import '../../../../shared/widgets/atras_con_destino.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../pagos/data/repositorio_pagos.dart';
 import '../../../pagos/presentation/widgets/pago_cliente.dart';
@@ -90,7 +90,10 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      AtrasConDestino(destino: Rutas.actividad, child: _contenido(context));
+
+  Widget _contenido(BuildContext context) {
     final canal = ref.watch(canalTiempoRealProvider);
     _escuchar(canal);
     final solicitud = ref.watch(solicitudProvider(widget.id));
@@ -98,11 +101,9 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tu solicitud'),
-        leading: IconButton(
-          tooltip: 'Inicio',
-          icon: const Icon(Icons.home_outlined),
-          onPressed: () => context.go(Rutas.inicio),
-        ),
+        // Recién creada la solicitud, o abierta desde un aviso, no hay pantalla
+        // anterior: atrás lleva a Mis solicitudes (AtrasConDestino).
+        leading: const BackButton(),
       ),
       body: solicitud.when(
         // Al volver a consultar se conserva lo que ya se veía.

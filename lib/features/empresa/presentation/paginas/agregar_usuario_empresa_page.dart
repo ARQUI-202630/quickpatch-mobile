@@ -6,6 +6,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/hoja_invitacion.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../data/repositorio_empresa.dart';
@@ -97,7 +98,12 @@ class _AgregarUsuarioEmpresaPageState
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [_nombre, _email, _telefono],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final texto = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: const Text('Agregar usuario')),

@@ -6,6 +6,7 @@ import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
+import '../../../../shared/widgets/atras_con_destino.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
@@ -82,11 +83,18 @@ class _ActivarCuentaPageState extends ConsumerState<ActivarCuentaPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      AtrasConDestino(destino: Rutas.iniciarSesion, child: _contenido(context));
+
+  Widget _contenido(BuildContext context) {
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(
-      appBar: AppBar(title: const Text('Activa tu cuenta')),
+      appBar: AppBar(
+        title: const Text('Activa tu cuenta'),
+        // Con el enlace de invitación no hay pantalla anterior.
+        leading: const BackButton(),
+      ),
       body: SafeArea(
         child: _activada
             ? Center(
