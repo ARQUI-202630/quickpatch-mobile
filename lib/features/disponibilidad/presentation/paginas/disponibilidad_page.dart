@@ -7,6 +7,7 @@ import '../../../../core/errors/codigo_error.dart';
 import '../../../../core/geo/localidad.dart';
 import '../../../../core/geo/repositorio_localidades.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mapa_bogota.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/vista_error.dart';
@@ -254,81 +255,84 @@ class _SeccionCoberturaState extends ConsumerState<_SeccionCobertura> {
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Recibirás ofertas solo en las localidades que elijas.',
-          style: texto.bodyMedium?.copyWith(color: secundario),
-        ),
-        const SizedBox(height: QpEspacio.e1),
-        Text(
-          '${elegidas.length} de ${lista.length} seleccionadas',
-          key: const Key('conteo-localidades'),
-          style: texto.bodySmall?.copyWith(color: secundario),
-        ),
-        const SizedBox(height: QpEspacio.e3),
-        // Sin el asset del mapa la cobertura sigue funcionando con los chips.
-        if (mapa.value case final mapa?) ...[
-          MapaBogota(
-            mapa: mapa,
-            disponibles: {for (final l in lista) l.codigo},
-            elegidas: elegidas,
-            habilitado: !_guardando,
-            alTocar: (codigo) => _alternar(
-              lista.firstWhere((l) => l.codigo == codigo),
-              desdeMapa: true,
-            ),
+    return ConfirmarSalida(
+      hayCambios: () => cambio,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Recibirás ofertas solo en las localidades que elijas.',
+            style: texto.bodyMedium?.copyWith(color: secundario),
           ),
           const SizedBox(height: QpEspacio.e1),
-          Semantics(
-            liveRegion: true,
-            child: Text(
-              _anuncio ?? '',
-              key: const Key('anuncio-mapa'),
-              style: texto.bodySmall,
-            ),
-          ),
           Text(
-            'Límites: IDECA – Secretaría Distrital de Planeación (CC BY 4.0)',
-            style: texto.labelSmall?.copyWith(color: secundario),
+            '${elegidas.length} de ${lista.length} seleccionadas',
+            key: const Key('conteo-localidades'),
+            style: texto.bodySmall?.copyWith(color: secundario),
           ),
           const SizedBox(height: QpEspacio.e3),
-        ],
-        Wrap(
-          spacing: QpEspacio.e2,
-          runSpacing: QpEspacio.e2,
-          children: [
-            for (final localidad in lista)
-              FilterChip(
-                key: Key('localidad-${localidad.codigo}'),
-                label: Text(localidad.nombre),
-                selected: elegidas.contains(localidad.codigo),
-                onSelected: _guardando ? null : (_) => _alternar(localidad),
+          // Sin el asset del mapa la cobertura sigue funcionando con los chips.
+          if (mapa.value case final mapa?) ...[
+            MapaBogota(
+              mapa: mapa,
+              disponibles: {for (final l in lista) l.codigo},
+              elegidas: elegidas,
+              habilitado: !_guardando,
+              alTocar: (codigo) => _alternar(
+                lista.firstWhere((l) => l.codigo == codigo),
+                desdeMapa: true,
               ),
-          ],
-        ),
-        if (_error != null) ...[
-          const SizedBox(height: QpEspacio.e4),
-          MensajeError(_error!, key: const Key('error-cobertura')),
-        ],
-        const SizedBox(height: QpEspacio.e6),
-        BotonPrincipal(
-          key: const Key('boton-guardar-cobertura'),
-          texto: 'Guardar localidades',
-          cargando: _guardando,
-          alPresionar: cambio ? _guardar : () {},
-        ),
-        if (!cambio)
-          Padding(
-            padding: const EdgeInsets.only(top: QpEspacio.e2),
-            child: Text(
-              'No hay cambios por guardar.',
-              textAlign: TextAlign.center,
-              style: texto.bodySmall?.copyWith(color: secundario),
             ),
+            const SizedBox(height: QpEspacio.e1),
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                _anuncio ?? '',
+                key: const Key('anuncio-mapa'),
+                style: texto.bodySmall,
+              ),
+            ),
+            Text(
+              'Límites: IDECA – Secretaría Distrital de Planeación (CC BY 4.0)',
+              style: texto.labelSmall?.copyWith(color: secundario),
+            ),
+            const SizedBox(height: QpEspacio.e3),
+          ],
+          Wrap(
+            spacing: QpEspacio.e2,
+            runSpacing: QpEspacio.e2,
+            children: [
+              for (final localidad in lista)
+                FilterChip(
+                  key: Key('localidad-${localidad.codigo}'),
+                  label: Text(localidad.nombre),
+                  selected: elegidas.contains(localidad.codigo),
+                  onSelected: _guardando ? null : (_) => _alternar(localidad),
+                ),
+            ],
           ),
-      ],
+          if (_error != null) ...[
+            const SizedBox(height: QpEspacio.e4),
+            MensajeError(_error!, key: const Key('error-cobertura')),
+          ],
+          const SizedBox(height: QpEspacio.e6),
+          BotonPrincipal(
+            key: const Key('boton-guardar-cobertura'),
+            texto: 'Guardar localidades',
+            cargando: _guardando,
+            alPresionar: cambio ? _guardar : () {},
+          ),
+          if (!cambio)
+            Padding(
+              padding: const EdgeInsets.only(top: QpEspacio.e2),
+              child: Text(
+                'No hay cambios por guardar.',
+                textAlign: TextAlign.center,
+                style: texto.bodySmall?.copyWith(color: secundario),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

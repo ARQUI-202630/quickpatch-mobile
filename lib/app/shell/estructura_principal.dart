@@ -7,6 +7,7 @@ import '../../core/session/controlador_sesion.dart';
 import '../../core/session/rol_usuario.dart';
 import '../../features/ofertas/presentation/widgets/escucha_ofertas.dart';
 import '../../features/solicitudes/presentation/widgets/escucha_asignaciones.dart';
+import '../router/rutas.dart';
 import 'escucha_notificaciones.dart';
 import 'navegacion_por_rol.dart';
 
@@ -35,23 +36,31 @@ class EstructuraPrincipal extends ConsumerWidget {
     final contenido = rol == RolUsuario.tecnico
         ? EscuchaAsignaciones(child: EscuchaOfertas(child: child))
         : child;
-    return Scaffold(
-      // El contador del buzón se mantiene al día (SCRUM-459).
-      body: rol != null && tieneBuzon(rol)
-          ? EscuchaNotificaciones(child: contenido)
-          : contenido,
-      bottomNavigationBar: NavigationBar(
-        key: const Key('barra-navegacion'),
-        selectedIndex: indiceDestino(destinos, ubicacion) ?? 0,
-        onDestinationSelected: (i) => context.go(destinos[i].ruta),
-        destinations: [
-          for (final destino in destinos)
-            NavigationDestination(
-              icon: Icon(destino.icono),
-              selectedIcon: Icon(destino.iconoActivo),
-              label: destino.etiqueta,
-            ),
-        ],
+    // En Actividad y Cuenta, atrás vuelve a Inicio; en Inicio sale de la app
+    // (SCRUM-617).
+    return PopScope(
+      canPop: ubicacion == Rutas.inicio,
+      onPopInvokedWithResult: (salio, _) {
+        if (!salio) context.go(Rutas.inicio);
+      },
+      child: Scaffold(
+        // El contador del buzón se mantiene al día (SCRUM-459).
+        body: rol != null && tieneBuzon(rol)
+            ? EscuchaNotificaciones(child: contenido)
+            : contenido,
+        bottomNavigationBar: NavigationBar(
+          key: const Key('barra-navegacion'),
+          selectedIndex: indiceDestino(destinos, ubicacion) ?? 0,
+          onDestinationSelected: (i) => context.go(destinos[i].ruta),
+          destinations: [
+            for (final destino in destinos)
+              NavigationDestination(
+                icon: Icon(destino.icono),
+                selectedIcon: Icon(destino.iconoActivo),
+                label: destino.etiqueta,
+              ),
+          ],
+        ),
       ),
     );
   }

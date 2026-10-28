@@ -128,7 +128,7 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
                           ),
                           TextButton(
                             key: const Key('boton-ir-registro'),
-                            onPressed: () => context.go(Rutas.registro),
+                            onPressed: () => context.push(Rutas.registro),
                             child: const Text('Crear una cuenta'),
                           ),
                         ],
@@ -145,7 +145,8 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
                           ),
                           TextButton(
                             key: const Key('boton-ir-registro-tecnico'),
-                            onPressed: () => context.go(Rutas.registroTecnico),
+                            onPressed: () =>
+                                context.push(Rutas.registroTecnico),
                             child: const Text(
                               'Regístrate como técnico o proveedor',
                             ),
