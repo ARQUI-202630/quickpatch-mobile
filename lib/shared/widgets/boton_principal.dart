@@ -12,7 +12,9 @@ class BotonPrincipal extends StatelessWidget {
   });
 
   final String texto;
-  final VoidCallback alPresionar;
+
+  /// Nulo deja el botón deshabilitado.
+  final VoidCallback? alPresionar;
   final bool cargando;
   final IconData? icono;
 
