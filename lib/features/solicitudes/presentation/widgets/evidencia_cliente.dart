@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import 'cotizacion_tecnico.dart' show SeccionCotizacion;
@@ -30,7 +31,7 @@ class EvidenciaCliente extends ConsumerWidget {
       child: fotos.when(
         skipLoadingOnRefresh: true,
         skipLoadingOnReload: true,
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const IndicadorCarga(etiqueta: 'Cargando las fotos'),
         error: (_, _) => Column(
           key: const Key('error-evidencias'),
           crossAxisAlignment: CrossAxisAlignment.start,
