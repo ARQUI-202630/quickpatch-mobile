@@ -95,6 +95,9 @@ enum CodigoError {
     'pago-en-curso': paymentInProgress,
     'ya-pagado': alreadyPaid,
     'pasarela-sin-respuesta': paymentProviderError,
+    // service-request.v1.yaml 1.10.0 (SCRUM-86).
+    'transicion-invalida': invalidStateTransition,
+    'ya-calificada': alreadyRated,
   };
 
   static CodigoError desdeTipo(String? tipo) {

@@ -13,6 +13,7 @@ import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/atras_con_destino.dart';
 import '../../../../shared/widgets/vista_error.dart';
+import '../../../calificacion/presentation/widgets/calificacion_cliente.dart';
 import '../../../pagos/data/repositorio_pagos.dart';
 import '../../../pagos/presentation/widgets/pago_cliente.dart';
 import '../../data/repositorio_solicitudes.dart';
@@ -26,16 +27,17 @@ import '../widgets/evidencia_cliente.dart';
 /// cancelación (SCRUM-477). Contrato: `GET /v1/service-requests/{id}` y
 /// `POST /v1/service-requests/{id}/cancel` (1.5.0). En `cotizado` el cliente
 /// acepta o rechaza la cotización (SCRUM-489, 1.6.0) y, con el servicio
-/// completado, lo paga (SCRUM-116, payments 1.0.0). Con técnico asignado se
-/// abre el chat con él (SCRUM-482, communication 1.3.0).
+/// completado, lo paga (SCRUM-116, payments 1.0.0). Ya pagado, lo califica
+/// (SCRUM-86, 1.10.0). Con técnico asignado se abre el chat con él (SCRUM-482,
+/// communication 1.3.0).
 ///
 /// El canal `/v1/realtime` (ADR-023) solo avisa que el estado cambió; la
 /// pantalla vuelve a pedir el detalle, que es la fuente de verdad. Si el canal
 /// no está conectado, consulta el detalle cada 30 s (RNF-06).
 ///
 /// Con [soloLectura], la solicitud es de la empresa pero la creó otro usuario
-/// (RN-SR14, service-request 1.9.0): se sigue igual, sin cotización, pago,
-/// cancelación ni chat, que son de quien la creó.
+/// (RN-SR14, service-request 1.9.0): se sigue igual, sin cotización,
+/// calificación, cancelación ni chat, que son de quien la creó.
 class DetalleSolicitudPage extends ConsumerStatefulWidget {
   const DetalleSolicitudPage({
     required this.id,
@@ -159,6 +161,11 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
               // la empresa (RN-P6, SCRUM-43), no solo quien la creó.
               if (PagoCliente.aplica(s.estado)) ...[
                 PagoCliente(solicitud: s, alCambiar: _actualizar),
+                const SizedBox(height: QpEspacio.e4),
+              ],
+              if (!widget.soloLectura &&
+                  CalificacionCliente.aplica(s.estado)) ...[
+                CalificacionCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
               if (EvidenciaCliente.aplica(s.estado)) ...[
