@@ -11,8 +11,8 @@ import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/botones.dart';
 
 /// Pestaña de cuenta: datos de la sesión, edición del perfil (SCRUM-612),
-/// buzón de notificaciones (SCRUM-459), licencias y cierre de sesión
-/// (SCRUM-441).
+/// historial del técnico (SCRUM-101), buzón de notificaciones (SCRUM-459),
+/// licencias y cierre de sesión (SCRUM-441).
 class CuentaPage extends ConsumerWidget {
   const CuentaPage({super.key});
 
@@ -80,6 +80,20 @@ class CuentaPage extends ConsumerWidget {
               onTap: () => context.push(Rutas.editarPerfil),
             ),
           ),
+          if (usuario.rol == RolUsuario.tecnico) ...[
+            const SizedBox(height: QpEspacio.e4),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                key: const Key('fila-historial'),
+                leading: const Icon(Icons.history_rounded),
+                title: const Text('Historial'),
+                subtitle: const Text('Servicios terminados y calificaciones'),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(Rutas.historialTecnico),
+              ),
+            ),
+          ],
           // Buzón (SCRUM-459); el proveedor no tiene (403).
           if (tieneBuzon(usuario.rol)) ...[
             const SizedBox(height: QpEspacio.e4),

@@ -22,6 +22,9 @@ abstract final class Rutas {
 
   static const disponibilidad = '/tecnico/disponibilidad';
 
+  /// Historial del técnico, desde Cuenta (SCRUM-101).
+  static const historialTecnico = '/tecnico/historial';
+
   /// Detalle de la solicitud asignada, para el técnico (SCRUM-92).
   static const solicitudAsignadaPatron = '/tecnico/solicitudes/:id';
   static String solicitudAsignada(String id) => '/tecnico/solicitudes/$id';
