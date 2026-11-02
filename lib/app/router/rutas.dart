@@ -14,6 +14,9 @@ abstract final class Rutas {
   static const actividad = '/actividad';
   static const cuenta = '/cuenta';
 
+  /// Edición del perfil propio, desde Cuenta (SCRUM-612).
+  static const editarPerfil = '/cuenta/perfil';
+
   /// Buzón de notificaciones (SCRUM-459).
   static const notificaciones = '/notificaciones';
 

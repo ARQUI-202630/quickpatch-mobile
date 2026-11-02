@@ -10,8 +10,9 @@ import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/botones.dart';
 
-/// Pestaña de cuenta: datos de la sesión, buzón de notificaciones
-/// (SCRUM-459), licencias y cierre de sesión (SCRUM-441).
+/// Pestaña de cuenta: datos de la sesión, edición del perfil (SCRUM-612),
+/// buzón de notificaciones (SCRUM-459), licencias y cierre de sesión
+/// (SCRUM-441).
 class CuentaPage extends ConsumerWidget {
   const CuentaPage({super.key});
 
@@ -65,6 +66,18 @@ class CuentaPage extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: QpEspacio.e4),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: ListTile(
+              key: const Key('fila-editar-perfil'),
+              leading: const Icon(Icons.edit_outlined),
+              title: const Text('Editar perfil'),
+              subtitle: const Text('Nombre y teléfono'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => context.push(Rutas.editarPerfil),
             ),
           ),
           // Buzón (SCRUM-459); el proveedor no tiene (403).
