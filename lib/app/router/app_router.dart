@@ -11,6 +11,7 @@ import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
 import '../../features/chat/presentation/paginas/chat_page.dart';
 import '../../features/cuenta/presentation/paginas/cuenta_page.dart';
+import '../../features/cuenta/presentation/paginas/editar_perfil_page.dart';
 import '../../features/disponibilidad/presentation/paginas/disponibilidad_page.dart';
 import '../../features/empresa/presentation/paginas/agregar_usuario_empresa_page.dart';
 import '../../features/empresa/presentation/paginas/usuarios_empresa_page.dart';
@@ -102,6 +103,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const NoTransitionPage(child: CuentaPage()),
           ),
         ],
+      ),
+      GoRoute(
+        path: Rutas.editarPerfil,
+        builder: (context, state) => const EditarPerfilPage(),
       ),
       GoRoute(
         path: Rutas.notificaciones,
