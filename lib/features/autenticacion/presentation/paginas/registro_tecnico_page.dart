@@ -9,6 +9,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../../shared/widgets/selector_categoria.dart';
 import '../../../../shared/widgets/vista_error.dart';
@@ -19,7 +20,7 @@ import '../acciones_sesion.dart';
 ///
 /// Contrato: `POST /v1/auth/register/technician` (identity.v1.yaml). La
 /// especialidad sale de las categorías activas del tenant del canal
-/// (`GET /v1/catalog/categories` sin sesión, con `X-Channel-Id`). El tenant
+/// (`GET /v1/service-requests/categories` sin sesión, con `X-Channel-Id`). El tenant
 /// nunca se pide: sale del canal (RN-U5). Al terminar inicia sesión y el
 /// inicio le muestra que su cuenta está en verificación.
 class RegistroTecnicoPage extends ConsumerStatefulWidget {
@@ -114,7 +115,19 @@ class _RegistroTecnicoPageState extends ConsumerState<RegistroTecnicoPage> {
       );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [
+      _nombre,
+      _email,
+      _telefono,
+      _documento,
+      _password,
+      _confirmacion,
+    ],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
     return Scaffold(

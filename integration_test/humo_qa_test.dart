@@ -64,7 +64,9 @@ void main() {
       data: {'email': correo, 'password': clave, 'fullName': 'Humo 448'},
     );
     expect(registro.statusCode, 201);
-    final categorias = await api.get<List<dynamic>>('/v1/catalog/categories');
+    final categorias = await api.get<List<dynamic>>(
+      '/v1/service-requests/categories',
+    );
     final categoria =
         (categorias.data!.first as Map<String, dynamic>)['name'] as String;
     debugPrint('Cliente de prueba: $correo; categoría: $categoria');

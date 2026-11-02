@@ -7,9 +7,10 @@ import '../network/cliente_api.dart';
 import '../network/interceptores.dart';
 import 'categoria.dart';
 
-/// Catálogo de categorías del tenant (`catalog.v1.yaml`,
-/// `GET /v1/catalog/categories`). Lo usan las solicitudes, el registro de
-/// técnicos y el equipo del proveedor.
+/// Categorías del tenant (`GET /v1/service-requests/categories`,
+/// service-request 1.8.0): ServiceRequest las sirve desde su réplica de Catalog
+/// (ADR-025). Lo usan las solicitudes, el registro de técnicos y el equipo del
+/// proveedor.
 class RepositorioCatalogo {
   const RepositorioCatalogo(this._dio);
 

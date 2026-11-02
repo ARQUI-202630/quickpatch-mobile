@@ -81,7 +81,7 @@ void main() {
   AdaptadorFalso adaptador() => AdaptadorFalso((o) {
     peticiones.add(o);
     final ruta = o.path;
-    if (ruta.endsWith('/v1/catalog/categories')) {
+    if (ruta.endsWith('/v1/service-requests/categories')) {
       return respuestaJson(categorias, 200);
     }
     if (ruta.endsWith('/invitation')) {

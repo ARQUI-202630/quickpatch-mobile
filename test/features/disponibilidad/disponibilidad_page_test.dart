@@ -62,7 +62,7 @@ void main() {
   AdaptadorFalso adaptador() => AdaptadorFalso((o) {
     peticiones.add(o);
     final ruta = o.path;
-    if (ruta.endsWith('/v1/localities')) {
+    if (ruta.endsWith('/v1/service-requests/localities')) {
       return respuestaLocalidades?.call() ?? respuestaJson(localidades, 200);
     }
     if (ruta.endsWith('/v1/technicians/me/availability')) {
@@ -158,7 +158,7 @@ void main() {
     expect(find.text('1 de 3 seleccionadas'), findsOneWidget);
 
     final localidadesPublicas = peticiones.firstWhere(
-      (p) => p.path.endsWith('/v1/localities'),
+      (p) => p.path.endsWith('/v1/service-requests/localities'),
     );
     expect(localidadesPublicas.headers['Authorization'], isNull);
     expect(localidadesPublicas.headers['X-Channel-Id'], isNotNull);

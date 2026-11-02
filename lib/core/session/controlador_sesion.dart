@@ -29,6 +29,28 @@ class ControladorSesion extends AsyncNotifier<Sesion?> {
     state = AsyncData(sesion);
   }
 
+  /// Cambia el nombre del usuario de la sesión después de editar el perfil
+  /// (SCRUM-612), para que se vea sin volver a iniciar sesión.
+  Future<void> actualizarNombre(String nombreCompleto) async {
+    final actual = state.value;
+    if (actual == null) return;
+    final u = actual.usuario;
+    final sesion = Sesion(
+      accessToken: actual.accessToken,
+      refreshToken: actual.refreshToken,
+      expiraEn: actual.expiraEn,
+      usuario: UsuarioSesion(
+        userId: u.userId,
+        fullName: nombreCompleto,
+        rol: u.rol,
+        companyId: u.companyId,
+        verificationStatus: u.verificationStatus,
+      ),
+    );
+    await ref.read(almacenSesionProvider).guardar(sesion);
+    state = AsyncData(sesion);
+  }
+
   Future<void> cerrarSesion() async {
     await ref.read(almacenSesionProvider).borrar();
     state = const AsyncData(null);

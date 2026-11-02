@@ -8,6 +8,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/campo_contrasena.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../domain/datos_registro.dart';
 import '../acciones_sesion.dart';
@@ -117,7 +118,22 @@ class _RegistroPageState extends ConsumerState<RegistroPage> {
       !_error!.esProblema('correo-registrado');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [
+      _nombre,
+      _email,
+      _telefono,
+      _password,
+      _confirmacion,
+      _razonSocial,
+      _nit,
+      _correoContacto,
+      _telefonoContacto,
+    ],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final esEmpresa = _tipo == TipoCuenta.empresa;
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;

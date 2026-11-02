@@ -9,6 +9,7 @@ import '../../../../core/errors/codigo_error.dart';
 import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
 import '../../../solicitudes/data/repositorio_solicitudes.dart';
 import '../../data/repositorio_pagos.dart';
@@ -162,7 +163,12 @@ class _PagarPageState extends ConsumerState<PagarPage> {
       (valor?.trim().isEmpty ?? true) ? mensaje : null;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ConfirmarSalida.conTextos(
+    controladores: [_numero, _vencimiento, _cvv, _documento, _correo],
+    child: _contenido(context),
+  );
+
+  Widget _contenido(BuildContext context) {
     final pago = ref.watch(pagoProvider(widget.solicitudId)).value;
     final tema = Theme.of(context);
     return Scaffold(
