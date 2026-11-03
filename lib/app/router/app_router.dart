@@ -20,6 +20,7 @@ import '../../features/notificaciones/presentation/paginas/notificaciones_page.d
 import '../../features/pagos/presentation/paginas/comprobante_page.dart';
 import '../../features/pagos/presentation/paginas/pagar_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
+import '../../features/solicitudes/presentation/paginas/historial_tecnico_page.dart';
 import '../../features/solicitudes/presentation/paginas/nueva_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/solicitud_asignada_page.dart';
 import '../../shared/widgets/vista_cargando.dart';
@@ -115,6 +116,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.disponibilidad,
         builder: (context, state) => const DisponibilidadPage(),
+      ),
+      GoRoute(
+        path: Rutas.historialTecnico,
+        builder: (context, state) => const HistorialTecnicoPage(),
       ),
       GoRoute(
         path: Rutas.altaTecnico,
