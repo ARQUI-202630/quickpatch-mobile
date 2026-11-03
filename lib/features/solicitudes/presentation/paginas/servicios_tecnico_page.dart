@@ -17,12 +17,12 @@ import '../../domain/modelos.dart';
 import '../widgets/tarjeta_solicitud.dart';
 
 /// Filtro de la lista del técnico. El contrato acepta un solo `status`;
-/// los demás estados se ven en «Todos».
+/// los demás estados se ven en «Todos» y, los terminados, en el historial
+/// (SCRUM-101).
 enum FiltroServicios {
   todos('Todos', null),
   asignados('Asignados', EstadoSolicitud.asignado),
-  enProgreso('En progreso', EstadoSolicitud.enProgreso),
-  completados('Completados', EstadoSolicitud.completado);
+  enProgreso('En progreso', EstadoSolicitud.enProgreso);
 
   const FiltroServicios(this.etiqueta, this.estado);
 
