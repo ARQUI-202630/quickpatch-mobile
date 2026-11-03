@@ -47,6 +47,7 @@ void main() {
     Future<Solicitud> Function() obtener, {
     ThemeData? tema,
     Size tamano = const Size(1200, 4200),
+    bool soloLectura = false,
   }) async {
     // Teléfono alto: toda la lista queda construida sin desplazar.
     tester.view.physicalSize = tamano;
@@ -77,7 +78,7 @@ void main() {
         ],
         child: MaterialApp(
           theme: tema ?? AppTheme.claro(),
-          home: const DetalleSolicitudPage(id: 's-1'),
+          home: DetalleSolicitudPage(id: 's-1', soloLectura: soloLectura),
         ),
       ),
     );
@@ -146,6 +147,31 @@ void main() {
       findsOneWidget,
     );
     expect(find.bySemanticsLabel(RegExp('en curso')), findsNothing);
+  });
+
+  testWidgets('pagada: quien la creó ve la calificación (SCRUM-86)', (
+    tester,
+  ) async {
+    await abrir(tester, () async => _solicitud(EstadoSolicitud.pagado));
+    expect(find.byKey(const Key('calificacion-cliente')), findsOneWidget);
+  });
+
+  testWidgets('pagada de otro usuario de la empresa: sin calificación', (
+    tester,
+  ) async {
+    await abrir(
+      tester,
+      () async => _solicitud(EstadoSolicitud.pagado),
+      soloLectura: true,
+    );
+    expect(find.byKey(const Key('calificacion-cliente')), findsNothing);
+  });
+
+  testWidgets('completada, sin pagar: sin calificación (RN-R3)', (
+    tester,
+  ) async {
+    await abrir(tester, () async => _solicitud(EstadoSolicitud.completado));
+    expect(find.byKey(const Key('calificacion-cliente')), findsNothing);
   });
 
   testWidgets('cancelada: sin línea de tiempo ni tarjeta de técnico', (
