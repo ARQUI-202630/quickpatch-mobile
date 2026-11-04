@@ -35,6 +35,10 @@ enum CodigoError {
   paymentInProgress('PAYMENT_IN_PROGRESS', 'Ya hay un pago en proceso.'),
   alreadyPaid('ALREADY_PAID', 'Este servicio ya fue pagado.'),
   alreadyRated('ALREADY_RATED', 'Ya calificaste este servicio.'),
+  tooManyRequests(
+    'TOO_MANY_REQUESTS',
+    'Hiciste varias solicitudes seguidas. Intenta más tarde.',
+  ),
   duplicateResource('DUPLICATE_RESOURCE', 'Ese dato ya está registrado.'),
   categoryUnavailable(
     'CATEGORY_UNAVAILABLE',
@@ -98,6 +102,8 @@ enum CodigoError {
     // service-request.v1.yaml 1.10.0 (SCRUM-86).
     'transicion-invalida': invalidStateTransition,
     'ya-calificada': alreadyRated,
+    // identity.v1.yaml 1.10.0 (SCRUM-626).
+    'demasiadas-solicitudes': tooManyRequests,
   };
 
   static CodigoError desdeTipo(String? tipo) {

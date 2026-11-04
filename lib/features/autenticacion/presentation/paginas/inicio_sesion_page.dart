@@ -103,6 +103,19 @@ class _InicioSesionPageState extends ConsumerState<InicioSesionPage> {
                             ? 'Escribe tu contraseña.'
                             : null,
                       ),
+                      // Recuperación de la contraseña (SCRUM-626); el panel
+                      // no la ofrece porque los administradores no la usan.
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          key: const Key('boton-olvide-contrasena'),
+                          onPressed: () => context.push(
+                            Rutas.recuperarContrasena,
+                            extra: _email.text,
+                          ),
+                          child: const Text('¿Olvidaste tu contraseña?'),
+                        ),
+                      ),
                       if (_error != null) ...[
                         const SizedBox(height: QpEspacio.e4),
                         MensajeError(_error!, key: const Key('mensaje-error')),

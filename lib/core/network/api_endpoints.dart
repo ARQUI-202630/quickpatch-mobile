@@ -13,6 +13,9 @@ abstract final class ApiEndpoints {
   static const login = '/v1/auth/login';
   static const usuarioActual = '/v1/users/me';
   static const definirContrasena = '/v1/auth/password/setup';
+
+  /// Recuperación de la contraseña olvidada (identity 1.10.0, SCRUM-626).
+  static const recuperarContrasena = '/v1/auth/password-recovery';
   static const equipoProveedor = '/v1/providers/me/technicians';
   static String invitacionTecnico(String userId) =>
       '/v1/providers/me/technicians/$userId/invitation';

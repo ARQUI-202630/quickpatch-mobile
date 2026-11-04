@@ -285,6 +285,7 @@ void main() {
       expect(calcularRedireccion(sin, Rutas.inicio), Rutas.iniciarSesion);
       expect(calcularRedireccion(sin, Rutas.iniciarSesion), isNull);
       expect(calcularRedireccion(sin, Rutas.registro), isNull);
+      expect(calcularRedireccion(sin, Rutas.recuperarContrasena), isNull);
     });
 
     test('con sesión sale de las pantallas de entrada', () {
@@ -292,6 +293,7 @@ void main() {
       expect(calcularRedireccion(con, Rutas.iniciarSesion), Rutas.inicio);
       expect(calcularRedireccion(con, Rutas.cargando), Rutas.inicio);
       expect(calcularRedireccion(con, Rutas.registro), Rutas.inicio);
+      expect(calcularRedireccion(con, Rutas.recuperarContrasena), Rutas.inicio);
       expect(calcularRedireccion(con, Rutas.inicio), isNull);
     });
 
