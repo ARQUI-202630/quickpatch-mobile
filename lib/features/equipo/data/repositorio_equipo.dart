@@ -62,3 +62,23 @@ class RepositorioEquipo {
 final repositorioEquipoProvider = Provider<RepositorioEquipo>(
   (ref) => RepositorioEquipo(ref.watch(clienteApiProvider)),
 );
+
+/// Todo el equipo del proveedor, página por página. Lo usan los pagos
+/// recibidos (SCRUM-502) para nombrar al técnico de cada pago, que solo trae
+/// su identificador.
+final equipoCompletoProvider = FutureProvider.autoDispose<List<TecnicoEquipo>>((
+  ref,
+) async {
+  final repositorio = ref.watch(repositorioEquipoProvider);
+  final tecnicos = <TecnicoEquipo>[];
+  for (var pagina = 1; ; pagina++) {
+    final resultado = await repositorio.listar(
+      FiltroEquipo.todos,
+      pagina: pagina,
+    );
+    tecnicos.addAll(resultado.tecnicos);
+    if (resultado.tecnicos.isEmpty || tecnicos.length >= resultado.total) {
+      return tecnicos;
+    }
+  }
+});
