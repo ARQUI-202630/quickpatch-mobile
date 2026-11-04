@@ -303,7 +303,8 @@ class PaginaSolicitudes {
 
 /// Solicitud en la lista del técnico (`TechnicianServiceRequest`,
 /// service-request 1.2.0). Sin dirección, ubicación ni cliente (RN-SR13): el
-/// detalle sigue en `GET /v1/service-requests/{id}`.
+/// detalle sigue en `GET /v1/service-requests/{id}`. Desde 1.10.0 trae la
+/// calificación del cliente, si ya calificó (SCRUM-101).
 class ServicioTecnico {
   const ServicioTecnico({
     required this.id,
@@ -312,6 +313,8 @@ class ServicioTecnico {
     required this.descripcion,
     required this.creadaEn,
     required this.asignadaEn,
+    this.puntaje,
+    this.calificadaEn,
   });
 
   factory ServicioTecnico.desdeJson(Map<String, dynamic> json) =>
@@ -322,6 +325,11 @@ class ServicioTecnico {
         descripcion: json['description'] as String,
         creadaEn: DateTime.parse(json['createdAt'] as String),
         asignadaEn: DateTime.parse(json['assignedAt'] as String),
+        puntaje: json['score'] as int?,
+        calificadaEn: switch (json['ratedAt']) {
+          final String fecha => DateTime.parse(fecha),
+          _ => null,
+        },
       );
 
   final String id;
@@ -330,6 +338,8 @@ class ServicioTecnico {
   final String descripcion;
   final DateTime creadaEn;
   final DateTime asignadaEn;
+  final int? puntaje;
+  final DateTime? calificadaEn;
 }
 
 /// Página de `GET /v1/technicians/me/service-requests`

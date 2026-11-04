@@ -261,6 +261,8 @@ void main() {
   testWidgets('tema oscuro y texto al 200 % sin desbordes', (tester) async {
     await abrir(tester, tema: AppTheme.oscuro(), escalaTexto: 2);
     expect(tester.takeException(), isNull);
-    expect(clave('filtro-completados'), findsOneWidget);
+    expect(clave('filtro-enProgreso'), findsOneWidget);
+    // Los completados pasaron al historial (SCRUM-101).
+    expect(clave('filtro-completados'), findsNothing);
   });
 }
