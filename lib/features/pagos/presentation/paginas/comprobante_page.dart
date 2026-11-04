@@ -5,6 +5,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/boton_principal.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/compartir_archivo.dart';
 import '../../data/repositorio_pagos.dart';
 import '../../domain/pago.dart';
@@ -51,26 +52,16 @@ class _ComprobantePageState extends ConsumerState<ComprobantePage> {
       child: ref
           .watch(comprobanteProvider(widget.pagoId))
           .when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () =>
+                const IndicadorCarga(etiqueta: 'Cargando el comprobante'),
             error: (e, _) => Center(
-              key: const Key('error-comprobante'),
-              child: Padding(
-                padding: const EdgeInsets.all(QpEspacio.pantalla),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      e is AppException
-                          ? e.mensaje
-                          : 'No pudimos cargar el comprobante.',
-                      textAlign: TextAlign.center,
-                    ),
-                    TextButton(
-                      onPressed: () =>
-                          ref.invalidate(comprobanteProvider(widget.pagoId)),
-                      child: const Text('Reintentar'),
-                    ),
-                  ],
+              child: SingleChildScrollView(
+                child: VistaError(
+                  key: const Key('error-comprobante'),
+                  error: e,
+                  titulo: 'No pudimos cargar el comprobante.',
+                  alReintentar: () =>
+                      ref.invalidate(comprobanteProvider(widget.pagoId)),
                 ),
               ),
             ),

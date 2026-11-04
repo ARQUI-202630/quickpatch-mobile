@@ -35,6 +35,15 @@ class UsuarioSesion {
   /// Solo para `tecnico` y `proveedor`: `pendiente`, `aprobado`, etc.
   final String? verificationStatus;
 
+  /// Copia con otro nombre; los demás campos se conservan (SCRUM-621).
+  UsuarioSesion copyWith({String? fullName}) => UsuarioSesion(
+    userId: userId,
+    fullName: fullName ?? this.fullName,
+    rol: rol,
+    companyId: companyId,
+    verificationStatus: verificationStatus,
+  );
+
   Map<String, dynamic> toJson() => {
     'userId': userId,
     'fullName': fullName,
@@ -83,6 +92,14 @@ class Sesion {
   final UsuarioSesion usuario;
 
   bool estaVencida(DateTime ahora) => !ahora.toUtc().isBefore(expiraEn);
+
+  /// Copia con otro usuario; los tokens se conservan (SCRUM-621).
+  Sesion copyWith({UsuarioSesion? usuario}) => Sesion(
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    expiraEn: expiraEn,
+    usuario: usuario ?? this.usuario,
+  );
 
   Map<String, dynamic> toJson() => {
     'accessToken': accessToken,

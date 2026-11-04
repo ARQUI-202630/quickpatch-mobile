@@ -44,6 +44,22 @@ void main() {
       expect(copia.refreshToken, s.refreshToken);
     });
 
+    test('copyWith cambia el nombre y conserva lo demás', () {
+      final s = Sesion.desdeLogin(loginJson(rol: 'tecnico'), ahora);
+      final copia = s.copyWith(
+        usuario: s.usuario.copyWith(fullName: 'Nombre Nuevo'),
+      );
+      expect(copia.usuario.fullName, 'Nombre Nuevo');
+      expect(copia.usuario.toJson()..remove('fullName'), {
+        ...s.usuario.toJson()..remove('fullName'),
+      });
+      expect(copia.accessToken, s.accessToken);
+      expect(copia.refreshToken, s.refreshToken);
+      expect(copia.expiraEn, s.expiraEn);
+      expect(s.copyWith().usuario, same(s.usuario));
+      expect(s.usuario.copyWith().fullName, s.usuario.fullName);
+    });
+
     test('un rol desconocido es un error de formato', () {
       expect(
         () => Sesion.desdeLogin(loginJson(rol: 'hacker'), ahora),
