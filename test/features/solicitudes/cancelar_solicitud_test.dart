@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
+import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
 import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
@@ -158,6 +159,15 @@ void main() {
     await abrir(tester);
     await tester.tap(find.byKey(const Key('boton-cancelar-solicitud')));
     await tester.pumpAndSettle();
+    // SCRUM-638: la acción destructiva va en rojo.
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('confirmar-cancelacion')))
+          .style
+          ?.backgroundColor
+          ?.resolve(const {}),
+      QpEstados.claro.peligro,
+    );
 
     await tester.tap(find.text('Volver'));
     await tester.pumpAndSettle();

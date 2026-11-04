@@ -465,9 +465,9 @@ void main() {
       expect(find.text(enlace), findsOneWidget);
     });
 
-    testWidgets('cancelar no genera nada', (tester) async {
+    testWidgets('volver no genera nada', (tester) async {
       await pedirEnlace(tester);
-      await tocar(tester, find.text('Cancelar'));
+      await tocar(tester, find.text('Volver'));
       expect(posts('/invitation'), isEmpty);
     });
 

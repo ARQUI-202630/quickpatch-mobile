@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'dialogo_confirmacion.dart';
+
 /// Pide confirmación antes de salir de una pantalla con cambios sin guardar:
 /// con la flecha de la barra y con el botón atrás del sistema (SCRUM-617).
 ///
@@ -52,27 +54,16 @@ class ConfirmarSalida extends StatelessWidget {
     child: child,
   );
 
-  static Future<bool> _confirmar(BuildContext context) async {
-    final salir = await showDialog<bool>(
-      context: context,
-      builder: (contexto) => AlertDialog(
-        key: const Key('dialogo-confirmar-salida'),
-        title: const Text('¿Salir sin guardar?'),
-        content: const Text('Si sales ahora, se pierde lo que escribiste.'),
-        actions: [
-          TextButton(
-            key: const Key('seguir-aqui'),
-            onPressed: () => Navigator.of(contexto).pop(false),
-            child: const Text('Seguir aquí'),
-          ),
-          FilledButton(
-            key: const Key('confirmar-salir'),
-            onPressed: () => Navigator.of(contexto).pop(true),
-            child: const Text('Salir'),
-          ),
-        ],
-      ),
-    );
-    return salir ?? false;
-  }
+  /// Salir descarta lo escrito: la acción va en rojo (SCRUM-638).
+  static Future<bool> _confirmar(BuildContext context) => confirmar(
+    context,
+    titulo: '¿Salir sin guardar?',
+    mensaje: 'Si sales ahora, se pierde lo que escribiste.',
+    accion: 'Salir',
+    peligro: true,
+    volver: 'Seguir aquí',
+    clave: const Key('confirmar-salir'),
+    claveVolver: const Key('seguir-aqui'),
+    claveDialogo: const Key('dialogo-confirmar-salida'),
+  );
 }

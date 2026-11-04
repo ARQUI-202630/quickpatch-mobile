@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
+import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
 import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
@@ -202,6 +203,15 @@ void main() {
     await tester.tap(clave('boton-rechazar-oferta'));
     await tester.pumpAndSettle();
     expect(find.textContaining('No tiene penalización'), findsOneWidget);
+    // SCRUM-638: la acción destructiva va en rojo.
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('confirmar-rechazo')))
+          .style
+          ?.backgroundColor
+          ?.resolve(const {}),
+      QpEstados.claro.peligro,
+    );
     await tester.tap(find.text('Volver'));
     await tester.pumpAndSettle();
     expect(peticiones.where((o) => o.method == 'POST'), isEmpty);

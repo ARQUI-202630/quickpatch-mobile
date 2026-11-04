@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../data/selector_fotos.dart';
@@ -94,33 +95,6 @@ class _Ayuda extends StatelessWidget {
   );
 }
 
-Future<bool> _confirmar(
-  BuildContext context, {
-  required String titulo,
-  required String mensaje,
-  required String accion,
-  required Key clave,
-}) async =>
-    await showDialog<bool>(
-      context: context,
-      builder: (contexto) => AlertDialog(
-        title: Text(titulo),
-        content: Text(mensaje),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(contexto).pop(false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            key: clave,
-            onPressed: () => Navigator.of(contexto).pop(true),
-            child: Text(accion),
-          ),
-        ],
-      ),
-    ) ==
-    true;
-
 class _Iniciar extends ConsumerStatefulWidget {
   const _Iniciar({required this.solicitudId, required this.alCambiar});
 
@@ -136,7 +110,7 @@ class _IniciarState extends ConsumerState<_Iniciar> {
 
   Future<void> _iniciar() async {
     final mensajero = ScaffoldMessenger.of(context);
-    final confirmado = await _confirmar(
+    final confirmado = await confirmar(
       context,
       titulo: '¿Iniciar el servicio?',
       mensaje:
@@ -245,7 +219,7 @@ class _EnProgresoState extends ConsumerState<_EnProgreso> {
 
   Future<void> _completar() async {
     final mensajero = ScaffoldMessenger.of(context);
-    final confirmado = await _confirmar(
+    final confirmado = await confirmar(
       context,
       titulo: '¿Marcar el servicio como completado?',
       mensaje:
