@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/reloj.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
@@ -118,28 +119,16 @@ class _CotizacionPendienteState extends ConsumerState<_CotizacionPendiente> {
   Future<void> _aceptar() async {
     final c = widget.cotizacion;
     final mensajero = ScaffoldMessenger.of(context);
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (contexto) => AlertDialog(
-        title: const Text('¿Aceptar la cotización?'),
-        content: Text(
+    final confirmado = await confirmar(
+      context,
+      titulo: '¿Aceptar la cotización?',
+      mensaje:
           'Pagarás ${c.total.formatear()} cuando el técnico termine el '
           'servicio. Después de aceptarla no se puede cambiar.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(contexto).pop(false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            key: const Key('confirmar-aceptar-cotizacion'),
-            onPressed: () => Navigator.of(contexto).pop(true),
-            child: const Text('Aceptar'),
-          ),
-        ],
-      ),
+      accion: 'Aceptar',
+      clave: const Key('confirmar-aceptar-cotizacion'),
     );
-    if (confirmado != true || !mounted) return;
+    if (!confirmado || !mounted) return;
     setState(() => _aceptando = true);
     String aviso;
     try {
@@ -297,64 +286,43 @@ class _DialogoRechazarState extends ConsumerState<_DialogoRechazar> {
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-    final peligro = context.estados.peligro;
-    return AlertDialog(
-      title: const Text('¿Rechazar la cotización?'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              widget.cotizacion.esLaUltima
-                  ? 'Es la tercera cotización: si la rechazas, la solicitud '
-                        'se cancela y no podrás reactivarla.'
-                  : 'El técnico podrá enviarte otra cotización.',
-              key: const Key('explicacion-rechazo'),
-            ),
-            const SizedBox(height: QpEspacio.e4),
-            TextField(
-              key: const Key('campo-motivo-rechazo'),
-              controller: _motivo,
-              enabled: !_enviando,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: LimitesCotizacion.motivoMaximo,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: 'Motivo (opcional)',
-                hintText: 'Por ejemplo: el valor es muy alto',
-                errorText: _error,
-                errorMaxLines: 3,
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Volver'),
-        ),
-        FilledButton(
-          key: const Key('confirmar-rechazo'),
-          style: FilledButton.styleFrom(
-            backgroundColor: peligro,
-            foregroundColor: esquema.surface,
+    return DialogoConfirmacion(
+      titulo: '¿Rechazar la cotización?',
+      contenido: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            widget.cotizacion.esLaUltima
+                ? 'Es la tercera cotización: si la rechazas, la solicitud '
+                      'se cancela y no podrás reactivarla.'
+                : 'El técnico podrá enviarte otra cotización.',
+            key: const Key('explicacion-rechazo'),
           ),
-          onPressed: _enviando ? null : _confirmar,
-          child: _enviando
-              ? Semantics(
-                  label: 'Rechazando',
-                  child: const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : const Text('Rechazar'),
-        ),
-      ],
+          const SizedBox(height: QpEspacio.e4),
+          TextField(
+            key: const Key('campo-motivo-rechazo'),
+            controller: _motivo,
+            enabled: !_enviando,
+            minLines: 2,
+            maxLines: 4,
+            maxLength: LimitesCotizacion.motivoMaximo,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: 'Motivo (opcional)',
+              hintText: 'Por ejemplo: el valor es muy alto',
+              errorText: _error,
+              errorMaxLines: 3,
+            ),
+          ),
+        ],
+      ),
+      accion: 'Rechazar',
+      peligro: true,
+      enviando: _enviando,
+      etiquetaEnviando: 'Rechazando',
+      claveConfirmar: const Key('confirmar-rechazo'),
+      alConfirmar: _confirmar,
     );
   }
 }

@@ -12,6 +12,7 @@ import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/atras_con_destino.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../calificacion/presentation/widgets/calificacion_cliente.dart';
 import '../../../pagos/data/repositorio_pagos.dart';
@@ -623,62 +624,41 @@ class _DialogoCancelarState extends ConsumerState<_DialogoCancelar> {
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-    final peligro = context.estados.peligro;
-    return AlertDialog(
-      title: const Text('¿Cancelar la solicitud?'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Dejaremos de buscar técnico o le avisaremos al técnico '
-              'asignado. No podrás reactivarla.',
-            ),
-            const SizedBox(height: QpEspacio.e4),
-            TextField(
-              key: const Key('campo-motivo-cancelacion'),
-              controller: _motivo,
-              enabled: !_enviando,
-              autofocus: true,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: MotivoCancelacion.maximo,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: 'Motivo',
-                hintText: 'Por ejemplo: ya no necesito el servicio',
-                errorText: _error,
-                errorMaxLines: 3,
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Volver'),
-        ),
-        FilledButton(
-          key: const Key('confirmar-cancelacion'),
-          style: FilledButton.styleFrom(
-            backgroundColor: peligro,
-            foregroundColor: esquema.surface,
+    return DialogoConfirmacion(
+      titulo: '¿Cancelar la solicitud?',
+      contenido: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Dejaremos de buscar técnico o le avisaremos al técnico '
+            'asignado. No podrás reactivarla.',
           ),
-          onPressed: _enviando ? null : _confirmar,
-          child: _enviando
-              ? Semantics(
-                  label: 'Cancelando',
-                  child: const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : const Text('Cancelar solicitud'),
-        ),
-      ],
+          const SizedBox(height: QpEspacio.e4),
+          TextField(
+            key: const Key('campo-motivo-cancelacion'),
+            controller: _motivo,
+            enabled: !_enviando,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            maxLength: MotivoCancelacion.maximo,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: 'Motivo',
+              hintText: 'Por ejemplo: ya no necesito el servicio',
+              errorText: _error,
+              errorMaxLines: 3,
+            ),
+          ),
+        ],
+      ),
+      accion: 'Cancelar solicitud',
+      peligro: true,
+      enviando: _enviando,
+      etiquetaEnviando: 'Cancelando',
+      claveConfirmar: const Key('confirmar-cancelacion'),
+      alConfirmar: _confirmar,
     );
   }
 }
