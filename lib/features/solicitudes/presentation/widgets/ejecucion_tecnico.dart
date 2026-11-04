@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../data/selector_fotos.dart';
 import '../../domain/modelos.dart';
@@ -319,7 +320,7 @@ class _EnProgresoState extends ConsumerState<_EnProgreso> {
               ],
             )
           else if (!fotos.hasValue)
-            const Center(child: CircularProgressIndicator())
+            const IndicadorCarga(etiqueta: 'Cargando las fotos')
           else if (lista.isNotEmpty)
             GaleriaEvidencias(
               solicitudId: widget.solicitudId,

@@ -6,6 +6,7 @@ import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../../solicitudes/domain/modelos.dart';
 import '../../../solicitudes/presentation/widgets/cotizacion_tecnico.dart'
     show SeccionCotizacion;
@@ -43,7 +44,7 @@ class PagoCliente extends ConsumerWidget {
           .when(
             skipLoadingOnRefresh: true,
             skipLoadingOnReload: true,
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const IndicadorCarga(etiqueta: 'Cargando el pago'),
             error: (e, _) => _SinPago(
               noListo:
                   e is AppException && e.codigo == CodigoError.paymentNotReady,
