@@ -7,10 +7,11 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
 import '../domain/pago.dart';
+import '../domain/pago_recibido.dart';
 
-/// Pago de la solicitud y su comprobante. Contrato: `payments.v1.yaml` 1.1.0
-/// (`GET` y `POST /v1/service-requests/{id}/payment` y
-/// `GET /v1/payments/{id}/invoice`).
+/// Pago de la solicitud, su comprobante y los pagos recibidos. Contrato:
+/// `payments.v1.yaml` 1.2.0 (`GET` y `POST /v1/service-requests/{id}/payment`,
+/// `GET /v1/payments/{id}/invoice` y `GET /v1/payments/received`).
 class RepositorioPagos {
   const RepositorioPagos(this._dio);
 
@@ -58,6 +59,29 @@ class RepositorioPagos {
       ),
     );
     return Uint8List.fromList(respuesta.data!);
+  });
+
+  /// Elementos por página de los pagos recibidos (DD 8.1).
+  static const tamanoPagina = 20;
+
+  /// `GET /v1/payments/received` (payments 1.2.0, RF-25): los del técnico
+  /// del token o, para el proveedor, los de su equipo. [tecnicoId] es solo
+  /// para el proveedor; el técnico que lo envía recibe `400`.
+  Future<PaginaPagosRecibidos> recibidos({
+    EstadoPago? estado,
+    String? tecnicoId,
+    int pagina = 1,
+  }) => _llamar(() async {
+    final respuesta = await _dio.get<Map<String, dynamic>>(
+      ApiEndpoints.pagosRecibidos,
+      queryParameters: {
+        'technicianId': ?tecnicoId,
+        'status': ?estado?.valor,
+        'page': pagina,
+        'size': tamanoPagina,
+      },
+    );
+    return PaginaPagosRecibidos.desdeJson(respuesta.data!);
   });
 
   Future<T> _llamar<T>(Future<T> Function() llamada) async {

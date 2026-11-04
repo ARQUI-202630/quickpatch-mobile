@@ -11,8 +11,8 @@ import '../../../../core/session/rol_usuario.dart';
 import '../../../../shared/widgets/botones.dart';
 
 /// Pestaña de cuenta: datos de la sesión, edición del perfil (SCRUM-612),
-/// historial del técnico (SCRUM-101), buzón de notificaciones (SCRUM-459),
-/// licencias y cierre de sesión (SCRUM-441).
+/// historial del técnico (SCRUM-101), pagos recibidos (SCRUM-502), buzón de
+/// notificaciones (SCRUM-459), licencias y cierre de sesión (SCRUM-441).
 class CuentaPage extends ConsumerWidget {
   const CuentaPage({super.key});
 
@@ -91,6 +91,26 @@ class CuentaPage extends ConsumerWidget {
                 subtitle: const Text('Servicios terminados y calificaciones'),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => context.push(Rutas.historialTecnico),
+              ),
+            ),
+          ],
+          // Pagos recibidos (SCRUM-502): los del técnico o los del equipo.
+          if (usuario.rol == RolUsuario.tecnico ||
+              usuario.rol == RolUsuario.proveedor) ...[
+            const SizedBox(height: QpEspacio.e4),
+            Card(
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                key: const Key('fila-mis-pagos'),
+                leading: const Icon(Icons.payments_outlined),
+                title: const Text('Mis pagos'),
+                subtitle: Text(
+                  usuario.rol == RolUsuario.proveedor
+                      ? 'Pagos de los técnicos de tu equipo'
+                      : 'Pagos de tus servicios',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => context.push(Rutas.misPagos),
               ),
             ),
           ],
