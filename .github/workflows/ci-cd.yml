@@ -1,0 +1,199 @@
+# CI/CD de quickpatch-mobile (Flutter).
+# El CI (SCRUM-337) y el CD (SCRUM-338) viven en este archivo, sin workflows de otros repositorios.
+# Qué corre en cada rama:
+#   PR a develop, push develop → formato, análisis, pruebas y compilación del APK de release
+#   push release/*             → además, el APK contra el API Gateway de QA (config/qa.json) como artefacto `apk-qa`
+#                                y lo publica como GitHub Release vX.Y.Z-qa con el asset quickpatch.apk (SCRUM-628)
+#   push main                  → además, el APK contra el API Gateway de producción (config/produccion.json) como artefacto
+#                                `apk-produccion` y, tras la aprobación del ambiente `produccion`, lo publica como GitHub Release
+#                                vX.Y.Z con el asset quickpatch-produccion.apk, SIN marcarlo como el último (SCRUM-641)
+# La app no se despliega en las VMs: el APK se descarga desde el último release, que es el que enlaza
+# el botón Descargar de la landing (releases/latest/download/quickpatch.apk) y sigue siendo el de QA.
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, "release/**", main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # CI propio del repositorio (SCRUM-337): formato, análisis, pruebas, cobertura ≥ 80% y APK de
+  # release (SCRUM-444: compilarlo en cada PR detecta antes un asset o una dependencia rota).
+  ci:
+    name: Análisis, pruebas y cobertura
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      APK: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
+      # release/* es QA (SCRUM-447): la app toma la URL del gateway, el Host y la huella del certificado de
+      # config/qa.json, sin secretos (quedan dentro del APK). En PR y develop no se fija ambiente.
+      # main es producción (SCRUM-641): misma regla con config/produccion.json.
+      CONFIG_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && '--dart-define-from-file=config/qa.json' || (github.ref == 'refs/heads/main' && '--dart-define-from-file=config/produccion.json' || '') }}
+      NOMBRE_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && 'apk-qa' || (github.ref == 'refs/heads/main' && 'apk-produccion' || 'apk') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.5"
+          cache: true
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Formato
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Análisis estático
+        run: flutter analyze
+
+      - name: Pruebas con cobertura
+        run: flutter test --coverage
+
+      - name: Cobertura mínima
+        run: python3 .github/scripts/cobertura.py lcov 80 coverage/lcov.info
+
+      # SCRUM-602: informe de cobertura, descargable desde la ejecución.
+      - name: Guardar la cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-y-resultados
+          path: coverage/lcov.info
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Con los secretos ANDROID_KEYSTORE_* el APK sale firmado con la clave de release; sin ellos,
+      # con la de depuración (android/app/build.gradle.kts). El keystore nunca queda en el repositorio.
+      - name: Firma de release
+        if: env.APK == 'true' && env.ANDROID_KEYSTORE_BASE64 != ''
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > android/release.jks
+          {
+            echo "storeFile=release.jks"
+            echo "storePassword=$ANDROID_KEYSTORE_PASSWORD"
+            echo "keyAlias=$ANDROID_KEY_ALIAS"
+            echo "keyPassword=$ANDROID_KEY_PASSWORD"
+          } > android/key.properties
+
+      - name: APK de release
+        run: flutter build apk --release $CONFIG_APK
+
+      - name: Guardar el APK
+        if: env.APK == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.NOMBRE_APK }}
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+  # Publica el APK de QA como GitHub Release (SCRUM-628). La etiqueta sale del nombre de la rama
+  # (release/0.5.0 → v0.5.0-qa) y el release queda como el último para que la landing lo descargue.
+  # Un nuevo push a la misma rama reemplaza el asset del release existente.
+  publicar-apk:
+    name: Publicar el APK
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk-qa
+
+      - name: Crear o actualizar el release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RAMA: ${{ github.ref_name }}
+        run: |
+          VERSION="${RAMA#release/}"
+          ETIQUETA="v${VERSION}-qa"
+          mv app-release.apk quickpatch.apk
+          if gh release view "$ETIQUETA" > /dev/null 2>&1; then
+            gh release upload "$ETIQUETA" quickpatch.apk --clobber
+          else
+            gh release create "$ETIQUETA" quickpatch.apk --target "$GITHUB_SHA" --latest               --title "QUICKPATCH ${VERSION} (QA)"               --notes "APK de la app QUICKPATCH ${VERSION} contra el ambiente de QA (https://qa.quickpatch.internal). Requiere la VPN de la universidad. Compilado desde ${RAMA} (${GITHUB_SHA::7})."
+          fi
+
+  # Publica el APK de producción como GitHub Release (SCRUM-641), aparte del de QA: etiqueta vX.Y.Z (sin -qa), asset
+  # quickpatch-produccion.apk y `--latest=false`, para que releases/latest (la landing) siga apuntando al APK de QA.
+  # La versión sale de la rama release/* del PR que se mezcló a main. Exige la aprobación del ambiente `produccion`.
+  publicar-apk-produccion:
+    name: Publicar el APK de producción
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: produccion
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk-produccion
+
+      - name: Crear o actualizar el release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          RAMA_PR=$(gh api "repos/${GH_REPO}/commits/${GITHUB_SHA}/pulls" --jq '.[0].head.ref // empty')
+          case "$RAMA_PR" in
+            release/*) VERSION="${RAMA_PR#release/}" ;;
+            *) echo "::error::main solo se promueve desde un PR de release/* (el commit ${GITHUB_SHA} viene de '${RAMA_PR}')."; exit 1 ;;
+          esac
+          ETIQUETA="v${VERSION}"
+          mv app-release.apk quickpatch-produccion.apk
+          if gh release view "$ETIQUETA" > /dev/null 2>&1; then
+            gh release upload "$ETIQUETA" quickpatch-produccion.apk --clobber
+          else
+            gh release create "$ETIQUETA" quickpatch-produccion.apk --target "$GITHUB_SHA" --latest=false \
+              --title "QUICKPATCH ${VERSION} (producción)" \
+              --notes "APK de la app QUICKPATCH ${VERSION} contra el API Gateway de producción (config/produccion.json). No es el último release: la landing sigue descargando el APK de QA."
+          fi
+
+  dependency-review:
+    name: dependency-review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  quality-gate:
+    name: quality-gate
+    if: always()
+    needs: [ci, dependency-review]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validar compuertas
+        env:
+          CI_RESULT: ${{ needs.ci.result }}
+          DEP_RESULT: ${{ needs.dependency-review.result }}
+        run: |
+          test "$CI_RESULT" = "success"
+          test "$DEP_RESULT" = "success" || test "$DEP_RESULT" = "skipped"

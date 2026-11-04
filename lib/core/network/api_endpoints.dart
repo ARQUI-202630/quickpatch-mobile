@@ -1,0 +1,82 @@
+/// Rutas REST que consume la app móvil.
+///
+/// Fuente: `quickpatch-api-gateway/openapi/` en `v0.6.0` (identity 1.7.0,
+/// catalog 1.2.0, service-request 1.3.0, matching 1.0.0 y communication
+/// 1.0.0). Las rutas marcadas
+/// "pendiente de contrato" vienen del catálogo del DD 3.1 y todavía no tienen
+/// especificación publicada: no deben usarse hasta que exista. No agregar
+/// rutas que no estén en el DD.
+abstract final class ApiEndpoints {
+  // Identity Service
+  static const registroCliente = '/v1/auth/register/client';
+  static const registroTecnico = '/v1/auth/register/technician';
+  static const login = '/v1/auth/login';
+  static const usuarioActual = '/v1/users/me';
+  static const definirContrasena = '/v1/auth/password/setup';
+
+  /// Recuperación de la contraseña olvidada (identity 1.10.0, SCRUM-626).
+  static const recuperarContrasena = '/v1/auth/password-recovery';
+  static const equipoProveedor = '/v1/providers/me/technicians';
+  static String invitacionTecnico(String userId) =>
+      '/v1/providers/me/technicians/$userId/invitation';
+
+  // Cuenta corporativa (identity 1.8.0, RF-06).
+  static const registroEmpresa = '/v1/auth/register/company';
+  static const empresaActual = '/v1/companies/me';
+  static const usuariosEmpresa = '/v1/companies/me/users';
+  static String invitacionUsuarioEmpresa(String userId) =>
+      '/v1/companies/me/users/$userId/invitation';
+
+  // Pendientes de contrato (DD 3.1).
+  static const refresh = '/v1/auth/refresh';
+
+  // Catalog Service: la administración del catálogo queda en Catalog como
+  // excepción del ADR-025; la app no la usa.
+
+  // Matching Service: disponibilidad, cobertura y ofertas son excepción del
+  // ADR-025 (el técnico necesita la respuesta al instante).
+  static const disponibilidad = '/v1/technicians/me/availability';
+  static const cobertura = '/v1/technicians/me/coverage';
+  static const ofertas = '/v1/matching/offers';
+  static String aceptarOferta(String attemptId) =>
+      '/v1/matching/offers/$attemptId/accept';
+  static String rechazarOferta(String attemptId) =>
+      '/v1/matching/offers/$attemptId/reject';
+
+  // ServiceRequest Service. Desde 1.8.0 (ADR-025) también sirve las
+  // categorías y las localidades: el gateway solo tiene REST hacia Identity,
+  // ServiceRequest y Payments.
+  static const categorias = '/v1/service-requests/categories';
+  static const localidades = '/v1/service-requests/localities';
+  static const solicitudes = '/v1/service-requests';
+  static const vistaPreviaUbicacion = '/v1/service-requests/location-preview';
+  static String solicitud(String id) => '/v1/service-requests/$id';
+  static String cancelar(String id) => '/v1/service-requests/$id/cancel';
+  static String cotizaciones(String id) => '/v1/service-requests/$id/quotes';
+  static String aceptarCotizacion(String id, String quoteId) =>
+      '/v1/service-requests/$id/quotes/$quoteId/accept';
+  static String rechazarCotizacion(String id, String quoteId) =>
+      '/v1/service-requests/$id/quotes/$quoteId/reject';
+  static String iniciar(String id) => '/v1/service-requests/$id/start';
+  static String evidencias(String id) => '/v1/service-requests/$id/evidence';
+  static String archivoEvidencia(String id, String evidenceId) =>
+      '/v1/service-requests/$id/evidence/$evidenceId/file';
+  static String completar(String id) => '/v1/service-requests/$id/complete';
+  static String calificar(String id) => '/v1/service-requests/$id/rating';
+
+  /// Desde service-request 1.2.0 (RF-17, SCRUM-464).
+  static const historialTecnico = '/v1/technicians/me/service-requests';
+
+  // Communication Service (buzón, communication.v1.yaml 1.2.0, ADR-024)
+  static const notificaciones = '/v1/notifications';
+  static String notificacionLeida(String id) => '/v1/notifications/$id/read';
+
+  /// Chat de la solicitud (communication.v1.yaml 1.3.0, ADR-026).
+  static String mensajesChat(String id) => '/v1/service-requests/$id/messages';
+
+  // Payments Service
+  static String pago(String id) => '/v1/service-requests/$id/payment';
+  static String comprobante(String paymentId) =>
+      '/v1/payments/$paymentId/invoice';
+  static const pagosRecibidos = '/v1/payments/received';
+}

@@ -1,0 +1,64 @@
+import 'package:dio/dio.dart';
+
+import '../../../core/network/api_endpoints.dart';
+import '../../../core/network/interceptores.dart';
+
+/// Llamadas REST de Identity Service usadas en la autenticación.
+class AutenticacionApi {
+  const AutenticacionApi(this._dio);
+
+  final Dio _dio;
+
+  /// DD, sección 8.3.2.
+  Future<Map<String, dynamic>> iniciarSesion(
+    String email,
+    String password,
+  ) async {
+    final respuesta = await _dio.post<Map<String, dynamic>>(
+      ApiEndpoints.login,
+      data: {'email': email, 'password': password},
+      options: opcionesPublicas(),
+    );
+    return respuesta.data!;
+  }
+
+  /// `POST /v1/auth/register/client` (openapi/identity.v1.yaml).
+  Future<void> registrarCliente(Map<String, dynamic> datos) => _dio.post<void>(
+    ApiEndpoints.registroCliente,
+    data: datos,
+    options: opcionesPublicas(),
+  );
+
+  /// `POST /v1/auth/register/technician` (openapi/identity.v1.yaml).
+  Future<void> registrarTecnico(Map<String, dynamic> datos) => _dio.post<void>(
+    ApiEndpoints.registroTecnico,
+    data: datos,
+    options: opcionesPublicas(),
+  );
+
+  /// `POST /v1/auth/password/setup` (identity 1.7.0): el técnico del equipo
+  /// de un proveedor define su contraseña con el token de su invitación. Sin
+  /// token de sesión; el tenant sale del canal (RN-U5). Responde 204.
+  Future<void> definirContrasena(String token, String password) =>
+      _dio.post<void>(
+        ApiEndpoints.definirContrasena,
+        data: {'token': token, 'password': password},
+        options: opcionesPublicas(),
+      );
+
+  /// `POST /v1/auth/password-recovery` (identity 1.10.0): pide la
+  /// recuperación de la contraseña. Sin token de sesión; el tenant sale del
+  /// canal (RN-U5). Responde 202 exista o no la cuenta.
+  Future<void> pedirRecuperacion(String email) => _dio.post<void>(
+    ApiEndpoints.recuperarContrasena,
+    data: {'email': email},
+    options: opcionesPublicas(),
+  );
+
+  /// `POST /v1/auth/register/company` (openapi/identity.v1.yaml).
+  Future<void> registrarEmpresa(Map<String, dynamic> datos) => _dio.post<void>(
+    ApiEndpoints.registroEmpresa,
+    data: datos,
+    options: opcionesPublicas(),
+  );
+}

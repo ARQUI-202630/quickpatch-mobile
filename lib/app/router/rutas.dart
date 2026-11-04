@@ -1,0 +1,73 @@
+/// Rutas de la app. Cada feature agrega aquí las suyas.
+abstract final class Rutas {
+  static const cargando = '/cargando';
+  static const iniciarSesion = '/iniciar-sesion';
+  static const registro = '/registro';
+  static const registroTecnico = '/registro/tecnico';
+
+  /// Pedir la recuperación de la contraseña olvidada (SCRUM-626). El enlace
+  /// que entrega el administrador se abre en el panel web, no aquí.
+  static const recuperarContrasena = '/recuperar-contrasena';
+
+  /// Activación de un técnico del equipo de un proveedor (SCRUM-98). Es la
+  /// ruta del enlace de invitación (`/activar#token=...`), así que no cambia.
+  static const activarCuenta = '/activar';
+
+  // Pestañas de la barra inferior (SCRUM-441).
+  static const inicio = '/inicio';
+  static const actividad = '/actividad';
+  static const cuenta = '/cuenta';
+
+  /// Edición del perfil propio, desde Cuenta (SCRUM-612).
+  static const editarPerfil = '/cuenta/perfil';
+
+  /// Pagos recibidos del técnico o del equipo del proveedor (SCRUM-502).
+  static const misPagos = '/cuenta/pagos';
+
+  /// Buzón de notificaciones (SCRUM-459).
+  static const notificaciones = '/notificaciones';
+
+  static const disponibilidad = '/tecnico/disponibilidad';
+
+  /// Historial del técnico, desde Cuenta (SCRUM-101).
+  static const historialTecnico = '/tecnico/historial';
+
+  /// Detalle de la solicitud asignada, para el técnico (SCRUM-92).
+  static const solicitudAsignadaPatron = '/tecnico/solicitudes/:id';
+  static String solicitudAsignada(String id) => '/tecnico/solicitudes/$id';
+
+  static const altaTecnico = '/equipo/nuevo';
+
+  /// Usuarios de la empresa cliente y alta de otro usuario (SCRUM-67).
+  static const usuariosEmpresa = '/empresa/usuarios';
+  static const agregarUsuarioEmpresa = '/empresa/usuarios/nuevo';
+
+  static const nuevaSolicitud = '/solicitudes/nueva';
+  static const detalleSolicitudPatron = '/solicitudes/:id';
+  static String detalleSolicitud(String id) => '/solicitudes/$id';
+
+  /// Solicitud de la empresa creada por otro usuario (RN-SR14): solo lectura.
+  static String detalleSolicitudSoloLectura(String id) => Uri(
+    path: detalleSolicitud(id),
+    queryParameters: {'soloLectura': '1'},
+  ).toString();
+
+  /// Chat entre el cliente y el técnico asignado (SCRUM-482). La usan los dos
+  /// detalles: el del cliente y el del técnico.
+  static const chatSolicitudPatron = '/solicitudes/:id/chat';
+  static String chatSolicitud(String id) => '/solicitudes/$id/chat';
+
+  /// Pago con tarjeta de una solicitud completada (SCRUM-116).
+  static const pagarSolicitudPatron = '/solicitudes/:id/pagar';
+  static String pagarSolicitud(String id) => '/solicitudes/$id/pagar';
+
+  /// Comprobante de un pago aprobado (SCRUM-494).
+  static const comprobantePatron = '/pagos/:id/comprobante';
+  static String comprobante(String pagoId) => '/pagos/$pagoId/comprobante';
+
+  /// Nueva solicitud con la categoría ya elegida desde el inicio.
+  static String nuevaSolicitudEn(String categoriaId) => Uri(
+    path: nuevaSolicitud,
+    queryParameters: {'categoria': categoriaId},
+  ).toString();
+}

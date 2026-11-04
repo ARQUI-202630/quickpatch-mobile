@@ -1,0 +1,135 @@
+import 'package:dio/dio.dart';
+
+import 'codigo_error.dart';
+
+/// Error de un campo en un `400 VALIDATION_ERROR`.
+class ErrorCampo {
+  const ErrorCampo(this.campo, this.mensaje);
+
+  final String campo;
+  final String mensaje;
+}
+
+/// Error de negocio o de red ya traducido desde el formato Problem Details
+/// (RFC 9457, DD sección 8.1.1).
+class AppException implements Exception {
+  const AppException(
+    this.codigo, {
+    this.status,
+    this.detalle,
+    this.correlationId,
+    this.erroresCampo = const [],
+    this.bloqueadaHasta,
+    this.tipo,
+    this.reintentarEn,
+  });
+
+  factory AppException.desdeDio(DioException e) {
+    return switch (e.type) {
+      DioExceptionType.connectionTimeout ||
+      DioExceptionType.sendTimeout ||
+      DioExceptionType.receiveTimeout ||
+      DioExceptionType.connectionError => const AppException(
+        CodigoError.sinConexion,
+      ),
+      DioExceptionType.badResponse => AppException.desdeRespuesta(
+        e.response?.statusCode,
+        e.response?.data,
+        reintentarEn: _segundos(e.response?.headers.value('retry-after')),
+      ),
+      _ => const AppException(CodigoError.desconocido),
+    };
+  }
+
+  factory AppException.desdeRespuesta(
+    int? status,
+    Object? cuerpo, {
+    Duration? reintentarEn,
+  }) {
+    if (cuerpo is! Map<String, dynamic>) {
+      return AppException(
+        status == 503
+            ? CodigoError.serviceUnavailable
+            : CodigoError.desconocido,
+        status: status,
+        reintentarEn: reintentarEn,
+      );
+    }
+    final errores = _erroresDeCampo(cuerpo['errors']);
+    final bloqueo = cuerpo['lockedUntil'] as String?;
+    final codigo = cuerpo['code'] is String
+        ? CodigoError.desdeCodigo(cuerpo['code'] as String)
+        : CodigoError.desdeTipo(cuerpo['type'] as String?);
+    return AppException(
+      codigo,
+      status: status,
+      detalle: cuerpo['detail'] as String?,
+      correlationId: cuerpo['correlationId'] as String?,
+      erroresCampo: errores,
+      bloqueadaHasta: bloqueo == null ? null : DateTime.parse(bloqueo),
+      tipo: cuerpo['type'] as String?,
+      reintentarEn: reintentarEn,
+    );
+  }
+
+  /// `Retry-After` en segundos; `null` si no llegó o no es un número.
+  static Duration? _segundos(String? valor) =>
+      switch (int.tryParse(valor ?? '')) {
+        final segundos? when segundos >= 0 => Duration(seconds: segundos),
+        _ => null,
+      };
+
+  /// `errors` llega como mapa campo → mensajes (contrato v1) o como lista de
+  /// `{field, message}` (propuesta P-07 del DD).
+  static List<ErrorCampo> _erroresDeCampo(Object? errores) {
+    if (errores is Map<String, dynamic>) {
+      return [
+        for (final entrada in errores.entries)
+          for (final mensaje in (entrada.value as List<dynamic>).cast<String>())
+            ErrorCampo(entrada.key, mensaje),
+      ];
+    }
+    if (errores is List<dynamic>) {
+      return errores
+          .whereType<Map<String, dynamic>>()
+          .map((e) => ErrorCampo(e['field'] as String, e['message'] as String))
+          .toList();
+    }
+    return const [];
+  }
+
+  final CodigoError codigo;
+  final int? status;
+  final String? detalle;
+
+  /// Se muestra en soporte para rastrear la petición en los logs (AC7-E4).
+  final String? correlationId;
+  final List<ErrorCampo> erroresCampo;
+
+  /// Solo en `423 ACCOUNT_LOCKED`.
+  final DateTime? bloqueadaHasta;
+
+  /// `type` de Problem Details tal como llegó. Distingue problemas que
+  /// comparten código, como `correo-registrado` y `documento-registrado`.
+  final String? tipo;
+
+  /// Cuánto esperar antes de repetir la petición, según `Retry-After` (por
+  /// ejemplo, en un `429`).
+  final Duration? reintentarEn;
+
+  /// Si el `type` es el [problema] dado (último segmento de la URL).
+  bool esProblema(String problema) => tipo?.split('/').last == problema;
+
+  String get mensaje => codigo.mensaje;
+
+  /// Mensaje del campo [campo] en un error de validación, si lo hay.
+  String? errorDe(String campo) {
+    for (final e in erroresCampo) {
+      if (e.campo == campo) return e.mensaje;
+    }
+    return null;
+  }
+
+  @override
+  String toString() => 'AppException(${codigo.codigo}, status: $status)';
+}

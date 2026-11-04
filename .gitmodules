@@ -1,0 +1,3 @@
+[submodule "contracts/api-gateway"]
+	path = contracts/api-gateway
+	url = https://github.com/ARQUI-202630/quickpatch-api-gateway.git
