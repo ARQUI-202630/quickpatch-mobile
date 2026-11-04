@@ -22,7 +22,7 @@ lib/
     realtime/, utils/       Mensajes en tiempo real y utilidades (montos)
   features/<capacidad>/     data/, domain/ y presentation/ (autenticacion, inicio, solicitudes)
 test/                       Misma estructura que lib/
-config/                     dev.json y qa.json (sin secretos: quedan dentro del APK)
+config/                     dev.json, qa.json y produccion.json (sin secretos: quedan dentro del APK)
 ```
 
 Las opciones del inicio dependen del rol del usuario (`app/shell/opciones_por_rol.dart`, SCRUM-25).
@@ -84,6 +84,12 @@ flutter test integration_test/humo_qa_test.dart --dart-define-from-file=config/q
 ```
 
 **APK de QA (SCRUM-447):** cada push a `release/*` compila el APK con `config/qa.json` y lo deja como artefacto `apk-qa` del workflow (pestaña Actions, 30 días). En local: `flutter build apk --release --dart-define-from-file=config/qa.json`.
+
+## APK de producción (SCRUM-641)
+
+`config/produccion.json` apunta al mismo gateway de VM1 y fija el mismo certificado (la misma huella SHA-256: el certificado de VM1 cubre `quickpatch.internal` y `qa.quickpatch.internal`), pero envía `Host: quickpatch.internal` para que el Nginx elija producción. Si VM1 regenera su certificado, la huella se actualiza en `qa.json` **y** en `produccion.json`.
+
+Cada push a `main` compila el APK con esa configuración (artefacto `apk-produccion`) y, tras la aprobación del ambiente `produccion` de GitHub, lo publica como GitHub Release `vX.Y.Z` (la versión sale de la rama `release/*` del PR que se mezcló) con el asset `quickpatch-produccion.apk`. **No se marca como el último release**: `releases/latest` (el botón Descargar de la landing) sigue siendo el APK de QA. Se descarga desde `https://github.com/ARQUI-202630/quickpatch-mobile/releases/download/vX.Y.Z/quickpatch-produccion.apk`.
 
 ## Comandos
 

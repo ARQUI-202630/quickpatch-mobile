@@ -4,9 +4,11 @@
 #   PR a develop, push develop → formato, análisis, pruebas y compilación del APK de release
 #   push release/*             → además, el APK contra el API Gateway de QA (config/qa.json) como artefacto `apk-qa`
 #                                y lo publica como GitHub Release vX.Y.Z-qa con el asset quickpatch.apk (SCRUM-628)
-#   push main                  → además, el APK como artefacto `apk` (falta config/produccion.json)
+#   push main                  → además, el APK contra el API Gateway de producción (config/produccion.json) como artefacto
+#                                `apk-produccion` y, tras la aprobación del ambiente `produccion`, lo publica como GitHub Release
+#                                vX.Y.Z con el asset quickpatch-produccion.apk, SIN marcarlo como el último (SCRUM-641)
 # La app no se despliega en las VMs: el APK se descarga desde el último release, que es el que enlaza
-# el botón Descargar de la landing (releases/latest/download/quickpatch.apk).
+# el botón Descargar de la landing (releases/latest/download/quickpatch.apk) y sigue siendo el de QA.
 name: CI/CD
 
 on:
@@ -34,8 +36,9 @@ jobs:
       APK: ${{ github.event_name == 'push' && (startsWith(github.ref, 'refs/heads/release/') || github.ref == 'refs/heads/main') }}
       # release/* es QA (SCRUM-447): la app toma la URL del gateway, el Host y la huella del certificado de
       # config/qa.json, sin secretos (quedan dentro del APK). En PR y develop no se fija ambiente.
-      CONFIG_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && '--dart-define-from-file=config/qa.json' || '' }}
-      NOMBRE_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && 'apk-qa' || 'apk' }}
+      # main es producción (SCRUM-641): misma regla con config/produccion.json.
+      CONFIG_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && '--dart-define-from-file=config/qa.json' || (github.ref == 'refs/heads/main' && '--dart-define-from-file=config/produccion.json' || '') }}
+      NOMBRE_APK: ${{ startsWith(github.ref, 'refs/heads/release/') && 'apk-qa' || (github.ref == 'refs/heads/main' && 'apk-produccion' || 'apk') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -129,6 +132,44 @@ jobs:
             gh release upload "$ETIQUETA" quickpatch.apk --clobber
           else
             gh release create "$ETIQUETA" quickpatch.apk --target "$GITHUB_SHA" --latest               --title "QUICKPATCH ${VERSION} (QA)"               --notes "APK de la app QUICKPATCH ${VERSION} contra el ambiente de QA (https://qa.quickpatch.internal). Requiere la VPN de la universidad. Compilado desde ${RAMA} (${GITHUB_SHA::7})."
+          fi
+
+  # Publica el APK de producción como GitHub Release (SCRUM-641), aparte del de QA: etiqueta vX.Y.Z (sin -qa), asset
+  # quickpatch-produccion.apk y `--latest=false`, para que releases/latest (la landing) siga apuntando al APK de QA.
+  # La versión sale de la rama release/* del PR que se mezcló a main. Exige la aprobación del ambiente `produccion`.
+  publicar-apk-produccion:
+    name: Publicar el APK de producción
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: produccion
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: apk-produccion
+
+      - name: Crear o actualizar el release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          RAMA_PR=$(gh api "repos/${GH_REPO}/commits/${GITHUB_SHA}/pulls" --jq '.[0].head.ref // empty')
+          case "$RAMA_PR" in
+            release/*) VERSION="${RAMA_PR#release/}" ;;
+            *) echo "::error::main solo se promueve desde un PR de release/* (el commit ${GITHUB_SHA} viene de '${RAMA_PR}')."; exit 1 ;;
+          esac
+          ETIQUETA="v${VERSION}"
+          mv app-release.apk quickpatch-produccion.apk
+          if gh release view "$ETIQUETA" > /dev/null 2>&1; then
+            gh release upload "$ETIQUETA" quickpatch-produccion.apk --clobber
+          else
+            gh release create "$ETIQUETA" quickpatch-produccion.apk --target "$GITHUB_SHA" --latest=false \
+              --title "QUICKPATCH ${VERSION} (producción)" \
+              --notes "APK de la app QUICKPATCH ${VERSION} contra el API Gateway de producción (config/produccion.json). No es el último release: la landing sigue descargando el APK de QA."
           fi
 
   dependency-review:
