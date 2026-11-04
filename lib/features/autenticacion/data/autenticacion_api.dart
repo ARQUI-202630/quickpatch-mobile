@@ -46,6 +46,15 @@ class AutenticacionApi {
         options: opcionesPublicas(),
       );
 
+  /// `POST /v1/auth/password-recovery` (identity 1.10.0): pide la
+  /// recuperación de la contraseña. Sin token de sesión; el tenant sale del
+  /// canal (RN-U5). Responde 202 exista o no la cuenta.
+  Future<void> pedirRecuperacion(String email) => _dio.post<void>(
+    ApiEndpoints.recuperarContrasena,
+    data: {'email': email},
+    options: opcionesPublicas(),
+  );
+
   /// `POST /v1/auth/register/company` (openapi/identity.v1.yaml).
   Future<void> registrarEmpresa(Map<String, dynamic> datos) => _dio.post<void>(
     ApiEndpoints.registroEmpresa,

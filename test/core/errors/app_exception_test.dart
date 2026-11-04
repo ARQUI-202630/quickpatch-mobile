@@ -118,6 +118,7 @@ void main() {
       'no-autorizado': CodigoError.forbidden,
       'no-encontrado': CodigoError.notFound,
       'canal-sin-tenant': CodigoError.serviceUnavailable,
+      'demasiadas-solicitudes': CodigoError.tooManyRequests,
     };
     for (final MapEntry(:key, :value) in casos.entries) {
       expect(

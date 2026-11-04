@@ -21,6 +21,7 @@ class AppException implements Exception {
     this.erroresCampo = const [],
     this.bloqueadaHasta,
     this.tipo,
+    this.reintentarEn,
   });
 
   factory AppException.desdeDio(DioException e) {
@@ -34,18 +35,24 @@ class AppException implements Exception {
       DioExceptionType.badResponse => AppException.desdeRespuesta(
         e.response?.statusCode,
         e.response?.data,
+        reintentarEn: _segundos(e.response?.headers.value('retry-after')),
       ),
       _ => const AppException(CodigoError.desconocido),
     };
   }
 
-  factory AppException.desdeRespuesta(int? status, Object? cuerpo) {
+  factory AppException.desdeRespuesta(
+    int? status,
+    Object? cuerpo, {
+    Duration? reintentarEn,
+  }) {
     if (cuerpo is! Map<String, dynamic>) {
       return AppException(
         status == 503
             ? CodigoError.serviceUnavailable
             : CodigoError.desconocido,
         status: status,
+        reintentarEn: reintentarEn,
       );
     }
     final errores = _erroresDeCampo(cuerpo['errors']);
@@ -61,8 +68,16 @@ class AppException implements Exception {
       erroresCampo: errores,
       bloqueadaHasta: bloqueo == null ? null : DateTime.parse(bloqueo),
       tipo: cuerpo['type'] as String?,
+      reintentarEn: reintentarEn,
     );
   }
+
+  /// `Retry-After` en segundos; `null` si no llegó o no es un número.
+  static Duration? _segundos(String? valor) =>
+      switch (int.tryParse(valor ?? '')) {
+        final segundos? when segundos >= 0 => Duration(seconds: segundos),
+        _ => null,
+      };
 
   /// `errors` llega como mapa campo → mensajes (contrato v1) o como lista de
   /// `{field, message}` (propuesta P-07 del DD).
@@ -97,6 +112,10 @@ class AppException implements Exception {
   /// `type` de Problem Details tal como llegó. Distingue problemas que
   /// comparten código, como `correo-registrado` y `documento-registrado`.
   final String? tipo;
+
+  /// Cuánto esperar antes de repetir la petición, según `Retry-After` (por
+  /// ejemplo, en un `429`).
+  final Duration? reintentarEn;
 
   /// Si el `type` es el [problema] dado (último segmento de la URL).
   bool esProblema(String problema) => tipo?.split('/').last == problema;

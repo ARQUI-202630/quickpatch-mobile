@@ -27,6 +27,31 @@ class RepositorioActivacion {
   }
 }
 
+/// Recuperación de la contraseña olvidada (SCRUM-626, identity 1.10.0). El
+/// usuario la pide con su correo; el administrador del tenant le entrega el
+/// enlace, que se abre en el panel web (`/recuperar#token=`).
+class RepositorioRecuperacion {
+  const RepositorioRecuperacion(this._api);
+
+  final AutenticacionApi _api;
+
+  /// Siempre responde igual, exista o no la cuenta. Lanza `AppException`:
+  /// `400 validacion` con `errors.email` o `429 demasiadas-solicitudes` con
+  /// [AppException.reintentarEn].
+  Future<void> pedir(String email) async {
+    try {
+      await _api.pedirRecuperacion(email.trim());
+    } on DioException catch (e) {
+      throw AppException.desdeDio(e);
+    }
+  }
+}
+
+final repositorioRecuperacionProvider = Provider<RepositorioRecuperacion>(
+  (ref) =>
+      RepositorioRecuperacion(AutenticacionApi(ref.watch(clienteApiProvider))),
+);
+
 final repositorioActivacionProvider = Provider<RepositorioActivacion>(
   (ref) =>
       RepositorioActivacion(AutenticacionApi(ref.watch(clienteApiProvider))),

@@ -5,6 +5,10 @@ abstract final class Rutas {
   static const registro = '/registro';
   static const registroTecnico = '/registro/tecnico';
 
+  /// Pedir la recuperación de la contraseña olvidada (SCRUM-626). El enlace
+  /// que entrega el administrador se abre en el panel web, no aquí.
+  static const recuperarContrasena = '/recuperar-contrasena';
+
   /// Activación de un técnico del equipo de un proveedor (SCRUM-98). Es la
   /// ruta del enlace de invitación (`/activar#token=...`), así que no cambia.
   static const activarCuenta = '/activar';

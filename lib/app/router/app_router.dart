@@ -7,6 +7,7 @@ import '../../core/session/sesion.dart';
 import '../../features/autenticacion/domain/enlace_invitacion.dart';
 import '../../features/autenticacion/presentation/paginas/activar_cuenta_page.dart';
 import '../../features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
+import '../../features/autenticacion/presentation/paginas/recuperar_contrasena_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_page.dart';
 import '../../features/autenticacion/presentation/paginas/registro_tecnico_page.dart';
 import '../../features/chat/presentation/paginas/chat_page.dart';
@@ -41,7 +42,8 @@ String? calcularRedireccion(AsyncValue<Sesion?> sesion, String ubicacion) {
   final publica =
       ubicacion == Rutas.iniciarSesion ||
       ubicacion == Rutas.registro ||
-      ubicacion == Rutas.registroTecnico;
+      ubicacion == Rutas.registroTecnico ||
+      ubicacion == Rutas.recuperarContrasena;
   final enEntrada = publica || ubicacion == Rutas.cargando;
   if (!autenticado) {
     return publica ? null : Rutas.iniciarSesion;
@@ -76,6 +78,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.registroTecnico,
         builder: (context, state) => const RegistroTecnicoPage(),
+      ),
+      GoRoute(
+        path: Rutas.recuperarContrasena,
+        builder: (context, state) =>
+            RecuperarContrasenaPage(email: state.extra as String?),
       ),
       GoRoute(
         path: Rutas.activarCuenta,
