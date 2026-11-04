@@ -19,6 +19,7 @@ import '../../features/empresa/presentation/paginas/usuarios_empresa_page.dart';
 import '../../features/equipo/presentation/paginas/alta_tecnico_page.dart';
 import '../../features/notificaciones/presentation/paginas/notificaciones_page.dart';
 import '../../features/pagos/presentation/paginas/comprobante_page.dart';
+import '../../features/pagos/presentation/paginas/mis_pagos_page.dart';
 import '../../features/pagos/presentation/paginas/pagar_page.dart';
 import '../../features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import '../../features/solicitudes/presentation/paginas/historial_tecnico_page.dart';
@@ -115,6 +116,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Rutas.editarPerfil,
         builder: (context, state) => const EditarPerfilPage(),
+      ),
+      GoRoute(
+        path: Rutas.misPagos,
+        builder: (context, state) => const MisPagosPage(),
       ),
       GoRoute(
         path: Rutas.notificaciones,

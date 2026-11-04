@@ -47,7 +47,7 @@ List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
     ),
     OpcionInicio('Ofertas', 'RF-10', ruta: Rutas.actividad),
     OpcionInicio('Mis servicios', 'RF-17', ruta: Rutas.actividad),
-    OpcionInicio('Pagos recibidos', 'RF-25'),
+    OpcionInicio('Pagos recibidos', 'RF-25', ruta: Rutas.misPagos),
   ],
   RolUsuario.proveedor => const [OpcionInicio('Mi equipo', 'RF-16')],
   RolUsuario.adminTenant || RolUsuario.adminPlataforma => const [],

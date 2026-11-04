@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/reloj.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import 'cotizacion_tecnico.dart' show SeccionCotizacion;
@@ -43,7 +44,7 @@ class CotizacionCliente extends ConsumerWidget {
           skipLoadingOnReload: true,
           loading: () => const SeccionCotizacion(
             titulo: 'Cotización',
-            child: Center(child: CircularProgressIndicator()),
+            child: IndicadorCarga(etiqueta: 'Cargando la cotización'),
           ),
           error: (e, _) => SeccionCotizacion(
             key: const Key('error-cotizaciones'),

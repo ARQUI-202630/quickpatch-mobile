@@ -34,18 +34,8 @@ class ControladorSesion extends AsyncNotifier<Sesion?> {
   Future<void> actualizarNombre(String nombreCompleto) async {
     final actual = state.value;
     if (actual == null) return;
-    final u = actual.usuario;
-    final sesion = Sesion(
-      accessToken: actual.accessToken,
-      refreshToken: actual.refreshToken,
-      expiraEn: actual.expiraEn,
-      usuario: UsuarioSesion(
-        userId: u.userId,
-        fullName: nombreCompleto,
-        rol: u.rol,
-        companyId: u.companyId,
-        verificationStatus: u.verificationStatus,
-      ),
+    final sesion = actual.copyWith(
+      usuario: actual.usuario.copyWith(fullName: nombreCompleto),
     );
     await ref.read(almacenSesionProvider).guardar(sesion);
     state = AsyncData(sesion);

@@ -21,6 +21,9 @@ abstract final class Rutas {
   /// Edición del perfil propio, desde Cuenta (SCRUM-612).
   static const editarPerfil = '/cuenta/perfil';
 
+  /// Pagos recibidos del técnico o del equipo del proveedor (SCRUM-502).
+  static const misPagos = '/cuenta/pagos';
+
   /// Buzón de notificaciones (SCRUM-459).
   static const notificaciones = '/notificaciones';
 

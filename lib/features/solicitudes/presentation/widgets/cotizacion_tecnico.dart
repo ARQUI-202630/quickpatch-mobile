@@ -6,6 +6,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../core/utils/monto.dart';
+import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import 'desglose_cotizacion.dart';
@@ -44,7 +45,7 @@ class CotizacionTecnico extends ConsumerWidget {
           skipLoadingOnReload: true,
           loading: () => const SeccionCotizacion(
             titulo: 'Cotización',
-            child: Center(child: CircularProgressIndicator()),
+            child: IndicadorCarga(etiqueta: 'Cargando la cotización'),
           ),
           error: (e, _) => SeccionCotizacion(
             key: const Key('error-cotizaciones'),
