@@ -12,6 +12,7 @@ import 'package:quickpatch_mobile/core/geo/mapa_localidades.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/features/solicitudes/data/proveedor_ubicacion.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
@@ -81,6 +82,7 @@ void main() {
     addTearDown(tester.view.reset);
     container = ProviderContainer(
       overrides: [
+        cifradoContrasenaProvider.overrideWithValue(const CifradoFalso()),
         almacenSeguroProvider.overrideWithValue(AlmacenSeguroEnMemoria()),
         conectorWsProvider.overrideWithValue(ConectorWsFalso().call),
         proveedorUbicacionProvider.overrideWithValue(

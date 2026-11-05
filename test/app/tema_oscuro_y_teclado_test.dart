@@ -7,6 +7,7 @@ import 'package:quickpatch_mobile/app/router/app_router.dart';
 import 'package:quickpatch_mobile/app/router/rutas.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 
@@ -35,7 +36,10 @@ void main() {
     }
     peticiones = [];
     container = ProviderContainer(
-      overrides: [almacenSeguroProvider.overrideWithValue(memoria)],
+      overrides: [
+        cifradoContrasenaProvider.overrideWithValue(const CifradoFalso()),
+        almacenSeguroProvider.overrideWithValue(memoria),
+      ],
     );
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = AdaptadorFalso((o) {

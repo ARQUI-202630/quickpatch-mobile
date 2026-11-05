@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 
 import '../../helpers/fakes.dart';
@@ -65,6 +66,7 @@ void main() {
 
     final container = ProviderContainer(
       overrides: [
+        cifradoContrasenaProvider.overrideWithValue(const CifradoFalso()),
         almacenSeguroProvider.overrideWithValue(AlmacenSeguroEnMemoria()),
       ],
     );
@@ -178,7 +180,7 @@ void main() {
       expect(registro.headers['X-Channel-Id'], isNotNull);
       expect(registro.data, {
         'email': 'luis@correo.co',
-        'password': 'secreta123',
+        'encryptedPassword': cifradaFalsa('secreta123'),
         'fullName': 'Luis Pérez',
         'phone': '3001234567',
         'documentId': '1012345678',
