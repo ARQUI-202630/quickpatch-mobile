@@ -16,6 +16,7 @@ import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/estado_vista.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 Solicitud _solicitud(EstadoSolicitud estado, {TecnicoAsignado? tecnico}) =>
@@ -445,4 +446,25 @@ void main() {
   test('fechaCorta usa dd/mm/aaaa hh:mm', () {
     expect(fechaCorta(DateTime(2026, 3, 7, 9, 5)), '07/03/2026 09:05');
   });
+
+  for (final estado in [
+    EstadoSolicitud.buscandoTecnico,
+    EstadoSolicitud.enEspera,
+    EstadoSolicitud.asignado,
+    EstadoSolicitud.cotizado,
+    EstadoSolicitud.cotizacionAceptada,
+    EstadoSolicitud.enProgreso,
+    EstadoSolicitud.completado,
+    EstadoSolicitud.pagado,
+    EstadoSolicitud.cancelado,
+  ]) {
+    testWidgets(
+      'el detalle en ${estado.valor} cumple las guías de accesibilidad '
+      'de Flutter (AC4-E7)',
+      (tester) async {
+        await abrir(tester, () async => _solicitud(estado));
+        await cumpleGuiasDeAccesibilidad(tester);
+      },
+    );
+  }
 }

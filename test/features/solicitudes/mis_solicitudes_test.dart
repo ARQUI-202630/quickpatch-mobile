@@ -12,6 +12,7 @@ import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 /// Lista de solicitudes del cliente y de la empresa (RF-11, RF-08; SCRUM-74,
@@ -272,6 +273,14 @@ void main() {
         ).toJson(),
         isNot(contains('siteName')),
       );
+    },
+  );
+
+  testWidgets(
+    'Mis solicitudes cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrir(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
     },
   );
 }

@@ -13,6 +13,7 @@ import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/cotizacion_cliente.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/cotizaciones.dart';
 import '../../helpers/fakes.dart';
 
@@ -391,4 +392,12 @@ void main() {
       expect(lista.map((c) => c.numero), [1, 2]);
     });
   });
+
+  testWidgets(
+    'La cotización del cliente cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrir(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
+    },
+  );
 }
