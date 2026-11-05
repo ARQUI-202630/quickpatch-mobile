@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/seguridad/cifrado_contrasena.dart';
 import 'autenticacion_api.dart';
 
 /// Activación de la cuenta de un técnico del equipo de un proveedor
@@ -48,11 +49,19 @@ class RepositorioRecuperacion {
 }
 
 final repositorioRecuperacionProvider = Provider<RepositorioRecuperacion>(
-  (ref) =>
-      RepositorioRecuperacion(AutenticacionApi(ref.watch(clienteApiProvider))),
+  (ref) => RepositorioRecuperacion(
+    AutenticacionApi(
+      ref.watch(clienteApiProvider),
+      ref.watch(cifradoContrasenaProvider),
+    ),
+  ),
 );
 
 final repositorioActivacionProvider = Provider<RepositorioActivacion>(
-  (ref) =>
-      RepositorioActivacion(AutenticacionApi(ref.watch(clienteApiProvider))),
+  (ref) => RepositorioActivacion(
+    AutenticacionApi(
+      ref.watch(clienteApiProvider),
+      ref.watch(cifradoContrasenaProvider),
+    ),
+  ),
 );

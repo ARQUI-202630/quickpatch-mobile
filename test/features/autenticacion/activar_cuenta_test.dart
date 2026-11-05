@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/router/app_router.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/features/autenticacion/presentation/paginas/inicio_sesion_page.dart';
 
@@ -29,6 +30,7 @@ void main() {
     addTearDown(tester.view.reset);
     final container = ProviderContainer(
       overrides: [
+        cifradoContrasenaProvider.overrideWithValue(const CifradoFalso()),
         almacenSeguroProvider.overrideWithValue(AlmacenSeguroEnMemoria()),
       ],
     );
@@ -88,7 +90,10 @@ void main() {
 
     final envio = envios().single;
     expect(envio.method, 'POST');
-    expect(envio.data, {'token': token, 'password': 'Segura.2026'});
+    expect(envio.data, {
+      'token': token,
+      'encryptedPassword': cifradaFalsa('Segura.2026'),
+    });
     expect(envio.headers['Authorization'], isNull);
     expect(envio.headers['X-Channel-Id'], isNotNull);
     expect(find.byKey(const Key('cuenta-activada')), findsOneWidget);

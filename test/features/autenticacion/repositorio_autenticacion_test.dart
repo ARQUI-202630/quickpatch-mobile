@@ -19,7 +19,7 @@ void main() {
     final dio = Dio(BaseOptions(baseUrl: 'https://gw/api'))
       ..httpClientAdapter = adaptador;
     repositorio = RepositorioAutenticacionImpl(
-      AutenticacionApi(dio),
+      AutenticacionApi(dio, const CifradoFalso()),
       reloj: () => ahora,
     );
   });
@@ -33,7 +33,7 @@ void main() {
     expect(adaptador.ultima!.method, 'POST');
     expect(adaptador.ultima!.data, {
       'email': 'ana.gomez@correo.com',
-      'password': 'secreta',
+      'encryptedPassword': cifradaFalsa('secreta'),
     });
     expect(sesion.usuario.fullName, 'Ana Gómez');
     expect(sesion.expiraEn, ahora.add(const Duration(seconds: 900)));
@@ -72,7 +72,7 @@ void main() {
     expect(adaptador.ultima!.data, {
       'fullName': 'Ana',
       'email': 'ana@correo.com',
-      'password': 'secreta123',
+      'encryptedPassword': cifradaFalsa('secreta123'),
     });
   });
 
@@ -100,7 +100,7 @@ void main() {
       },
       'user': {
         'email': 'l@e.co',
-        'password': 'secreta123',
+        'encryptedPassword': cifradaFalsa('secreta123'),
         'fullName': 'Laura',
         'phone': '6011234567',
       },
@@ -127,7 +127,7 @@ void main() {
       expect(adaptador.ultima!.extra['publico'], isTrue);
       expect(adaptador.ultima!.data, {
         'email': 'luis@correo.co',
-        'password': 'secreta123',
+        'encryptedPassword': cifradaFalsa('secreta123'),
         'fullName': 'Luis Pérez',
         'phone': '3001234567',
         'documentId': '1012345678',
