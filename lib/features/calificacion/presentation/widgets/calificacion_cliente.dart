@@ -19,9 +19,10 @@ const _comentarioMaximo = 500;
 /// service-request 1.10.0): puntaje de 1 a 5 y comentario opcional, solo en
 /// `pagado` y una sola vez (RN-R1 a RN-R3).
 ///
-/// El detalle aún no trae la calificación: al volver a abrirlo se ve el
-/// formulario y, al enviar, `409 ya-calificada` confirma que ya existe, sin
-/// sus estrellas.
+/// Desde service-request 1.12.0 el detalle trae la calificación (`rating`):
+/// al volver a abrir una solicitud ya calificada se ven sus estrellas y su
+/// comentario, no el formulario. Con un detalle anterior (`rating` ausente),
+/// `409 ya-calificada` confirma que ya existe, sin sus estrellas.
 class CalificacionCliente extends ConsumerStatefulWidget {
   const CalificacionCliente({
     required this.solicitud,
@@ -93,7 +94,14 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
       return SeccionCotizacion(
         key: const Key('calificacion-registrada'),
         titulo: 'Tu calificación',
-        child: _Registrada(registrada),
+        child: _Registrada(registrada.puntaje, registrada.comentario),
+      );
+    }
+    if (widget.solicitud.calificacion case final delDetalle?) {
+      return SeccionCotizacion(
+        key: const Key('calificacion-del-detalle'),
+        titulo: 'Tu calificación',
+        child: _Registrada(delDetalle.puntaje, delDetalle.comentario),
       );
     }
     if (_yaCalificada) {
@@ -157,24 +165,25 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
 }
 
 class _Registrada extends StatelessWidget {
-  const _Registrada(this.calificacion);
+  const _Registrada(this.puntaje, this.comentario);
 
-  final Calificacion calificacion;
+  final int puntaje;
+  final String? comentario;
 
   @override
   Widget build(BuildContext context) {
-    final comentario = calificacion.comentario;
+    final comentario = this.comentario;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
-          label: 'Calificación: ${calificacion.puntaje} de $_estrellas',
+          label: 'Calificación: $puntaje de $_estrellas',
           excludeSemantics: true,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (var n = 1; n <= _estrellas; n++)
-                _Estrella(llena: n <= calificacion.puntaje, tamano: 24),
+                _Estrella(llena: n <= puntaje, tamano: 24),
             ],
           ),
         ),

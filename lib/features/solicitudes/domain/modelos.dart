@@ -154,6 +154,27 @@ class ClienteSolicitud {
   final String? telefono;
 }
 
+/// Calificación que trae el detalle de la solicitud (`rating`, service-request
+/// 1.12.0): puntaje de 1 a 5, comentario opcional y cuándo se calificó.
+class ResumenCalificacion {
+  const ResumenCalificacion({
+    required this.puntaje,
+    required this.calificadaEn,
+    this.comentario,
+  });
+
+  factory ResumenCalificacion.desdeJson(Map<String, dynamic> json) =>
+      ResumenCalificacion(
+        puntaje: json['score'] as int,
+        comentario: json['comment'] as String?,
+        calificadaEn: DateTime.parse(json['ratedAt'] as String),
+      );
+
+  final int puntaje;
+  final String? comentario;
+  final DateTime calificadaEn;
+}
+
 /// Solicitud creada o consultada (`ServiceRequest`).
 class Solicitud {
   const Solicitud({
@@ -174,6 +195,7 @@ class Solicitud {
     this.completadaEn,
     this.tipoCliente = TipoCliente.hogar,
     this.sede,
+    this.calificacion,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -206,6 +228,9 @@ class Solicitud {
         : DateTime.parse(json['completedAt'] as String),
     tipoCliente: TipoCliente.desdeValor(json['clientType'] as String?),
     sede: json['siteName'] as String?,
+    calificacion: json['rating'] == null
+        ? null
+        : ResumenCalificacion.desdeJson(json['rating'] as Map<String, dynamic>),
   );
 
   final String id;
@@ -237,6 +262,10 @@ class Solicitud {
   /// Hogar o empresa, y la sede de la empresa (1.9.0).
   final TipoCliente tipoCliente;
   final String? sede;
+
+  /// Calificación del servicio, solo para el cliente que lo pidió; `null` si
+  /// todavía no se califica (1.12.0).
+  final ResumenCalificacion? calificacion;
 }
 
 /// Solicitud en la lista del cliente o de la empresa (`AdminServiceRequest`,
