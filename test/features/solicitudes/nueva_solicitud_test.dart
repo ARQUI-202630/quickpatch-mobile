@@ -18,6 +18,7 @@ import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import 'package:quickpatch_mobile/shared/widgets/mapa_bogota.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 const _categoria = 'f2b9a0c4-1111-4c0a-9a55-2f1f3d6b8e01';
@@ -483,4 +484,12 @@ void main() {
     expect(cuerpoEnviado!.containsKey('clientType'), isFalse);
     expect(cuerpoEnviado!.containsKey('companyId'), isFalse);
   });
+
+  testWidgets(
+    'Nueva solicitud cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrirComoCliente(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
+    },
+  );
 }

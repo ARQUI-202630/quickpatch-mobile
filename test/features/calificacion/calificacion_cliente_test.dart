@@ -8,6 +8,7 @@ import 'package:quickpatch_mobile/features/calificacion/data/repositorio_calific
 import 'package:quickpatch_mobile/features/calificacion/presentation/widgets/calificacion_cliente.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 /// SCRUM-86: calificación del servicio pagado, con
@@ -328,4 +329,12 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(clave('boton-calificar'), findsOneWidget);
   });
+
+  testWidgets(
+    'La calificación cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrir(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
+    },
+  );
 }
