@@ -152,6 +152,12 @@ void main() {
       find.byKey(const Key('tarjeta-cancelacion')),
       'Solicitud cancelada con su motivo',
     );
+    // La lista del detalle es perezosa: al bajar hasta el botón de cancelar descarta el encabezado con el estado.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('estado-solicitud')),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(
       tester.widget<Text>(find.byKey(const Key('estado-solicitud'))).data,
       'Cancelada',
