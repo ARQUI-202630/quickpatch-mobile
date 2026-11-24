@@ -30,6 +30,7 @@ import '../shell/actividad_page.dart';
 import '../shell/estructura_principal.dart';
 import '../shell/inicio_page.dart';
 import 'rutas.dart';
+import 'secciones_detalle_solicitud.dart';
 
 /// Decide a dónde redirigir según el estado de la sesión.
 String? calcularRedireccion(AsyncValue<Sesion?> sesion, String ubicacion) {
@@ -161,6 +162,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => DetalleSolicitudPage(
           id: state.pathParameters['id']!,
           soloLectura: state.uri.queryParameters['soloLectura'] == '1',
+          secciones: seccionesDetalleSolicitud,
         ),
       ),
       GoRoute(

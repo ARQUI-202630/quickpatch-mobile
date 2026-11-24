@@ -5,10 +5,10 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/reloj.dart';
 import '../../../../shared/widgets/dialogo_confirmacion.dart';
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
-import 'cotizacion_tecnico.dart' show SeccionCotizacion;
 import 'desglose_cotizacion.dart';
 
 /// Cotización que recibe el cliente (RF-35, SCRUM-489; service-request
@@ -43,11 +43,11 @@ class CotizacionCliente extends ConsumerWidget {
         .when(
           skipLoadingOnRefresh: true,
           skipLoadingOnReload: true,
-          loading: () => const SeccionCotizacion(
+          loading: () => const SeccionDetalle(
             titulo: 'Cotización',
             child: IndicadorCarga(etiqueta: 'Cargando la cotización'),
           ),
-          error: (e, _) => SeccionCotizacion(
+          error: (e, _) => SeccionDetalle(
             key: const Key('error-cotizaciones'),
             titulo: 'Cotización',
             child: Column(
@@ -72,7 +72,7 @@ class CotizacionCliente extends ConsumerWidget {
             // siguiente aviso o la consulta de respaldo lo ponen al día.
             if (cotizacion == null) return const SizedBox.shrink();
             return buscada == EstadoCotizacion.aceptada
-                ? SeccionCotizacion(
+                ? SeccionDetalle(
                     key: const Key('cotizacion-aceptada'),
                     titulo: 'Cotización aceptada',
                     child: Column(
@@ -166,7 +166,7 @@ class _CotizacionPendienteState extends ConsumerState<_CotizacionPendiente> {
     final vigente = c.respondibleEn(ref.watch(relojProvider)());
     final peligro = context.estados.peligro;
     final texto = Theme.of(context).textTheme;
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('cotizacion-pendiente'),
       titulo: 'Tienes una cotización',
       child: Column(

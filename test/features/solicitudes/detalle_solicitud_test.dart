@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quickpatch_mobile/app/router/secciones_detalle_solicitud.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
@@ -79,7 +80,12 @@ void main() {
         ],
         child: MaterialApp(
           theme: tema ?? AppTheme.claro(),
-          home: DetalleSolicitudPage(id: 's-1', soloLectura: soloLectura),
+          home: DetalleSolicitudPage(
+            id: 's-1',
+            soloLectura: soloLectura,
+            // Las mismas secciones que arma el router de la app (SCRUM-714).
+            secciones: seccionesDetalleSolicitud,
+          ),
         ),
       ),
     );

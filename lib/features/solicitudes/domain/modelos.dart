@@ -1,5 +1,10 @@
 import '../../../core/geo/localidad.dart';
+import '../../../core/solicitudes/estado_solicitud.dart';
+import '../../../core/solicitudes/resumen_calificacion.dart';
 import '../../../core/utils/monto.dart';
+
+export '../../../core/solicitudes/estado_solicitud.dart';
+export '../../../core/solicitudes/resumen_calificacion.dart';
 
 /// Punto geográfico WGS 84 (`GeoPoint` en `service-request.v1.yaml`).
 class Ubicacion {
@@ -84,38 +89,6 @@ class VistaPreviaUbicacion {
   final String direccionReconocida;
 }
 
-/// Estado de la solicitud (`ServiceRequestStatus`, DD 7.4).
-enum EstadoSolicitud {
-  buscandoTecnico('buscando_tecnico', 'Buscando técnico'),
-  enEspera('en_espera', 'En espera'),
-  asignado('asignado', 'Técnico asignado'),
-  cotizado('cotizado', 'Cotizada'),
-  cotizacionAceptada('cotizacion_aceptada', 'Cotización aceptada'),
-  enProgreso('en_progreso', 'En progreso'),
-  completado('completado', 'Completada'),
-  pagado('pagado', 'Pagada'),
-  cancelado('cancelado', 'Cancelada');
-
-  const EstadoSolicitud(this.valor, this.etiqueta);
-
-  final String valor;
-  final String etiqueta;
-
-  static EstadoSolicitud desdeValor(String valor) =>
-      values.firstWhere((e) => e.valor == valor);
-
-  /// Estados anteriores al inicio del servicio, desde los que se puede
-  /// cancelar (RN-SR7; service-request 1.5.0).
-  bool get cancelable => switch (this) {
-    buscandoTecnico ||
-    enEspera ||
-    asignado ||
-    cotizado ||
-    cotizacionAceptada => true,
-    enProgreso || completado || pagado || cancelado => false,
-  };
-}
-
 /// Límites del motivo de cancelación (`CancelServiceRequest`, 1.5.0).
 abstract final class MotivoCancelacion {
   static const minimo = 5;
@@ -152,27 +125,6 @@ class ClienteSolicitud {
   final String id;
   final String? nombre;
   final String? telefono;
-}
-
-/// Calificación que trae el detalle de la solicitud (`rating`, service-request
-/// 1.12.0): puntaje de 1 a 5, comentario opcional y cuándo se calificó.
-class ResumenCalificacion {
-  const ResumenCalificacion({
-    required this.puntaje,
-    required this.calificadaEn,
-    this.comentario,
-  });
-
-  factory ResumenCalificacion.desdeJson(Map<String, dynamic> json) =>
-      ResumenCalificacion(
-        puntaje: json['score'] as int,
-        comentario: json['comment'] as String?,
-        calificadaEn: DateTime.parse(json['ratedAt'] as String),
-      );
-
-  final int puntaje;
-  final String? comentario;
-  final DateTime calificadaEn;
 }
 
 /// Solicitud creada o consultada (`ServiceRequest`).

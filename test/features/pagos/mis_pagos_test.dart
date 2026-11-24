@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/app.dart';
+import 'package:quickpatch_mobile/app/composicion.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/geo/repositorio_localidades.dart';
@@ -100,6 +101,8 @@ void main() {
         conectorWsProvider.overrideWithValue(ConectorWsFalso().call),
         categoriasProvider.overrideWith((ref) async => const []),
         localidadesProvider.overrideWith((ref) async => const []),
+        // La app conecta el equipo con los pagos así (SCRUM-714).
+        ...composicionDeFeatures,
       ],
     );
     addTearDown(container.dispose);

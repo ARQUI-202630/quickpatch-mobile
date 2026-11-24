@@ -35,16 +35,6 @@ Map<String, dynamic> pagoJson({
   'processedAt': null,
 };
 
-Solicitud _solicitud(EstadoSolicitud estado) => Solicitud(
-  id: 's-1',
-  estado: estado,
-  categoriaId: 'c-1',
-  descripcion: 'Fuga de agua debajo del lavaplatos',
-  ubicacion: const Ubicacion(4.6765, -74.0480),
-  direccion: 'Calle 93 # 13-20',
-  creadaEn: DateTime.utc(2026, 10, 20, 14),
-);
-
 class _SesionFija extends ControladorSesion {
   @override
   Future<Sesion?> build() async => sesionDePrueba();
@@ -109,7 +99,8 @@ void main() {
               body: ListView(
                 children: [
                   PagoCliente(
-                    solicitud: _solicitud(estado),
+                    solicitudId: 's-1',
+                    estado: estado,
                     alCambiar: () => cambios++,
                   ),
                 ],

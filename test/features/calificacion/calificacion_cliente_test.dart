@@ -63,16 +63,8 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: CalificacionCliente(
-                solicitud: Solicitud(
-                  id: 's-1',
-                  estado: EstadoSolicitud.pagado,
-                  categoriaId: 'c-1',
-                  descripcion: 'Fuga de agua',
-                  ubicacion: const Ubicacion(4.6765, -74.0480),
-                  direccion: 'Calle 93 # 13-20',
-                  creadaEn: DateTime.utc(2026, 10, 7, 15),
-                  calificacion: calificacion,
-                ),
+                solicitudId: 's-1',
+                calificacion: calificacion,
                 alCambiar: () => cambios++,
               ),
             ),

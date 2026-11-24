@@ -7,11 +7,11 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
 import '../../../../core/session/controlador_sesion.dart';
+import '../../../../core/solicitudes/revision_solicitud.dart';
 import '../../../../core/utils/validadores.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/confirmar_salida.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
-import '../../../solicitudes/data/repositorio_solicitudes.dart';
 import '../../data/repositorio_pagos.dart';
 import '../../data/tokenizador_tarjetas.dart';
 import '../../domain/pago.dart';
@@ -153,11 +153,8 @@ class _PagarPageState extends ConsumerState<PagarPage> {
     }
   }
 
-  void _refrescar() {
-    ref
-      ..invalidate(pagoProvider(widget.solicitudId))
-      ..invalidate(solicitudProvider(widget.solicitudId));
-  }
+  // La revisión vuelve a pedir el pago y el detalle de la solicitud (SCRUM-714).
+  void _refrescar() => solicitudCambio(ref, widget.solicitudId);
 
   String? _requerido(String? valor, String mensaje) =>
       (valor?.trim().isEmpty ?? true) ? mensaje : null;

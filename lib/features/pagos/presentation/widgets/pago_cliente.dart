@@ -6,10 +6,9 @@ import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
+import '../../../../core/solicitudes/estado_solicitud.dart';
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../../../shared/widgets/vista_error.dart';
-import '../../../solicitudes/domain/modelos.dart';
-import '../../../solicitudes/presentation/widgets/cotizacion_tecnico.dart'
-    show SeccionCotizacion;
 import '../../data/repositorio_pagos.dart';
 import '../../domain/pago.dart';
 
@@ -20,12 +19,14 @@ import '../../domain/pago.dart';
 /// acceso a su comprobante (SCRUM-494).
 class PagoCliente extends ConsumerWidget {
   const PagoCliente({
-    required this.solicitud,
+    required this.solicitudId,
+    required this.estado,
     required this.alCambiar,
     super.key,
   });
 
-  final Solicitud solicitud;
+  final String solicitudId;
+  final EstadoSolicitud estado;
 
   /// Vuelve a pedir la solicitud y el pago.
   final VoidCallback alCambiar;
@@ -35,12 +36,12 @@ class PagoCliente extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (!aplica(solicitud.estado)) return const SizedBox.shrink();
-    return SeccionCotizacion(
+    if (!aplica(estado)) return const SizedBox.shrink();
+    return SeccionDetalle(
       key: const Key('pago-cliente'),
       titulo: 'Pago',
       child: ref
-          .watch(pagoProvider(solicitud.id))
+          .watch(pagoProvider(solicitudId))
           .when(
             skipLoadingOnRefresh: true,
             skipLoadingOnReload: true,
