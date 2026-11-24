@@ -10,12 +10,12 @@ import '../../../../core/catalogo/repositorio_catalogo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
+import '../../../../core/solicitudes/revision_solicitud.dart';
+import '../../../../core/solicitudes/seccion_detalle_solicitud.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/atras_con_destino.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
-import '../../../calificacion/presentation/widgets/calificacion_cliente.dart';
-import '../../../pagos/data/repositorio_pagos.dart';
-import '../../../pagos/presentation/widgets/pago_cliente.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
 import '../estado_vista.dart';
@@ -42,11 +42,16 @@ class DetalleSolicitudPage extends ConsumerStatefulWidget {
   const DetalleSolicitudPage({
     required this.id,
     this.soloLectura = false,
+    this.secciones = const [],
     super.key,
   });
 
   final String id;
   final bool soloLectura;
+
+  /// Secciones de otras features (el pago y la calificación), en ese orden.
+  /// Las arma `app/router`: esta feature no importa a otras (SCRUM-714).
+  final List<SeccionDetalleSolicitud> secciones;
 
   @override
   ConsumerState<DetalleSolicitudPage> createState() =>
@@ -70,8 +75,9 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
     ref
       ..invalidate(solicitudProvider(widget.id))
       ..invalidate(cotizacionesProvider(widget.id))
-      ..invalidate(evidenciasProvider(widget.id))
-      ..invalidate(pagoProvider(widget.id));
+      ..invalidate(evidenciasProvider(widget.id));
+    // La revisión vuelve a pedir el detalle y lo de otras features, como el pago.
+    solicitudCambio(ref, widget.id);
   }
 
   /// Se suscribe al canal actual; cambia si la sesión crea uno nuevo.
@@ -126,8 +132,8 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
           onRefresh: () {
             ref
               ..invalidate(cotizacionesProvider(widget.id))
-              ..invalidate(evidenciasProvider(widget.id))
-              ..invalidate(pagoProvider(widget.id));
+              ..invalidate(evidenciasProvider(widget.id));
+            solicitudCambio(ref, widget.id);
             return ref.refresh(solicitudProvider(widget.id).future);
           },
           child: ListView(
@@ -157,17 +163,20 @@ class _DetalleSolicitudPageState extends ConsumerState<DetalleSolicitudPage> {
                 CotizacionCliente(solicitud: s, alCambiar: _actualizar),
                 const SizedBox(height: QpEspacio.e4),
               ],
-              // El pago de una solicitud de empresa lo hace cualquier usuario de
-              // la empresa (RN-P6, SCRUM-43), no solo quien la creó.
-              if (PagoCliente.aplica(s.estado)) ...[
-                PagoCliente(solicitud: s, alCambiar: _actualizar),
-                const SizedBox(height: QpEspacio.e4),
-              ],
-              if (!widget.soloLectura &&
-                  CalificacionCliente.aplica(s.estado)) ...[
-                CalificacionCliente(solicitud: s, alCambiar: _actualizar),
-                const SizedBox(height: QpEspacio.e4),
-              ],
+              for (final seccion in widget.secciones)
+                if (seccion(
+                      DatosSeccionSolicitud(
+                        solicitudId: s.id,
+                        estado: s.estado,
+                        soloLectura: widget.soloLectura,
+                        calificacion: s.calificacion,
+                      ),
+                      _actualizar,
+                    )
+                    case final Widget widgetSeccion) ...[
+                  widgetSeccion,
+                  const SizedBox(height: QpEspacio.e4),
+                ],
               if (EvidenciaCliente.aplica(s.estado)) ...[
                 EvidenciaCliente(solicitud: s),
                 const SizedBox(height: QpEspacio.e4),
@@ -623,62 +632,41 @@ class _DialogoCancelarState extends ConsumerState<_DialogoCancelar> {
 
   @override
   Widget build(BuildContext context) {
-    final esquema = Theme.of(context).colorScheme;
-    final peligro = context.estados.peligro;
-    return AlertDialog(
-      title: const Text('¿Cancelar la solicitud?'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'Dejaremos de buscar técnico o le avisaremos al técnico '
-              'asignado. No podrás reactivarla.',
-            ),
-            const SizedBox(height: QpEspacio.e4),
-            TextField(
-              key: const Key('campo-motivo-cancelacion'),
-              controller: _motivo,
-              enabled: !_enviando,
-              autofocus: true,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: MotivoCancelacion.maximo,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: 'Motivo',
-                hintText: 'Por ejemplo: ya no necesito el servicio',
-                errorText: _error,
-                errorMaxLines: 3,
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _enviando ? null : () => Navigator.of(context).pop(),
-          child: const Text('Volver'),
-        ),
-        FilledButton(
-          key: const Key('confirmar-cancelacion'),
-          style: FilledButton.styleFrom(
-            backgroundColor: peligro,
-            foregroundColor: esquema.surface,
+    return DialogoConfirmacion(
+      titulo: '¿Cancelar la solicitud?',
+      contenido: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Dejaremos de buscar técnico o le avisaremos al técnico '
+            'asignado. No podrás reactivarla.',
           ),
-          onPressed: _enviando ? null : _confirmar,
-          child: _enviando
-              ? Semantics(
-                  label: 'Cancelando',
-                  child: const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                )
-              : const Text('Cancelar solicitud'),
-        ),
-      ],
+          const SizedBox(height: QpEspacio.e4),
+          TextField(
+            key: const Key('campo-motivo-cancelacion'),
+            controller: _motivo,
+            enabled: !_enviando,
+            autofocus: true,
+            minLines: 2,
+            maxLines: 4,
+            maxLength: MotivoCancelacion.maximo,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(
+              labelText: 'Motivo',
+              hintText: 'Por ejemplo: ya no necesito el servicio',
+              errorText: _error,
+              errorMaxLines: 3,
+            ),
+          ),
+        ],
+      ),
+      accion: 'Cancelar solicitud',
+      peligro: true,
+      enviando: _enviando,
+      etiquetaEnviando: 'Cancelando',
+      claveConfirmar: const Key('confirmar-cancelacion'),
+      alConfirmar: _confirmar,
     );
   }
 }

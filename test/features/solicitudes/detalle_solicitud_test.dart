@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:quickpatch_mobile/app/router/secciones_detalle_solicitud.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
@@ -16,6 +17,7 @@ import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/estado_vista.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 Solicitud _solicitud(EstadoSolicitud estado, {TecnicoAsignado? tecnico}) =>
@@ -78,7 +80,12 @@ void main() {
         ],
         child: MaterialApp(
           theme: tema ?? AppTheme.claro(),
-          home: DetalleSolicitudPage(id: 's-1', soloLectura: soloLectura),
+          home: DetalleSolicitudPage(
+            id: 's-1',
+            soloLectura: soloLectura,
+            // Las mismas secciones que arma el router de la app (SCRUM-714).
+            secciones: seccionesDetalleSolicitud,
+          ),
         ),
       ),
     );
@@ -445,4 +452,25 @@ void main() {
   test('fechaCorta usa dd/mm/aaaa hh:mm', () {
     expect(fechaCorta(DateTime(2026, 3, 7, 9, 5)), '07/03/2026 09:05');
   });
+
+  for (final estado in [
+    EstadoSolicitud.buscandoTecnico,
+    EstadoSolicitud.enEspera,
+    EstadoSolicitud.asignado,
+    EstadoSolicitud.cotizado,
+    EstadoSolicitud.cotizacionAceptada,
+    EstadoSolicitud.enProgreso,
+    EstadoSolicitud.completado,
+    EstadoSolicitud.pagado,
+    EstadoSolicitud.cancelado,
+  ]) {
+    testWidgets(
+      'el detalle en ${estado.valor} cumple las guías de accesibilidad '
+      'de Flutter (AC4-E7)',
+      (tester) async {
+        await abrir(tester, () async => _solicitud(estado));
+        await cumpleGuiasDeAccesibilidad(tester);
+      },
+    );
+  }
 }

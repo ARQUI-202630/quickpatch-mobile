@@ -2,7 +2,7 @@
 
 Inventario de la SCRUM-616 (historia SCRUM-615). La SCRUM-617 (#44) aplicó la regla y la SCRUM-618 la prueba: las tablas dicen cómo se comporta hoy cada pantalla, que es lo que se espera.
 
-Se revisaron las 22 páginas de `lib/` y la pantalla de carga contra `develop` (`b59eaf1`), que ya incluye la SCRUM-617 (#44) y la edición del perfil de la SCRUM-612 (#45). Las rutas están en `lib/app/router/rutas.dart` y el enrutador en `lib/app/router/app_router.dart`.
+Se revisaron las 25 páginas de `lib/` y la pantalla de carga contra `develop` (`2306ba1`), que ya incluye la SCRUM-617 (#44), la edición del perfil (SCRUM-612, #45), el historial del técnico (SCRUM-101, #46), Mis pagos (SCRUM-502, #50) y la recuperación de la contraseña (SCRUM-626, #51). Las rutas están en `lib/app/router/rutas.dart` y el enrutador en `lib/app/router/app_router.dart`.
 
 ## Regla general
 
@@ -48,8 +48,11 @@ Tres widgets con `PopScope` cubren la flecha y el botón atrás:
 |---|---|---|---|---|
 | Registro de cliente | `/registro` | `push` desde el login | Vuelve al login | Sí, si hay datos escritos |
 | Registro de técnico | `/registro/tecnico` | `push` desde el login | Vuelve al login | Sí, si hay datos escritos |
+| Recupera tu contraseña | `/recuperar-contrasena` | `push` desde «¿Olvidaste tu contraseña?» del login, con el correo ya escrito | Vuelve al login. Después de enviar, «Volver a iniciar sesión» va al login con `go` | Sí, si el correo es distinto al que llegó del login. Enviada, no pregunta |
 | Activar cuenta | `/activar` | `push` desde el login, o desde el enlace de invitación | Vuelve al login. Desde el enlace no hay pila y `AtrasConDestino` lleva al login | No |
 | Editar perfil | `/cuenta/perfil` | `push` desde Cuenta | Vuelve a Cuenta | Sí, si cambió el nombre o el teléfono. Al guardar cierra sin preguntar |
+| Historial (técnico) | `/tecnico/historial` | `push` desde Cuenta | Vuelve a Cuenta | No |
+| Mis pagos (técnico y proveedor) | `/cuenta/pagos` | `push` desde Cuenta; el técnico también desde «Pagos recibidos» en Inicio | Vuelve a la pantalla anterior | No |
 | Notificaciones | `/notificaciones` | `push` desde Inicio y Cuenta | Vuelve a la pantalla anterior | No |
 | Disponibilidad y cobertura | `/tecnico/disponibilidad` | `push` desde Inicio y desde la oferta | Vuelve a la pantalla anterior | Sí, si hay cambios sin guardar |
 | Usuarios de la empresa | `/empresa/usuarios` | `push` desde Inicio | Vuelve a Inicio | No |
@@ -57,20 +60,28 @@ Tres widgets con `PopScope` cubren la flecha y el botón atrás:
 | Agregar técnico (equipo) | `/equipo/nuevo` | `push` desde Equipo | Vuelve a Equipo | Sí, si hay datos escritos. Al crear cierra sin preguntar |
 | Nueva solicitud | `/solicitudes/nueva` | `push` desde Inicio y Mis solicitudes | Vuelve a la pantalla anterior | Sí, si hay datos escritos. Al crear va al detalle sin preguntar |
 | Detalle de la solicitud (cliente) | `/solicitudes/:id` | `push` desde la lista y el buzón; `go` al crear | Vuelve a la pantalla anterior. Recién creada o sin pila, `AtrasConDestino` lleva a Mis solicitudes | No |
-| Servicio asignado (técnico) | `/tecnico/solicitudes/:id` | `push` desde Servicios, la oferta, el aviso y el buzón | Vuelve a la pantalla anterior | No |
+| Servicio asignado (técnico) | `/tecnico/solicitudes/:id` | `push` desde Servicios, el historial (solo los completados), la oferta, el aviso y el buzón | Vuelve a la pantalla anterior | No |
 | Chat del servicio | `/solicitudes/:id/chat` | `push` desde los dos detalles | Vuelve al detalle | Sí, si hay texto sin enviar |
 | Pagar el servicio | `/solicitudes/:id/pagar` | `push` desde el detalle | Vuelve al detalle. Con el pago aprobado hace `pop`, así que no se repite el pago | Sí, si hay datos de tarjeta escritos |
 | Comprobante de pago | `/pagos/:id/comprobante` | `push` desde el pago del detalle | Vuelve al detalle | No |
 
 ## Cambios de la SCRUM-617 (#44)
 
-Lo que cambió respecto al inventario anterior, y dónde verlo en `develop` (`b59eaf1`):
+Lo que cambió respecto al inventario anterior, y dónde verlo en `develop` (`2306ba1`):
 
-1. **Registro y registro de técnico:** se abren con `push` en lugar de `go` (`inicio_sesion_page.dart`, líneas 131 y 149).
+1. **Registro y registro de técnico:** se abren con `push` en lugar de `go` (`inicio_sesion_page.dart`, líneas 144 y 162).
 2. **Detalle de la solicitud:**
-   - La casita que siempre iba a Inicio ahora es la flecha normal (`detalle_solicitud_page.dart`, línea 106).
-   - `AtrasConDestino` lleva a Mis solicitudes cuando no hay pila (línea 94).
+   - La casita que siempre iba a Inicio ahora es la flecha normal (`detalle_solicitud_page.dart`, línea 108).
+   - `AtrasConDestino` lleva a Mis solicitudes cuando no hay pila (línea 96).
    - Al crear la solicitud se sigue abriendo con `go` (`nueva_solicitud_page.dart`, línea 106); por eso atrás lleva a Mis solicitudes y no cierra la app.
 3. **Activar cuenta:** `AtrasConDestino` lleva al login cuando no hay pila (`activar_cuenta_page.dart`, línea 87).
 4. **Pestañas Actividad y Cuenta:** el botón atrás vuelve a Inicio (`estructura_principal.dart`, línea 41).
 5. **Confirmar antes de descartar cambios:** `ConfirmarSalida` en los 7 formularios (registro, registro de técnico, nueva solicitud, agregar usuario de la empresa, agregar técnico, pagar y disponibilidad) y en el chat. La SCRUM-612 (#45) lo agregó también en Editar perfil.
+
+## Pantallas agregadas después de la SCRUM-617
+
+Siguen la misma regla; están en la tabla de pantallas secundarias.
+
+- **Historial (SCRUM-101):** se abre desde Cuenta con `push`. Solo los servicios completados abren su detalle; en pagado y cancelado la API responde 403 (RN-SR13).
+- **Mis pagos (SCRUM-502):** se abre con `push` desde Cuenta (técnico y proveedor) y desde «Pagos recibidos» en Inicio (técnico). No abre detalle: el contrato no lo tiene.
+- **Recupera tu contraseña (SCRUM-626):** pantalla pública; se abre con `push` desde el login (`inicio_sesion_page.dart`, línea 113) y usa `ConfirmarSalida` solo si el correo cambió. El enlace que entrega el administrador se abre en el panel web (`/recuperar`), no en la app.

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/solicitudes/revision_solicitud.dart';
 import '../domain/pago.dart';
 import '../domain/pago_recibido.dart';
 
@@ -97,10 +98,14 @@ final repositorioPagosProvider = Provider<RepositorioPagos>(
   (ref) => RepositorioPagos(ref.watch(clienteApiProvider)),
 );
 
-final pagoProvider = FutureProvider.autoDispose.family<Pago, String>(
-  (ref, solicitudId) =>
-      ref.watch(repositorioPagosProvider).obtener(solicitudId),
-);
+final pagoProvider = FutureProvider.autoDispose.family<Pago, String>((
+  ref,
+  solicitudId,
+) {
+  // Se vuelve a pedir cuando la solicitud cambia (SCRUM-714).
+  ref.watch(revisionSolicitudProvider(solicitudId));
+  return ref.watch(repositorioPagosProvider).obtener(solicitudId);
+});
 
 final comprobanteProvider = FutureProvider.autoDispose
     .family<Comprobante, String>(

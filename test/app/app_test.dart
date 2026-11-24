@@ -6,6 +6,7 @@ import 'package:quickpatch_mobile/app/app.dart';
 import 'package:quickpatch_mobile/app/router/app_router.dart';
 import 'package:quickpatch_mobile/app/router/rutas.dart';
 import 'package:quickpatch_mobile/core/network/cliente_api.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/core/session/sesion.dart';
@@ -21,7 +22,10 @@ void main() {
 
   Future<void> abrirApp(WidgetTester tester) async {
     container = ProviderContainer(
-      overrides: [almacenSeguroProvider.overrideWithValue(memoria)],
+      overrides: [
+        cifradoContrasenaProvider.overrideWithValue(const CifradoFalso()),
+        almacenSeguroProvider.overrideWithValue(memoria),
+      ],
     );
     addTearDown(container.dispose);
     container.read(clienteApiProvider).httpClientAdapter = adaptador;
@@ -218,7 +222,7 @@ void main() {
         },
         'user': {
           'email': 'laura@andinas.co',
-          'password': 'secreta123',
+          'encryptedPassword': cifradaFalsa('secreta123'),
           'fullName': 'Laura Mora',
         },
       });

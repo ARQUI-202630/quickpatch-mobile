@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/router/rutas.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/hoja_invitacion.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_empresa.dart';
@@ -82,28 +83,16 @@ class _UsuariosEmpresaPageState extends ConsumerState<UsuariosEmpresaPage> {
   }
 
   Future<void> _nuevoEnlace(UsuarioEmpresa usuario) async {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (contexto) => AlertDialog(
-        title: Text('¿Generar un enlace nuevo para ${usuario.nombre}?'),
-        content: const Text(
+    final confirmado = await confirmar(
+      context,
+      titulo: '¿Generar un enlace nuevo para ${usuario.nombre}?',
+      mensaje:
           'El enlace anterior dejará de funcionar. Úsalo si se perdió o se '
           'venció.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(contexto).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            key: const Key('confirmar-enlace-nuevo'),
-            onPressed: () => Navigator.of(contexto).pop(true),
-            child: const Text('Generar enlace'),
-          ),
-        ],
-      ),
+      accion: 'Generar enlace',
+      clave: const Key('confirmar-enlace-nuevo'),
     );
-    if (confirmado != true || !mounted) return;
+    if (!confirmado || !mounted) return;
     setState(() => _generando = usuario.userId);
     try {
       final invitacion = await _repositorio.nuevaInvitacion(usuario.userId);

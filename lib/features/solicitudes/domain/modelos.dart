@@ -1,5 +1,10 @@
 import '../../../core/geo/localidad.dart';
+import '../../../core/solicitudes/estado_solicitud.dart';
+import '../../../core/solicitudes/resumen_calificacion.dart';
 import '../../../core/utils/monto.dart';
+
+export '../../../core/solicitudes/estado_solicitud.dart';
+export '../../../core/solicitudes/resumen_calificacion.dart';
 
 /// Punto geográfico WGS 84 (`GeoPoint` en `service-request.v1.yaml`).
 class Ubicacion {
@@ -84,38 +89,6 @@ class VistaPreviaUbicacion {
   final String direccionReconocida;
 }
 
-/// Estado de la solicitud (`ServiceRequestStatus`, DD 7.4).
-enum EstadoSolicitud {
-  buscandoTecnico('buscando_tecnico', 'Buscando técnico'),
-  enEspera('en_espera', 'En espera'),
-  asignado('asignado', 'Técnico asignado'),
-  cotizado('cotizado', 'Cotizada'),
-  cotizacionAceptada('cotizacion_aceptada', 'Cotización aceptada'),
-  enProgreso('en_progreso', 'En progreso'),
-  completado('completado', 'Completada'),
-  pagado('pagado', 'Pagada'),
-  cancelado('cancelado', 'Cancelada');
-
-  const EstadoSolicitud(this.valor, this.etiqueta);
-
-  final String valor;
-  final String etiqueta;
-
-  static EstadoSolicitud desdeValor(String valor) =>
-      values.firstWhere((e) => e.valor == valor);
-
-  /// Estados anteriores al inicio del servicio, desde los que se puede
-  /// cancelar (RN-SR7; service-request 1.5.0).
-  bool get cancelable => switch (this) {
-    buscandoTecnico ||
-    enEspera ||
-    asignado ||
-    cotizado ||
-    cotizacionAceptada => true,
-    enProgreso || completado || pagado || cancelado => false,
-  };
-}
-
 /// Límites del motivo de cancelación (`CancelServiceRequest`, 1.5.0).
 abstract final class MotivoCancelacion {
   static const minimo = 5;
@@ -174,6 +147,7 @@ class Solicitud {
     this.completadaEn,
     this.tipoCliente = TipoCliente.hogar,
     this.sede,
+    this.calificacion,
   });
 
   factory Solicitud.desdeJson(Map<String, dynamic> json) => Solicitud(
@@ -206,6 +180,9 @@ class Solicitud {
         : DateTime.parse(json['completedAt'] as String),
     tipoCliente: TipoCliente.desdeValor(json['clientType'] as String?),
     sede: json['siteName'] as String?,
+    calificacion: json['rating'] == null
+        ? null
+        : ResumenCalificacion.desdeJson(json['rating'] as Map<String, dynamic>),
   );
 
   final String id;
@@ -237,6 +214,10 @@ class Solicitud {
   /// Hogar o empresa, y la sede de la empresa (1.9.0).
   final TipoCliente tipoCliente;
   final String? sede;
+
+  /// Calificación del servicio, solo para el cliente que lo pidió; `null` si
+  /// todavía no se califica (1.12.0).
+  final ResumenCalificacion? calificacion;
 }
 
 /// Solicitud en la lista del cliente o de la empresa (`AdminServiceRequest`,

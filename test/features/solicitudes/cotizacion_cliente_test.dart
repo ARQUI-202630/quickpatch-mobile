@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:quickpatch_mobile/app/theme/app_theme.dart';
+import 'package:quickpatch_mobile/app/theme/tokens.dart';
 import 'package:quickpatch_mobile/core/catalogo/categoria.dart';
 import 'package:quickpatch_mobile/core/catalogo/repositorio_catalogo.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
@@ -12,6 +13,7 @@ import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/paginas/detalle_solicitud_page.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/cotizacion_cliente.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/cotizaciones.dart';
 import '../../helpers/fakes.dart';
 
@@ -304,7 +306,18 @@ void main() {
     await abrir(tester);
     final antes = consultas;
 
-    await rechazar(tester, '');
+    await tocar(tester, 'boton-rechazar-cotizacion');
+    // SCRUM-638: la acción destructiva va en rojo.
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const Key('confirmar-rechazo')))
+          .style
+          ?.backgroundColor
+          ?.resolve(const {}),
+      QpEstados.claro.peligro,
+    );
+    await tester.enterText(clave('campo-motivo-rechazo'), '');
+    await tocar(tester, 'confirmar-rechazo');
 
     expect(find.text(avisoConflicto), findsOneWidget);
     expect(clave('campo-motivo-rechazo'), findsNothing);
@@ -379,4 +392,12 @@ void main() {
       expect(lista.map((c) => c.numero), [1, 2]);
     });
   });
+
+  testWidgets(
+    'La cotización del cliente cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrir(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
+    },
+  );
 }

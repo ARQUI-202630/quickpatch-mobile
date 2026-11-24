@@ -11,6 +11,9 @@ abstract final class ApiEndpoints {
   static const registroCliente = '/v1/auth/register/client';
   static const registroTecnico = '/v1/auth/register/technician';
   static const login = '/v1/auth/login';
+
+  /// Llave pública para cifrar la contraseña (identity 1.11.0).
+  static const llaveContrasena = '/v1/auth/password-key';
   static const usuarioActual = '/v1/users/me';
   static const definirContrasena = '/v1/auth/password/setup';
 

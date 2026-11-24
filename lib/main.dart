@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/app.dart';
+import 'app/composicion.dart';
 import 'core/network/politica_reintento.dart';
 
 void main() {
@@ -13,5 +14,11 @@ void main() {
     yield LicenseEntryWithLineBreaks(['Plus Jakarta Sans'], ofl);
   });
   // Sin reintentos de los 4xx: con ellos la pantalla se queda cargando.
-  runApp(const ProviderScope(retry: politicaReintento, child: QuickpatchApp()));
+  runApp(
+    ProviderScope(
+      retry: politicaReintento,
+      overrides: composicionDeFeatures,
+      child: const QuickpatchApp(),
+    ),
+  );
 }

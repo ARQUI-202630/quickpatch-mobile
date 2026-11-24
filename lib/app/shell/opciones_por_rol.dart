@@ -22,17 +22,16 @@ class OpcionInicio {
 
 /// Opciones de cada rol en la app móvil, según la relación pantalla–contrato
 /// del DD v3 (trasladada a SCRUM-332). Cada opción se habilita cuando su
-/// feature esté implementada.
+/// feature esté implementada. El pago del cliente (RF-22) no es una opción de
+/// inicio: se hace desde el detalle de cada solicitud completada.
 List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
   RolUsuario.cliente => const [
     OpcionInicio('Nueva solicitud', 'RF-07', ruta: Rutas.nuevaSolicitud),
     OpcionInicio('Mis solicitudes', 'RF-11', ruta: Rutas.actividad),
-    OpcionInicio('Pagos y comprobantes', 'RF-22'),
   ],
   RolUsuario.empresaContacto => const [
     OpcionInicio('Nueva solicitud', 'RF-08', ruta: Rutas.nuevaSolicitud),
     OpcionInicio('Solicitudes de la empresa', 'RF-11', ruta: Rutas.actividad),
-    OpcionInicio('Pagos y comprobantes', 'RF-22'),
     OpcionInicio(
       'Usuarios de la empresa',
       'RF-06',
@@ -49,6 +48,8 @@ List<OpcionInicio> opcionesPara(RolUsuario rol) => switch (rol) {
     OpcionInicio('Mis servicios', 'RF-17', ruta: Rutas.actividad),
     OpcionInicio('Pagos recibidos', 'RF-25', ruta: Rutas.misPagos),
   ],
-  RolUsuario.proveedor => const [OpcionInicio('Mi equipo', 'RF-16')],
+  RolUsuario.proveedor => const [
+    OpcionInicio('Mi equipo', 'RF-16', ruta: Rutas.actividad),
+  ],
   RolUsuario.adminTenant || RolUsuario.adminPlataforma => const [],
 };

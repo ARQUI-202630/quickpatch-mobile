@@ -12,6 +12,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/realtime/canal_tiempo_real.dart';
 import '../../../../core/realtime/mensaje_tiempo_real.dart';
 import '../../../../core/utils/reloj.dart';
+import '../../../../shared/widgets/dialogo_confirmacion.dart';
 import '../../../../shared/widgets/icono_categoria.dart';
 import '../../data/repositorio_ofertas.dart';
 import '../../domain/oferta.dart';
@@ -202,27 +203,16 @@ class _TarjetaOfertaState extends ConsumerState<TarjetaOferta> {
   }
 
   Future<void> _rechazar() async {
-    final confirmado = await showDialog<bool>(
-      context: context,
-      builder: (contexto) => AlertDialog(
-        title: const Text('¿Rechazar esta oferta?'),
-        content: const Text(
+    final confirmado = await confirmar(
+      context,
+      titulo: '¿Rechazar esta oferta?',
+      mensaje:
           'No tiene penalización. Le ofreceremos el servicio a otro técnico.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(contexto).pop(false),
-            child: const Text('Volver'),
-          ),
-          FilledButton(
-            key: const Key('confirmar-rechazo'),
-            onPressed: () => Navigator.of(contexto).pop(true),
-            child: const Text('Rechazar'),
-          ),
-        ],
-      ),
+      accion: 'Rechazar',
+      peligro: true,
+      clave: const Key('confirmar-rechazo'),
     );
-    if (confirmado != true || !mounted) return;
+    if (!confirmado || !mounted) return;
     setState(() => _enCurso = _Accion.rechazar);
     try {
       await ref

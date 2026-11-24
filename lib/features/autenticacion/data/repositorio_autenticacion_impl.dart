@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/seguridad/cifrado_contrasena.dart';
 import '../../../core/session/sesion.dart';
 import '../domain/datos_registro.dart';
 import '../domain/repositorio_autenticacion.dart';
@@ -53,6 +54,9 @@ class RepositorioAutenticacionImpl implements RepositorioAutenticacion {
 
 final repositorioAutenticacionProvider = Provider<RepositorioAutenticacion>(
   (ref) => RepositorioAutenticacionImpl(
-    AutenticacionApi(ref.watch(clienteApiProvider)),
+    AutenticacionApi(
+      ref.watch(clienteApiProvider),
+      ref.watch(cifradoContrasenaProvider),
+    ),
   ),
 );

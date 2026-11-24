@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:quickpatch_mobile/core/realtime/canal_tiempo_real.dart';
+import 'package:quickpatch_mobile/core/seguridad/cifrado_contrasena.dart';
 import 'package:quickpatch_mobile/core/session/almacen_sesion.dart';
 import 'package:quickpatch_mobile/core/session/rol_usuario.dart';
 import 'package:quickpatch_mobile/core/session/sesion.dart';
@@ -133,3 +134,22 @@ Sesion sesionDePrueba({
   expiraEn: expiraEn ?? DateTime.now().toUtc().add(const Duration(hours: 1)),
   usuario: UsuarioSesion(userId: 'u-1', fullName: 'Ana Gómez', rol: rol),
 );
+
+/// Cifrado de la contraseña para las pruebas: no pide la llave ni usa RSA,
+/// así el cuerpo es predecible ([cifradaFalsa]). El cifrado real se prueba en
+/// `test/core/seguridad/cifrado_contrasena_test.dart`.
+class CifradoFalso implements CifradoContrasena {
+  const CifradoFalso();
+
+  @override
+  Future<T> enviar<T>(
+    String password,
+    Future<T> Function(Map<String, String> cifrada) enviar,
+  ) => enviar(cifradaFalsa(password));
+}
+
+/// `encryptedPassword` que manda [CifradoFalso] para [password].
+Map<String, String> cifradaFalsa(String password) => {
+  'keyId': 'llave-de-prueba',
+  'ciphertext': 'cifrado:$password',
+};

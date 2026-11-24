@@ -15,6 +15,7 @@ import 'package:quickpatch_mobile/features/pagos/presentation/widgets/pago_clien
 import 'package:quickpatch_mobile/features/solicitudes/data/repositorio_solicitudes.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 /// Pago del cliente (RF-22, SCRUM-116; payments 1.0.0) con la pasarela
@@ -33,16 +34,6 @@ Map<String, dynamic> pagoJson({
   'createdAt': '2026-10-21T15:00:00Z',
   'processedAt': null,
 };
-
-Solicitud _solicitud(EstadoSolicitud estado) => Solicitud(
-  id: 's-1',
-  estado: estado,
-  categoriaId: 'c-1',
-  descripcion: 'Fuga de agua debajo del lavaplatos',
-  ubicacion: const Ubicacion(4.6765, -74.0480),
-  direccion: 'Calle 93 # 13-20',
-  creadaEn: DateTime.utc(2026, 10, 20, 14),
-);
 
 class _SesionFija extends ControladorSesion {
   @override
@@ -108,7 +99,8 @@ void main() {
               body: ListView(
                 children: [
                   PagoCliente(
-                    solicitud: _solicitud(estado),
+                    solicitudId: 's-1',
+                    estado: estado,
                     alCambiar: () => cambios++,
                   ),
                 ],
@@ -119,6 +111,12 @@ void main() {
       );
       await tester.pumpAndSettle();
     }
+
+    testWidgets('la sección de pago cumple las guías de accesibilidad de '
+        'Flutter (AC4-E7)', (tester) async {
+      await abrir(tester, EstadoSolicitud.completado);
+      await cumpleGuiasDeAccesibilidad(tester);
+    });
 
     testWidgets('antes de completar no aparece', (tester) async {
       await abrir(tester, EstadoSolicitud.enProgreso);

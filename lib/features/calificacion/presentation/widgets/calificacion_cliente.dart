@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
+import '../../../../core/solicitudes/estado_solicitud.dart';
+import '../../../../core/solicitudes/resumen_calificacion.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
-import '../../../solicitudes/domain/modelos.dart';
-import '../../../solicitudes/presentation/widgets/cotizacion_tecnico.dart'
-    show SeccionCotizacion;
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../data/repositorio_calificacion.dart';
 import '../../domain/calificacion.dart';
 
@@ -19,17 +19,22 @@ const _comentarioMaximo = 500;
 /// service-request 1.10.0): puntaje de 1 a 5 y comentario opcional, solo en
 /// `pagado` y una sola vez (RN-R1 a RN-R3).
 ///
-/// El detalle aún no trae la calificación: al volver a abrirlo se ve el
-/// formulario y, al enviar, `409 ya-calificada` confirma que ya existe, sin
-/// sus estrellas.
+/// Desde service-request 1.12.0 el detalle trae la calificación (`rating`):
+/// al volver a abrir una solicitud ya calificada se ven sus estrellas y su
+/// comentario, no el formulario. Con un detalle anterior (`rating` ausente),
+/// `409 ya-calificada` confirma que ya existe, sin sus estrellas.
 class CalificacionCliente extends ConsumerStatefulWidget {
   const CalificacionCliente({
-    required this.solicitud,
+    required this.solicitudId,
     required this.alCambiar,
+    this.calificacion,
     super.key,
   });
 
-  final Solicitud solicitud;
+  final String solicitudId;
+
+  /// La que trae el detalle (`rating`, service-request 1.12.0), si ya existe.
+  final ResumenCalificacion? calificacion;
 
   /// Vuelve a pedir la solicitud.
   final VoidCallback alCambiar;
@@ -67,7 +72,7 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
       final registrada = await ref
           .read(repositorioCalificacionProvider)
           .calificar(
-            widget.solicitud.id,
+            widget.solicitudId,
             puntaje: puntaje,
             comentario: _comentario.text.trim(),
           );
@@ -90,21 +95,28 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
   @override
   Widget build(BuildContext context) {
     if (_registrada case final registrada?) {
-      return SeccionCotizacion(
+      return SeccionDetalle(
         key: const Key('calificacion-registrada'),
         titulo: 'Tu calificación',
-        child: _Registrada(registrada),
+        child: _Registrada(registrada.puntaje, registrada.comentario),
+      );
+    }
+    if (widget.calificacion case final delDetalle?) {
+      return SeccionDetalle(
+        key: const Key('calificacion-del-detalle'),
+        titulo: 'Tu calificación',
+        child: _Registrada(delDetalle.puntaje, delDetalle.comentario),
       );
     }
     if (_yaCalificada) {
-      return SeccionCotizacion(
+      return SeccionDetalle(
         key: const Key('calificacion-existente'),
         titulo: 'Tu calificación',
         child: Text(CodigoError.alreadyRated.mensaje),
       );
     }
     final errorComentario = _error?.errorDe('comment');
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('calificacion-cliente'),
       titulo: 'Califica el servicio',
       child: Column(
@@ -157,24 +169,25 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
 }
 
 class _Registrada extends StatelessWidget {
-  const _Registrada(this.calificacion);
+  const _Registrada(this.puntaje, this.comentario);
 
-  final Calificacion calificacion;
+  final int puntaje;
+  final String? comentario;
 
   @override
   Widget build(BuildContext context) {
-    final comentario = calificacion.comentario;
+    final comentario = this.comentario;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Semantics(
-          label: 'Calificación: ${calificacion.puntaje} de $_estrellas',
+          label: 'Calificación: $puntaje de $_estrellas',
           excludeSemantics: true,
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               for (var n = 1; n <= _estrellas; n++)
-                _Estrella(llena: n <= calificacion.puntaje, tamano: 24),
+                _Estrella(llena: n <= puntaje, tamano: 24),
             ],
           ),
         ),

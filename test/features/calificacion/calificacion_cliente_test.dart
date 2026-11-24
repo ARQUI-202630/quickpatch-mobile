@@ -8,6 +8,7 @@ import 'package:quickpatch_mobile/features/calificacion/data/repositorio_calific
 import 'package:quickpatch_mobile/features/calificacion/presentation/widgets/calificacion_cliente.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 
+import '../../helpers/accesibilidad.dart';
 import '../../helpers/fakes.dart';
 
 /// SCRUM-86: calificación del servicio pagado, con
@@ -38,6 +39,7 @@ void main() {
     WidgetTester tester, {
     ThemeData? tema,
     double escalaTexto = 1,
+    ResumenCalificacion? calificacion,
   }) async {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
       ..httpClientAdapter = AdaptadorFalso((o) {
@@ -61,15 +63,8 @@ void main() {
           home: Scaffold(
             body: SingleChildScrollView(
               child: CalificacionCliente(
-                solicitud: Solicitud(
-                  id: 's-1',
-                  estado: EstadoSolicitud.pagado,
-                  categoriaId: 'c-1',
-                  descripcion: 'Fuga de agua',
-                  ubicacion: const Ubicacion(4.6765, -74.0480),
-                  direccion: 'Calle 93 # 13-20',
-                  creadaEn: DateTime.utc(2026, 10, 7, 15),
-                ),
+                solicitudId: 's-1',
+                calificacion: calificacion,
                 alCambiar: () => cambios++,
               ),
             ),
@@ -225,9 +220,113 @@ void main() {
     expect(clave('calificacion-registrada'), findsOneWidget);
   });
 
+  testWidgets('al reabrir una solicitud ya calificada se ven sus estrellas '
+      'y su comentario, no el formulario (1.12.0)', (tester) async {
+    final semantica = tester.ensureSemantics();
+    await abrir(
+      tester,
+      calificacion: ResumenCalificacion(
+        puntaje: 4,
+        comentario: 'Muy puntual y ordenado',
+        calificadaEn: DateTime.utc(2026, 10, 8, 15, 20),
+      ),
+    );
+
+    expect(clave('calificacion-del-detalle'), findsOneWidget);
+    expect(find.text('Tu calificación'), findsOneWidget);
+    expect(find.text('Muy puntual y ordenado'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(RegExp('Calificación: 4 de 5')),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.star_rounded), findsNWidgets(4));
+    expect(find.byIcon(Icons.star_outline_rounded), findsOneWidget);
+    expect(clave('boton-calificar'), findsNothing);
+    expect(clave('campo-comentario'), findsNothing);
+    expect(clave('estrella-1'), findsNothing);
+    expect(envios, isEmpty, reason: 'no vuelve a pedir ni a enviar nada');
+    semantica.dispose();
+  });
+
+  testWidgets('una calificación sin comentario muestra solo las estrellas', (
+    tester,
+  ) async {
+    await abrir(
+      tester,
+      calificacion: ResumenCalificacion(
+        puntaje: 1,
+        calificadaEn: DateTime.utc(2026, 10, 8, 15, 20),
+      ),
+    );
+
+    expect(clave('calificacion-del-detalle'), findsOneWidget);
+    expect(clave('comentario-registrado'), findsNothing);
+    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.star_outline_rounded), findsNWidgets(4));
+  });
+
+  testWidgets('sin calificación en el detalle se sigue mostrando el '
+      'formulario', (tester) async {
+    await abrir(tester);
+
+    expect(clave('calificacion-cliente'), findsOneWidget);
+    expect(clave('calificacion-del-detalle'), findsNothing);
+    expect(clave('boton-calificar'), findsOneWidget);
+  });
+
+  testWidgets('calificada desde la app, manda la recién enviada aunque el '
+      'detalle no la traiga todavía', (tester) async {
+    await abrir(tester);
+    await calificar(tester, estrellas: 5);
+
+    expect(clave('calificacion-registrada'), findsOneWidget);
+    expect(clave('calificacion-del-detalle'), findsNothing);
+  });
+
+  test('la solicitud lee rating del detalle (1.12.0) y es nula sin él', () {
+    Map<String, dynamic> detalle(Map<String, dynamic>? rating) => {
+      'id': 's-1',
+      'status': 'pagado',
+      'categoryId': 'c-1',
+      'description': 'Fuga de agua debajo del lavaplatos',
+      'location': {'latitude': 4.6765, 'longitude': -74.048},
+      'addressText': 'Calle 93 # 13-20',
+      'createdAt': '2026-10-20T14:00:00Z',
+      'rating': rating,
+    };
+
+    final con = Solicitud.desdeJson(
+      detalle({
+        'score': 5,
+        'comment': 'Excelente',
+        'ratedAt': '2026-10-21T09:30:00Z',
+      }),
+    );
+    expect(con.calificacion?.puntaje, 5);
+    expect(con.calificacion?.comentario, 'Excelente');
+    expect(con.calificacion?.calificadaEn, DateTime.utc(2026, 10, 21, 9, 30));
+
+    final sinComentario = Solicitud.desdeJson(
+      detalle({'score': 2, 'comment': null, 'ratedAt': '2026-10-21T09:30:00Z'}),
+    );
+    expect(sinComentario.calificacion?.comentario, isNull);
+
+    expect(Solicitud.desdeJson(detalle(null)).calificacion, isNull);
+    final sinClave = detalle(null)..remove('rating');
+    expect(Solicitud.desdeJson(sinClave).calificacion, isNull);
+  });
+
   testWidgets('tema oscuro y texto al 200 % sin desbordes', (tester) async {
     await abrir(tester, tema: AppTheme.oscuro(), escalaTexto: 2);
     expect(tester.takeException(), isNull);
     expect(clave('boton-calificar'), findsOneWidget);
   });
+
+  testWidgets(
+    'La calificación cumple las guías de accesibilidad de Flutter (AC4-E7)',
+    (tester) async {
+      await abrir(tester);
+      await cumpleGuiasDeAccesibilidad(tester);
+    },
+  );
 }
