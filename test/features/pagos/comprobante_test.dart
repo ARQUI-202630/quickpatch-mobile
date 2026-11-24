@@ -191,15 +191,8 @@ void main() {
             body: ListView(
               children: [
                 PagoCliente(
-                  solicitud: Solicitud(
-                    id: 's-1',
-                    estado: EstadoSolicitud.pagado,
-                    categoriaId: 'c-1',
-                    descripcion: 'Fuga de agua debajo del lavaplatos',
-                    ubicacion: const Ubicacion(4.6765, -74.0480),
-                    direccion: 'Calle 93 # 13-20',
-                    creadaEn: DateTime.utc(2026, 10, 20, 14),
-                  ),
+                  solicitudId: 's-1',
+                  estado: EstadoSolicitud.pagado,
                   alCambiar: () {},
                 ),
               ],

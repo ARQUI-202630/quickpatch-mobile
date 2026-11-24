@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/errors/codigo_error.dart';
+import '../../../../core/solicitudes/estado_solicitud.dart';
+import '../../../../core/solicitudes/resumen_calificacion.dart';
 import '../../../../shared/widgets/boton_principal.dart';
 import '../../../../shared/widgets/mensaje_error.dart';
-import '../../../solicitudes/domain/modelos.dart';
-import '../../../solicitudes/presentation/widgets/cotizacion_tecnico.dart'
-    show SeccionCotizacion;
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../data/repositorio_calificacion.dart';
 import '../../domain/calificacion.dart';
 
@@ -25,12 +25,16 @@ const _comentarioMaximo = 500;
 /// `409 ya-calificada` confirma que ya existe, sin sus estrellas.
 class CalificacionCliente extends ConsumerStatefulWidget {
   const CalificacionCliente({
-    required this.solicitud,
+    required this.solicitudId,
     required this.alCambiar,
+    this.calificacion,
     super.key,
   });
 
-  final Solicitud solicitud;
+  final String solicitudId;
+
+  /// La que trae el detalle (`rating`, service-request 1.12.0), si ya existe.
+  final ResumenCalificacion? calificacion;
 
   /// Vuelve a pedir la solicitud.
   final VoidCallback alCambiar;
@@ -68,7 +72,7 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
       final registrada = await ref
           .read(repositorioCalificacionProvider)
           .calificar(
-            widget.solicitud.id,
+            widget.solicitudId,
             puntaje: puntaje,
             comentario: _comentario.text.trim(),
           );
@@ -91,28 +95,28 @@ class _CalificacionClienteState extends ConsumerState<CalificacionCliente> {
   @override
   Widget build(BuildContext context) {
     if (_registrada case final registrada?) {
-      return SeccionCotizacion(
+      return SeccionDetalle(
         key: const Key('calificacion-registrada'),
         titulo: 'Tu calificación',
         child: _Registrada(registrada.puntaje, registrada.comentario),
       );
     }
-    if (widget.solicitud.calificacion case final delDetalle?) {
-      return SeccionCotizacion(
+    if (widget.calificacion case final delDetalle?) {
+      return SeccionDetalle(
         key: const Key('calificacion-del-detalle'),
         titulo: 'Tu calificación',
         child: _Registrada(delDetalle.puntaje, delDetalle.comentario),
       );
     }
     if (_yaCalificada) {
-      return SeccionCotizacion(
+      return SeccionDetalle(
         key: const Key('calificacion-existente'),
         titulo: 'Tu calificación',
         child: Text(CodigoError.alreadyRated.mensaje),
       );
     }
     final errorComentario = _error?.errorDe('comment');
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('calificacion-cliente'),
       titulo: 'Califica el servicio',
       child: Column(

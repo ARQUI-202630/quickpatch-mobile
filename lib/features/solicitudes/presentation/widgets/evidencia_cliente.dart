@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
-import 'cotizacion_tecnico.dart' show SeccionCotizacion;
 import 'galeria_evidencias.dart';
 
 /// Fotos del trabajo que ve el cliente (RF-15, SCRUM-95; service-request
@@ -25,7 +25,7 @@ class EvidenciaCliente extends ConsumerWidget {
     if (!aplica(solicitud.estado)) return const SizedBox.shrink();
     final fotos = ref.watch(evidenciasProvider(solicitud.id));
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('evidencia-cliente'),
       titulo: 'Fotos del trabajo',
       child: fotos.when(

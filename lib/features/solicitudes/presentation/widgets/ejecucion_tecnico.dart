@@ -5,11 +5,11 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/dialogo_confirmacion.dart';
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../data/selector_fotos.dart';
 import '../../domain/modelos.dart';
-import 'cotizacion_tecnico.dart' show SeccionCotizacion;
 import 'galeria_evidencias.dart';
 
 /// Ejecución del servicio desde la app del técnico (RF-14, RF-15, SCRUM-95;
@@ -269,7 +269,7 @@ class _EnProgresoState extends ConsumerState<_EnProgreso> {
     final ocupado = _subiendo || _completando || !fotos.hasValue;
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('seccion-evidencia'),
       titulo: 'Evidencia del trabajo',
       child: Column(
@@ -391,7 +391,7 @@ class _Completado extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lista = ref.watch(evidenciasProvider(solicitud.id)).value;
     final fin = solicitud.completadaEn;
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('servicio-completado'),
       titulo: 'Servicio completado',
       child: Column(

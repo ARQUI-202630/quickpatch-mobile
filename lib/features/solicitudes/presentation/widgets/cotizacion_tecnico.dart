@@ -6,6 +6,7 @@ import '../../../../app/theme/tokens.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../core/utils/monto.dart';
+import '../../../../shared/widgets/seccion_detalle.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../data/repositorio_solicitudes.dart';
 import '../../domain/modelos.dart';
@@ -43,11 +44,11 @@ class CotizacionTecnico extends ConsumerWidget {
         .when(
           skipLoadingOnRefresh: true,
           skipLoadingOnReload: true,
-          loading: () => const SeccionCotizacion(
+          loading: () => const SeccionDetalle(
             titulo: 'Cotización',
             child: IndicadorCarga(etiqueta: 'Cargando la cotización'),
           ),
-          error: (e, _) => SeccionCotizacion(
+          error: (e, _) => SeccionDetalle(
             key: const Key('error-cotizaciones'),
             titulo: 'Cotización',
             child: Column(
@@ -109,7 +110,7 @@ class _Contenido extends StatelessWidget {
                   numero: cotizaciones.length + 1,
                   alCambiar: alCambiar,
                 )
-              : const SeccionCotizacion(
+              : const SeccionDetalle(
                   key: Key('sin-cotizaciones-restantes'),
                   titulo: 'Cotización',
                   child: Text(
@@ -118,7 +119,7 @@ class _Contenido extends StatelessWidget {
                   ),
                 )
         else if (vigente != null)
-          SeccionCotizacion(
+          SeccionDetalle(
             key: const Key('cotizacion-vigente'),
             titulo: vigente.estado == EstadoCotizacion.aceptada
                 ? 'El cliente aceptó tu cotización'
@@ -127,7 +128,7 @@ class _Contenido extends StatelessWidget {
           ),
         for (final c in anteriores) ...[
           const SizedBox(height: QpEspacio.e4),
-          SeccionCotizacion(
+          SeccionDetalle(
             key: Key('cotizacion-anterior-${c.numero}'),
             titulo:
                 'Cotización ${c.numero}: ${c.estado.etiqueta.toLowerCase()}',
@@ -273,7 +274,7 @@ class _FormularioCotizacionState extends ConsumerState<FormularioCotizacion> {
     final texto = Theme.of(context).textTheme;
     final secundario = Theme.of(context).colorScheme.onSurfaceVariant;
     final restantes = LimitesCotizacion.maximo - widget.numero;
-    return SeccionCotizacion(
+    return SeccionDetalle(
       key: const Key('formulario-cotizacion'),
       titulo: 'Cotización ${widget.numero} de ${LimitesCotizacion.maximo}',
       child: Column(
@@ -402,36 +403,6 @@ class _CampoPesos extends StatelessWidget {
       helperText: ayuda,
       errorText: error,
       errorMaxLines: 3,
-    ),
-  );
-}
-
-/// Tarjeta con título de la cotización; la usan el técnico y el cliente.
-class SeccionCotizacion extends StatelessWidget {
-  const SeccionCotizacion({
-    required this.titulo,
-    required this.child,
-    super.key,
-  });
-
-  final String titulo;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Card(
-    child: Padding(
-      padding: const EdgeInsets.all(QpEspacio.e4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Semantics(
-            header: true,
-            child: Text(titulo, style: Theme.of(context).textTheme.titleMedium),
-          ),
-          const SizedBox(height: QpEspacio.e3),
-          child,
-        ],
-      ),
     ),
   );
 }

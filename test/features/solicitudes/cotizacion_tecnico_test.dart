@@ -6,6 +6,7 @@ import 'package:quickpatch_mobile/app/theme/app_theme.dart';
 import 'package:quickpatch_mobile/features/solicitudes/data/repositorio_solicitudes.dart';
 import 'package:quickpatch_mobile/features/solicitudes/domain/modelos.dart';
 import 'package:quickpatch_mobile/features/solicitudes/presentation/widgets/cotizacion_tecnico.dart';
+import 'package:quickpatch_mobile/shared/widgets/seccion_detalle.dart';
 
 import '../../helpers/cotizaciones.dart';
 import '../../helpers/fakes.dart';
@@ -281,7 +282,7 @@ void main() {
   ) async {
     await abrir(tester, EstadoSolicitud.enProgreso);
 
-    expect(find.byType(SeccionCotizacion), findsNothing);
+    expect(find.byType(SeccionDetalle), findsNothing);
   });
 
   testWidgets('si no carga las cotizaciones permite reintentar', (

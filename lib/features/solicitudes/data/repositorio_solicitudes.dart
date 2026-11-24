@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/network/cliente_api.dart';
+import '../../../core/solicitudes/revision_solicitud.dart';
 import '../../../core/utils/monto.dart';
 import '../domain/modelos.dart';
 
@@ -226,9 +227,14 @@ final repositorioSolicitudesProvider = Provider<RepositorioSolicitudes>(
 );
 
 /// Detalle de una solicitud.
-final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>(
-  (ref, id) => ref.watch(repositorioSolicitudesProvider).obtener(id),
-);
+final solicitudProvider = FutureProvider.autoDispose.family<Solicitud, String>((
+  ref,
+  id,
+) {
+  // Se vuelve a pedir cuando otra feature la cambia, como el pago (SCRUM-714).
+  ref.watch(revisionSolicitudProvider(id));
+  return ref.watch(repositorioSolicitudesProvider).obtener(id);
+});
 
 /// Cotizaciones de una solicitud (service-request 1.6.0).
 final cotizacionesProvider = FutureProvider.autoDispose

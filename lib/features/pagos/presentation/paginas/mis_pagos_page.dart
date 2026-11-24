@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/equipo/miembros_equipo.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/session/controlador_sesion.dart';
 import '../../../../core/session/rol_usuario.dart';
 import '../../../../core/utils/fechas.dart';
 import '../../../../shared/widgets/vista_error.dart';
 import '../../../../shared/widgets/vista_estado.dart';
-import '../../../equipo/data/repositorio_equipo.dart';
-import '../../../equipo/domain/modelos.dart';
 import '../../data/repositorio_pagos.dart';
 import '../../domain/pago.dart';
 import '../../domain/pago_recibido.dart';
@@ -133,10 +132,10 @@ class _MisPagosPageState extends ConsumerState<MisPagosPage> {
   Widget build(BuildContext context) {
     // Sin la lista del equipo, los pagos se muestran igual, sin el nombre.
     final equipo = _esProveedor
-        ? ref.watch(equipoCompletoProvider).value
+        ? ref.watch(miembrosEquipoProvider).value
         : null;
     final nombres = {
-      for (final t in equipo ?? const <TecnicoEquipo>[]) t.userId: t.nombre,
+      for (final t in equipo ?? const <MiembroEquipo>[]) t.userId: t.nombre,
     };
     return Scaffold(
       appBar: AppBar(title: const Text('Mis pagos')),
